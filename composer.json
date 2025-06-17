@@ -1,0 +1,92 @@
+{
+	"name": "eliashaeussler/typo3-vendor-bundler",
+	"description": "Composer plugin to bundle vendor libraries for TYPO3 extensions in classic mode",
+	"license": "GPL-3.0-or-later",
+	"type": "library",
+	"authors": [
+		{
+			"name": "Elias Häußler",
+			"email": "elias@haeussler.dev",
+			"homepage": "https://haeussler.dev",
+			"role": "Maintainer"
+		}
+	],
+	"require": {
+		"php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+		"composer": "~2.2.18 || ^2.4",
+		"cuyz/valinor": "^1.16",
+		"symfony/console": "^5.4 || ^6.4 || ^7.0",
+		"symfony/filesystem": "^5.4 || ^6.4 || ^7.0",
+		"symfony/yaml": "^5.4 || ^6.4 || ^7.0"
+	},
+	"require-dev": {
+		"armin/editorconfig-cli": "^2.1",
+		"composer/composer": "~2.2.18 || ^2.4",
+		"eliashaeussler/php-cs-fixer-config": "^2.3",
+		"eliashaeussler/phpstan-config": "^2.9",
+		"eliashaeussler/rector-config": "^3.1",
+		"eliashaeussler/version-bumper": "^2.4",
+		"ergebnis/composer-normalize": "^2.47",
+		"phpstan/extension-installer": "^1.4",
+		"phpstan/phpstan-phpunit": "^2.0",
+		"phpstan/phpstan-symfony": "^2.0",
+		"phpunit/phpunit": "^11.5 || ^12.2",
+		"shipmonk/composer-dependency-analyser": "^1.8"
+	},
+	"autoload": {
+		"psr-4": {
+			"EliasHaeussler\\Typo3VendorBundler\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"EliasHaeussler\\Typo3VendorBundler\\Tests\\": "tests/src/"
+		}
+	},
+	"bin": [
+		"bin/typo3-vendor-bundler"
+	],
+	"config": {
+		"allow-plugins": {
+			"eliashaeussler/version-bumper": true,
+			"ergebnis/composer-normalize": true,
+			"phpstan/extension-installer": true
+		},
+		"sort-packages": true
+	},
+	"extra": {
+		"class": "EliasHaeussler\\Typo3VendorBundler\\Typo3VendorBundlerPlugin"
+	},
+	"scripts": {
+		"analyze": [
+			"@analyze:dependencies"
+		],
+		"analyze:dependencies": "composer-dependency-analyser",
+		"fix": [
+			"@fix:composer",
+			"@fix:editorconfig",
+			"@fix:php"
+		],
+		"fix:composer": "@composer normalize",
+		"fix:editorconfig": "@lint:editorconfig --fix",
+		"fix:php": "php-cs-fixer fix",
+		"lint": [
+			"@lint:composer",
+			"@lint:editorconfig",
+			"@lint:php"
+		],
+		"lint:composer": "@fix:composer --dry-run",
+		"lint:editorconfig": "ec",
+		"lint:php": "@fix:php --dry-run",
+		"migration": [
+			"@migration:rector"
+		],
+		"migration:rector": "rector process -c rector.php",
+		"sca": [
+			"@sca:php"
+		],
+		"sca:php": "phpstan analyse -c phpstan.php",
+		"test": "@test:coverage --no-coverage",
+		"test:coverage": "phpunit -c phpunit.xml"
+	}
+}

@@ -1,0 +1,8 @@
+/.build/
+/tests/src/Fixtures/Extensions/*/libs/vendor
+/tests/src/Fixtures/Extensions/*/libs/composer.lock
+/tests/src/Fixtures/Extensions/*/composer.json.bak
+/tests/src/Fixtures/Extensions/*/ext_emconf.php.bak
+/tests/src/Fixtures/Extensions/*/ext_emconf_modified.php
+/tests/src/Fixtures/Extensions/valid-temporary
+/vendor/

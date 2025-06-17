@@ -1,0 +1,10 @@
+{
+	"autoload": {
+		"classmap": [
+			"baz.php"
+		],
+		"psr-4": {
+			"Baz\\": "other"
+		}
+	}
+}

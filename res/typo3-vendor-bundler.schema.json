@@ -1,0 +1,48 @@
+{
+	"$schema": "http://json-schema.org/draft-06/schema#",
+	"type": "object",
+	"title": "TYPO3 Vendor Bundler config file schema",
+	"properties": {
+		"autoload": {
+			"$ref": "#/definitions/autoload"
+		},
+		"pathToVendorLibraries": {
+			"type": "string",
+			"title": "Absolute or relative path to composer.json where vendor libraries are managed",
+			"default": "Resources/Private/Libs"
+		},
+		"rootPath": {
+			"type": "string",
+			"title": "Relative or absolute path to project root",
+			"description": "This path will be used to calculate paths to configured files if they are configured as relative paths. If the root path is configured as relative path, it is calculated based on the config file path."
+		}
+	},
+	"additionalProperties": false,
+	"definitions": {
+		"autoload": {
+			"type": "object",
+			"title": "Set of options used to bundle autoload configuration",
+			"properties": {
+				"dropComposerAutoload": {
+					"type": "boolean",
+					"title": "Define whether to drop \"autoload\" section in composer.json",
+					"description": "When enabled, the configured \"autoload\" section in composer.json will be removed in order to let ext_emconf.php manage all autoload parameters",
+					"default": true
+				},
+				"targetFile": {
+					"type": "string",
+					"title": "File where to bundle autoload configuration",
+					"description": "This is usually the `ext_emconf.php` file",
+					"default": "ext_emconf.php"
+				},
+				"backupSources": {
+					"type": "boolean",
+					"title": "Define whether to backup source files",
+					"description": "When enabled, original contents of source files, which are to be modified, will be backed up in a separate file",
+					"default": false
+				}
+			},
+			"additionalProperties": false
+		}
+	}
+}
