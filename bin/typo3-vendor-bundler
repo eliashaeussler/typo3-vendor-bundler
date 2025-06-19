@@ -44,7 +44,7 @@ require $autoloadFile;
 unset($autoloadFile, $file);
 
 // Run application
-$applicationVersion = '0.1.0';
+$applicationVersion = '1.0.0';
 $application = new Console\Application('TYPO3 Vendor Bundler', $applicationVersion);
 $application->add(new Command\BundleCommand());
 $application->add(new Command\BundleAutoloadCommand());
