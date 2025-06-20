@@ -36,7 +36,7 @@ jobs:
         run: git reset --hard HEAD && git clean -fx
 
       - name: Bundle vendor libraries
-        run: ~/.composer/vendor/bin/typo3-vendor-bundler bundle
+        run: composer bundle
 
       - name: Publish to TER
         run: ~/.composer/vendor/bin/tailor ter:publish "${{ github.ref_name }}" "${{ secrets.TYPO3_EXTENSION_KEY }}"
@@ -63,7 +63,7 @@ release:
     - git reset --hard HEAD && git clean -fx
 
     # Bundle vendor libraries
-    - /tmp/vendor/bin/typo3-vendor-bundler bundle
+    - composer bundle
 
     # Publish to TER
     - /tmp/vendor/bin/tailor ter:publish "$CI_COMMIT_TAG" "$TYPO3_EXTENSION_KEY"
