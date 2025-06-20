@@ -33,10 +33,8 @@ use function sprintf;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class BundleCommand extends Console\Command\Command
+final class BundleCommand extends AbstractConfigurationAwareCommand
 {
-    private Console\Style\SymfonyStyle $io;
-
     /**
      * @param list<Console\Command\Command> $bundlers
      */
@@ -50,20 +48,9 @@ final class BundleCommand extends Console\Command\Command
 
     protected function configure(): void
     {
-        $this->setAliases(['b']);
+        parent::configure();
+
         $this->setDescription('Execute all available bundlers');
-
-        $this->addOption(
-            'config',
-            'c',
-            Console\Input\InputOption::VALUE_REQUIRED,
-            'Path to configuration file (JSON, YAML or PHP)',
-        );
-    }
-
-    protected function initialize(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): void
-    {
-        $this->io = new Console\Style\SymfonyStyle($input, $output);
     }
 
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int

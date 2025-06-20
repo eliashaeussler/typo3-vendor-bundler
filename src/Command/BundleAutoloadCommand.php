@@ -39,18 +39,17 @@ use function trim;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class BundleAutoloadCommand extends BaseCommand
+final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
 {
     public function __construct()
     {
         parent::__construct('bundle-autoload');
-
-        $this->configReader = new Config\ConfigReader();
     }
 
     protected function configure(): void
     {
-        $this->setAliases(['a']);
+        parent::configure();
+
         $this->setDescription('Bundle autoloader for vendor libraries in ext_emconf.php');
 
         $this->addArgument(
@@ -59,12 +58,6 @@ final class BundleAutoloadCommand extends BaseCommand
             'Path to vendor libraries (either absolute or relative to working directory)',
         );
 
-        $this->addOption(
-            'config',
-            'c',
-            Console\Input\InputOption::VALUE_REQUIRED,
-            'Path to configuration file (JSON, YAML or PHP)',
-        );
         $this->addOption(
             'drop-composer-autoload',
             'a',
@@ -89,11 +82,6 @@ final class BundleAutoloadCommand extends BaseCommand
             Console\Input\InputOption::VALUE_NONE,
             'Force overwriting the given target file',
         );
-    }
-
-    protected function initialize(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): void
-    {
-        $this->io = new Console\Style\SymfonyStyle($input, $output);
     }
 
     /**

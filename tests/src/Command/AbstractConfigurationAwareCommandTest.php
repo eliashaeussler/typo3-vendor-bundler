@@ -31,13 +31,13 @@ use Symfony\Component\Console;
 use function dirname;
 
 /**
- * BaseCommandTest.
+ * AbstractConfigurationAwareCommandTest.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-#[Framework\Attributes\CoversClass(Src\Command\BaseCommand::class)]
-final class BaseCommandTest extends Framework\TestCase
+#[Framework\Attributes\CoversClass(Src\Command\AbstractConfigurationAwareCommand::class)]
+final class AbstractConfigurationAwareCommandTest extends Framework\TestCase
 {
     private Console\Output\BufferedOutput $output;
     private Tests\Fixtures\Classes\DummyCommand $command;
@@ -45,7 +45,7 @@ final class BaseCommandTest extends Framework\TestCase
     public function setUp(): void
     {
         $this->output = new Console\Output\BufferedOutput();
-        $this->command = new Tests\Fixtures\Classes\DummyCommand('foo', output: $this->output);
+        $this->command = new Tests\Fixtures\Classes\DummyCommand(output: $this->output);
     }
 
     #[Framework\Attributes\Test]

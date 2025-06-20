@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Tests\Command;
 
+use Composer\Console\Application;
 use EliasHaeussler\Typo3VendorBundler as Src;
 use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
@@ -47,12 +48,15 @@ final class BundleCommandTest extends Framework\TestCase
     {
         $this->firstCommand = new Tests\Fixtures\Classes\DummyCommand('first command');
         $this->secondCommand = new Tests\Fixtures\Classes\DummyCommand('second command');
-        $this->commandTester = new Console\Tester\CommandTester(
-            new Src\Command\BundleCommand([
-                $this->firstCommand,
-                $this->secondCommand,
-            ]),
-        );
+
+        $application = new Application();
+        $command = new Src\Command\BundleCommand([
+            $this->firstCommand,
+            $this->secondCommand,
+        ]);
+        $command->setApplication($application);
+
+        $this->commandTester = new Console\Tester\CommandTester($command);
     }
 
     #[Framework\Attributes\Test]
@@ -70,9 +74,6 @@ final class BundleCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executePassesConfigToConfiguredBundlers(): void
     {
-        $this->firstCommand->getDefinition()->addOption(
-            new Console\Input\InputOption('config'),
-        );
         $this->firstCommand->setCode(
             static function (Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int {
                 $config = $input->getOption('config');

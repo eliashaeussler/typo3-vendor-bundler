@@ -1,7 +1,7 @@
 repository:
   name: 'typo3-vendor-bundler'
-  description: '📦 Composer library to bundle vendor libraries for TYPO3 extensions in classic mode'
-  topics: 'typo3,extension,vendor,libraries,bundler,composer-library'
+  description: '📦 Composer plugin to bundle vendor libraries for TYPO3 extensions in classic mode'
+  topics: 'typo3,extension,vendor,libraries,bundler,composer-plugin'
   private: false
   has_issues: true
   has_projects: false

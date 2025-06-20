@@ -2,7 +2,7 @@
 	"name": "eliashaeussler/typo3-vendor-bundler",
 	"description": "Composer plugin to bundle vendor libraries for TYPO3 extensions in classic mode",
 	"license": "GPL-3.0-or-later",
-	"type": "library",
+	"type": "composer-plugin",
 	"authors": [
 		{
 			"name": "Elias Häußler",
@@ -13,6 +13,7 @@
 	],
 	"require": {
 		"php": "~8.2.0 || ~8.3.0 || ~8.4.0",
+		"composer-plugin-api": "^2.0",
 		"composer": "~2.2.18 || ^2.4",
 		"cuyz/valinor": "^1.16",
 		"symfony/console": "^5.4 || ^6.4 || ^7.0",
@@ -43,9 +44,6 @@
 			"EliasHaeussler\\Typo3VendorBundler\\Tests\\": "tests/src/"
 		}
 	},
-	"bin": [
-		"bin/typo3-vendor-bundler"
-	],
 	"config": {
 		"allow-plugins": {
 			"eliashaeussler/version-bumper": true,

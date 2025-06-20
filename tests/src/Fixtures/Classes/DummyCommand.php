@@ -35,10 +35,10 @@ use Symfony\Component\Console;
  *
  * @internal
  */
-final class DummyCommand extends Command\BaseCommand
+final class DummyCommand extends Command\AbstractConfigurationAwareCommand
 {
     public function __construct(
-        string $description,
+        string $description = 'dummy',
         string $name = 'dummy',
         ?Console\Output\OutputInterface $output = null,
     ) {
@@ -51,11 +51,6 @@ final class DummyCommand extends Command\BaseCommand
         );
 
         $this->setDescription($description);
-    }
-
-    protected function initialize(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): void
-    {
-        $this->io = new Console\Style\SymfonyStyle($input, $output);
     }
 
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
