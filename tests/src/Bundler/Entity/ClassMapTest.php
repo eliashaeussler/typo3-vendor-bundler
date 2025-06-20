@@ -52,6 +52,45 @@ final class ClassMapTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function hasReturnsTrueIfGivenRelativePathExistsInMap(): void
+    {
+        self::assertTrue($this->subject->has('foo'));
+        self::assertTrue($this->subject->has('foo/baz'));
+        self::assertFalse($this->subject->has('baz'));
+    }
+
+    #[Framework\Attributes\Test]
+    public function hasReturnsTrueIfGivenAbsolutePathExistsInMap(): void
+    {
+        self::assertTrue($this->subject->has(__DIR__.'/foo'));
+        self::assertTrue($this->subject->has(__DIR__.'/foo/baz'));
+        self::assertFalse($this->subject->has(__DIR__.'/baz'));
+    }
+
+    #[Framework\Attributes\Test]
+    public function removeDoesNothingIfGivenPathDoesNotExistInMap(): void
+    {
+        $expected = $this->subject->toArray();
+
+        self::assertSame($this->subject, $this->subject->remove('baz'));
+        self::assertSame($expected, $this->subject->toArray());
+    }
+
+    #[Framework\Attributes\Test]
+    public function removeReturnsNewClassMapObjectWithoutGivenPath(): void
+    {
+        $expected = new Src\Bundler\Entity\ClassMap(
+            [
+                'foo/baz',
+            ],
+            'classmap.php',
+            __DIR__,
+        );
+
+        self::assertEquals($expected, $this->subject->remove('foo'));
+    }
+
+    #[Framework\Attributes\Test]
     public function toArrayReturnsClassMap(): void
     {
         $expected = [

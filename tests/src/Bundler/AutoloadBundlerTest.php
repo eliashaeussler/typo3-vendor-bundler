@@ -155,6 +155,65 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleExcludesFilesFromLibsClassMap(): void
+    {
+        $targetFile = $this->getFixturePath('valid').'/ext_emconf_modified.php';
+
+        try {
+            $this->subject->bundle(
+                'ext_emconf_modified.php',
+                false,
+                false,
+                true,
+                [
+                    'vendor/composer/InstalledVersions.php',
+                ],
+            );
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🔍 Parsing ext_emconf.php file... Done', $output);
+            self::assertStringContainsString('🍄 Loading class map from ext_emconf.php... Done', $output);
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString(
+                '⛔ Removing "vendor/composer/InstalledVersions.php" from class map... Done',
+                $output,
+            );
+
+            $actual = $this->extEmConfParser->parse($targetFile);
+
+            self::assertIsArray($actual['autoload'] ?? null);
+            self::assertIsArray($actual['autoload']['classmap'] ?? null);
+            self::assertNotContains('libs/vendor/composer/InstalledVersions.php', $actual['autoload']['classmap']);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMap(): void
+    {
+        try {
+            $this->subject->bundle(
+                'ext_emconf_modified.php',
+                false,
+                false,
+                true,
+                [
+                    'foo.php',
+                ],
+            );
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🔍 Parsing ext_emconf.php file... Done', $output);
+            self::assertStringContainsString('🍄 Loading class map from ext_emconf.php... Done', $output);
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('⛔ Removing "foo.php" from class map... Failed', $output);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespace(): void
     {
         $composerJson = $this->getFixturePath('invalid-multiple-namespace-paths').'/composer.json';
