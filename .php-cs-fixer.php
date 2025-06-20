@@ -34,9 +34,6 @@ $header = PhpCsFixerConfig\Rules\Header::create(
 
 return PhpCsFixerConfig\Config::create()
     ->withRule($header)
-    ->withFinder(static fn (Finder\Finder $finder) => $finder
-        ->in(__DIR__)
-        ->name(['*.php', 'typo3-vendor-bundler']),
-    )
+    ->withFinder(static fn (Finder\Finder $finder) => $finder->in(__DIR__))
     ->setCacheFile('.build/cache/php-cs-fixer/.php-cs-fixer.cache')
 ;

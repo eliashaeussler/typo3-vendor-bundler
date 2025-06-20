@@ -26,7 +26,6 @@
 		"eliashaeussler/php-cs-fixer-config": "^2.3",
 		"eliashaeussler/phpstan-config": "^2.9",
 		"eliashaeussler/rector-config": "^3.1",
-		"eliashaeussler/version-bumper": "^2.4",
 		"ergebnis/composer-normalize": "^2.47",
 		"phpstan/extension-installer": "^1.4",
 		"phpstan/phpstan-phpunit": "^2.0",
@@ -46,7 +45,6 @@
 	},
 	"config": {
 		"allow-plugins": {
-			"eliashaeussler/version-bumper": true,
 			"ergebnis/composer-normalize": true,
 			"phpstan/extension-installer": true
 		},

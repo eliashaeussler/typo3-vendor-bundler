@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1a9a1af7c6d62dc1ce2be8f3ed02d080",
+    "content-hash": "1d6eed9e4ae38f458f1e41ba0c30ec68",
     "packages": [
         {
             "name": "cuyz/valinor",
@@ -1739,69 +1739,6 @@
             "time": "2024-05-06T16:37:16+00:00"
         },
         {
-            "name": "cypresslab/gitelephant",
-            "version": "v4.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/matteosister/GitElephant.git",
-                "reference": "4e546eee4c9ad1e0226054f5756c4ef5217e2929"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/matteosister/GitElephant/zipball/4e546eee4c9ad1e0226054f5756c4ef5217e2929",
-                "reference": "4e546eee4c9ad1e0226054f5756c4ef5217e2929",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2.0",
-                "phpoption/phpoption": "1.*",
-                "symfony/filesystem": ">=3.4",
-                "symfony/finder": ">=3.4",
-                "symfony/process": ">=3.4"
-            },
-            "require-dev": {
-                "mockery/mockery": "~1.1",
-                "php": ">=7.2.0",
-                "phpstan/phpstan": "*",
-                "phpstan/phpstan-phpunit": "*",
-                "phpunit/phpunit": "~8.0|~9.0",
-                "rector/rector": "*",
-                "symplify/easy-coding-standard": "*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "GitElephant": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0+"
-            ],
-            "authors": [
-                {
-                    "name": "Matteo Giachino",
-                    "email": "matteog@gmail.com"
-                }
-            ],
-            "description": "An abstraction layer for git written in PHP",
-            "homepage": "http://gitelephant.cypresslab.net/",
-            "keywords": [
-                "git"
-            ],
-            "support": {
-                "issues": "https://github.com/matteosister/GitElephant/issues",
-                "source": "https://github.com/matteosister/GitElephant/tree/v4.6.0"
-            },
-            "funding": [
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/cypresslab/gitelephant",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-11-26T16:23:11+00:00"
-        },
-        {
             "name": "eliashaeussler/php-cs-fixer-config",
             "version": "2.3.0",
             "source": {
@@ -1975,70 +1912,6 @@
                 "source": "https://github.com/eliashaeussler/rector-config/tree/3.1.1"
             },
             "time": "2025-03-19T06:55:11+00:00"
-        },
-        {
-            "name": "eliashaeussler/version-bumper",
-            "version": "2.4.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/eliashaeussler/version-bumper.git",
-                "reference": "e297bf2be0699e6dbffb42223f6e67d5e04251c4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/eliashaeussler/version-bumper/zipball/e297bf2be0699e6dbffb42223f6e67d5e04251c4",
-                "reference": "e297bf2be0699e6dbffb42223f6e67d5e04251c4",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^2.0",
-                "cuyz/valinor": "^1.12",
-                "cypresslab/gitelephant": "^4.5",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
-                "symfony/console": "^5.4 || ^6.4 || ^7.0",
-                "symfony/filesystem": "^5.4 || ^6.4 || ^7.0",
-                "symfony/options-resolver": "^5.4 || ^6.4 || ^7.0",
-                "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
-            },
-            "require-dev": {
-                "armin/editorconfig-cli": "^1.8 || ^2.0",
-                "composer/composer": "^2.2",
-                "eliashaeussler/php-cs-fixer-config": "^2.0",
-                "eliashaeussler/phpstan-config": "^2.0",
-                "eliashaeussler/rector-config": "^3.0",
-                "ergebnis/composer-normalize": "^2.30",
-                "phpstan/extension-installer": "^1.2",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpstan/phpstan-symfony": "^2.0",
-                "phpunit/phpunit": "^10.2 || ^11.0 || ^12.0"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "EliasHaeussler\\VersionBumper\\VersionBumperPlugin"
-            },
-            "autoload": {
-                "psr-4": {
-                    "EliasHaeussler\\VersionBumper\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Elias Häußler",
-                    "email": "elias@haeussler.dev",
-                    "homepage": "https://haeussler.dev",
-                    "role": "Maintainer"
-                }
-            ],
-            "description": "Composer plugin to bump project versions during release preparations",
-            "support": {
-                "issues": "https://github.com/eliashaeussler/version-bumper/issues",
-                "source": "https://github.com/eliashaeussler/version-bumper/tree/2.4.0"
-            },
-            "time": "2025-06-04T14:11:26+00:00"
         },
         {
             "name": "ergebnis/composer-normalize",
@@ -3187,81 +3060,6 @@
                 "source": "https://github.com/phar-io/version/tree/3.2.1"
             },
             "time": "2022-02-21T01:04:05+00:00"
-        },
-        {
-            "name": "phpoption/phpoption",
-            "version": "1.9.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/schmittjoh/php-option.git",
-                "reference": "e3fac8b24f56113f7cb96af14958c0dd16330f54"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/php-option/zipball/e3fac8b24f56113f7cb96af14958c0dd16330f54",
-                "reference": "e3fac8b24f56113f7cb96af14958c0dd16330f54",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.2.5 || ^8.0"
-            },
-            "require-dev": {
-                "bamarni/composer-bin-plugin": "^1.8.2",
-                "phpunit/phpunit": "^8.5.39 || ^9.6.20 || ^10.5.28"
-            },
-            "type": "library",
-            "extra": {
-                "bamarni-bin": {
-                    "bin-links": true,
-                    "forward-command": false
-                },
-                "branch-alias": {
-                    "dev-master": "1.9-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "PhpOption\\": "src/PhpOption/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Johannes M. Schmitt",
-                    "email": "schmittjoh@gmail.com",
-                    "homepage": "https://github.com/schmittjoh"
-                },
-                {
-                    "name": "Graham Campbell",
-                    "email": "hello@gjcampbell.co.uk",
-                    "homepage": "https://github.com/GrahamCampbell"
-                }
-            ],
-            "description": "Option Type for PHP",
-            "keywords": [
-                "language",
-                "option",
-                "php",
-                "type"
-            ],
-            "support": {
-                "issues": "https://github.com/schmittjoh/php-option/issues",
-                "source": "https://github.com/schmittjoh/php-option/tree/1.9.3"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/GrahamCampbell",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpoption/phpoption",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2024-07-20T21:41:07+00:00"
         },
         {
             "name": "phpstan/extension-installer",
