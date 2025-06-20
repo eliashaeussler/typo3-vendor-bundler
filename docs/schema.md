@@ -7,6 +7,7 @@ autoload:
   dropComposerAutoload: true
   targetFile: 'ext_emconf.php'
   backupSources: false
+  overwriteExistingTargetFile: false
 
 # Path to composer.json where vendor libraries are managed
 pathToVendorLibraries: 'Resources/Private/Libs'
@@ -20,12 +21,13 @@ rootPath: ../
 
 ## Autoload
 
-| Property                        | Type    | Required | Description                                                                       |
-|---------------------------------|---------|----------|-----------------------------------------------------------------------------------|
-| `autoload`                      | Object  | –        | Set of configuration options to respect when bundling autoload configuration.     |
-| `autoload.dropComposerAutoload` | Boolean | –        | Define whether to drop `autoload` section in `composer.json`. Defaults to `true`. |
-| `autoload.targetFile`           | String  | –        | File where to bundle autoload configuration. Defaults to `ext_emconf.php`.        |
-| `autoload.backupSources`        | Boolean | –        | Define whether to backup source files. Defaults to `false`.                       |
+| Property                               | Type    | Required | Description                                                                             |
+|----------------------------------------|---------|----------|-----------------------------------------------------------------------------------------|
+| `autoload`                             | Object  | –        | Set of configuration options to respect when bundling autoload configuration.           |
+| `autoload.dropComposerAutoload`        | Boolean | –        | Define whether to drop `autoload` section in `composer.json`. Defaults to `true`.       |
+| `autoload.targetFile`                  | String  | –        | File where to bundle autoload configuration. Defaults to `ext_emconf.php`.              |
+| `autoload.backupSources`               | Boolean | –        | Define whether to backup source files. Defaults to `false`.                             |
+| `autoload.overwriteExistingTargetFile` | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`. |
 
 ## Path to vendor libraries
 

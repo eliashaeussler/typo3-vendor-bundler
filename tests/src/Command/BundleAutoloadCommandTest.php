@@ -139,7 +139,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function executeOverwritesTargetWithoutAskingIfForceOptionIsSet(): void
+    public function executeOverwritesTargetWithoutAskingIfOverwriteOptionIsSet(): void
     {
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 
@@ -151,7 +151,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--force' => true,
+            '--overwrite' => true,
         ]);
 
         self::assertStringNotEqualsFile($rootPath.'/ext_emconf_modified.php', '');
@@ -188,6 +188,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
             '--drop-composer-autoload' => true,
+            '--overwrite' => true,
         ]);
 
         self::assertJsonStringEqualsJsonFile($rootPath.'/composer.json', '{}');
@@ -230,6 +231,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
             '--drop-composer-autoload' => true,
             '--target-file' => 'ext_emconf.php',
             '--backup-sources' => false,
+            '--overwrite' => true,
         ]);
 
         self::assertFileDoesNotExist($rootPath.'/composer.json.bak');

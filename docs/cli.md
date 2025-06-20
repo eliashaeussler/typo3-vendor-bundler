@@ -26,7 +26,7 @@ composer bundle-autoload \
     [-a|--[no-]drop-composer-autoload] \
     [-t|--target-file TARGET-FILE] \
     [-b|--[no-]backup-sources] \
-    [-f|--force]
+    [-o|--[no-]overwrite]
 ```
 
 Pass the following options to the console command:
@@ -80,7 +80,11 @@ generated.
 > [!NOTE]
 > If omitted, the `autoload.backupSources` option from the config file will be used instead.
 
-### `-f|--force`
+### `-o|--[no-]overwrite`
 
-Force overwriting the given target file if it already exists. When omitted, you will be
-asked whether the target file should be overwritten.
+Force overwriting the given target file if it already exists.
+
+> [!NOTE]
+> If omitted, the `autoload.overwriteExistingTargetFile` option from the config file will be
+> used instead. If `false` is configured, you will be asked whether the target file should be
+> overwritten.

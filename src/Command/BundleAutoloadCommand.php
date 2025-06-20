@@ -77,10 +77,10 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
             'Backup source files before they get overwritten',
         );
         $this->addOption(
-            'force',
-            'f',
-            Console\Input\InputOption::VALUE_NONE,
-            'Force overwriting the given target file',
+            'overwrite',
+            'o',
+            Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
+            'Force overwriting the given target file, if it already exists',
         );
     }
 
@@ -104,7 +104,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         $dropComposerAutoload = $input->getOption('drop-composer-autoload') ?? $config->autoload()->dropComposerAutoload();
         $targetFile = $input->getOption('target-file') ?? $config->autoload()->targetFile();
         $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources();
-        $force = $input->getOption('force');
+        $overwrite = $input->getOption('overwrite') ?? $config->autoload()->overwriteExistingTargetFile();
 
         // Exit if libs directory is invalid
         if ('' === trim($libsDir)) {
@@ -116,9 +116,9 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         $autoloadBundler = new Bundler\AutoloadBundler($rootPath, $libsDir, $this->io);
 
         try {
-            $autoload = $autoloadBundler->bundle($targetFile, $dropComposerAutoload, $backupSources, $force);
+            $autoload = $autoloadBundler->bundle($targetFile, $dropComposerAutoload, $backupSources, $overwrite);
         } catch (Exception\FileAlreadyExists $exception) {
-            if (!$this->io->confirm('Target file already exists. Overwrite file?')) {
+            if (!$this->io->confirm('Target file already exists. Overwrite file?', false)) {
                 throw $exception;
             }
 
