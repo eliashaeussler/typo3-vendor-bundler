@@ -36,6 +36,7 @@ autoload:
   dropComposerAutoload: true
   targetFile: 'ext_emconf.php'
   backupSources: false
+  overwriteExistingTargetFile: false
 pathToVendorLibraries: 'Resources/Private/Libs'
 ```
 

@@ -35,6 +35,7 @@ final readonly class AutoloadConfig
         private bool $dropComposerAutoload = true,
         private string $targetFile = 'ext_emconf.php',
         private bool $backupSources = false,
+        private bool $overwriteExistingTargetFile = false,
     ) {}
 
     public function dropComposerAutoload(): bool
@@ -50,5 +51,10 @@ final readonly class AutoloadConfig
     public function backupSources(): bool
     {
         return $this->backupSources;
+    }
+
+    public function overwriteExistingTargetFile(): bool
+    {
+        return $this->overwriteExistingTargetFile;
     }
 }

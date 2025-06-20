@@ -40,6 +40,12 @@
 					"title": "Define whether to backup source files",
 					"description": "When enabled, original contents of source files, which are to be modified, will be backed up in a separate file",
 					"default": false
+				},
+				"overwriteExistingTargetFile": {
+					"type": "boolean",
+					"title": "Define whether to overwrite the target file, if it already exists",
+					"description": "When enabled, the configured target file will be overwritten with the bundled autoload information, if the file already exists",
+					"default": false
 				}
 			},
 			"additionalProperties": false
