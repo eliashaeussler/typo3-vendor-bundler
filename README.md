@@ -10,14 +10,11 @@
 
 </div>
 
-A Composer library to bundle vendor libraries of TYPO3 extensions for use
+A Composer plugin to bundle vendor libraries of TYPO3 extensions for use
 in [classic mode](https://docs.typo3.org/permalink/t3coreapi:classic-directory-structure).
 It allows to easily prepare dependencies, which are not part of TYPO3's
 bundled dependencies, in order to make TYPO3 extensions fully usable in
 classic mode installations.
-
-It provides a console binary `typo3-vendor-bundler` to execute various bundlers.
-All bundlers can be configured by configuration files.
 
 ## 🔥 Installation
 
@@ -45,7 +42,7 @@ pathToVendorLibraries: 'Resources/Private/Libs'
 Execute the main bundler:
 
 ```bash
-vendor/bin/typo3-vendor-bundler bundle
+composer bundle
 ```
 
 You can also execute a single bundler. Read more about available

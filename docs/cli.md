@@ -1,15 +1,11 @@
 # Console commands
 
-The console binary will be provided by Composer and is usually located in
-`vendor/bin/typo3-vendor-bundler` or `.Build/bin/typo3-vendor-bundler`. In
-the following sections, all available commands will be presented.
-
-## [`bundle` / `b`](../src/Command/BundleCommand.php)
+## [`bundle`](../src/Command/BundleCommand.php)
 
 Executes all available bundlers in a single run.
 
 ```bash
-vendor/bin/typo3-vendor-bundler bundle [-c|--config CONFIG]
+composer bundle [-c|--config CONFIG]
 ```
 
 Pass the following options to the console command:
@@ -19,12 +15,12 @@ Pass the following options to the console command:
 Path to [config file](config-file), defaults to auto-detection in current
 working directory.
 
-## [`bundle-autoload` / `a`](../src/Command/BundleAutoloadCommand.php)
+## [`bundle-autoload`](../src/Command/BundleAutoloadCommand.php)
 
 Bundles autoloader for vendor libraries in `ext_emconf.php`.
 
 ```bash
-$ vendor/bin/typo3-vendor-bundler bundle-autoload \
+composer bundle-autoload \
     [<libs-dir>] \
     [-c|--config CONFIG] \
     [-a|--[no-]drop-composer-autoload] \

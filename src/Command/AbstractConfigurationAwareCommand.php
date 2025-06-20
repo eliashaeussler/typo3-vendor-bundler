@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Command;
 
+use Composer\Command;
 use CuyZ\Valinor;
 use EliasHaeussler\Typo3VendorBundler\Config;
 use EliasHaeussler\Typo3VendorBundler\Exception;
@@ -32,15 +33,37 @@ use Symfony\Component\Filesystem;
 use function sprintf;
 
 /**
- * BaseCommand.
+ * AbstractConfigurationAwareCommand.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-abstract class BaseCommand extends Console\Command\Command
+abstract class AbstractConfigurationAwareCommand extends Command\BaseCommand
 {
     protected Config\ConfigReader $configReader;
     protected Console\Style\SymfonyStyle $io;
+
+    public function __construct(?string $name = null)
+    {
+        parent::__construct($name);
+
+        $this->configReader = new Config\ConfigReader();
+    }
+
+    protected function configure(): void
+    {
+        $this->addOption(
+            'config',
+            'c',
+            Console\Input\InputOption::VALUE_REQUIRED,
+            'Path to configuration file (JSON, YAML or PHP)',
+        );
+    }
+
+    protected function initialize(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): void
+    {
+        $this->io = new Console\Style\SymfonyStyle($input, $output);
+    }
 
     protected function readConfigFile(?string $configFile, string $rootPath): ?Config\Typo3VendorBundlerConfig
     {
