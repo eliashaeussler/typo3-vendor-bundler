@@ -46,6 +46,15 @@
 					"title": "Define whether to overwrite the target file, if it already exists",
 					"description": "When enabled, the configured target file will be overwritten with the bundled autoload information, if the file already exists",
 					"default": false
+				},
+				"excludeFromClassMap": {
+					"type": "array",
+					"title": "List of files to exclude from vendor libraries class map",
+					"description": "Absolute or relative paths to files to remove from parsed vendor libraries class map",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
 				}
 			},
 			"additionalProperties": false

@@ -8,6 +8,8 @@ autoload:
   targetFile: 'ext_emconf.php'
   backupSources: false
   overwriteExistingTargetFile: false
+  excludeFromClassMap:
+    - 'vendor/composer/InstalledVersions.php'
 
 # Path to composer.json where vendor libraries are managed
 pathToVendorLibraries: 'Resources/Private/Libs'
@@ -28,6 +30,7 @@ rootPath: ../
 | `autoload.targetFile`                  | String  | –        | File where to bundle autoload configuration. Defaults to `ext_emconf.php`.              |
 | `autoload.backupSources`               | Boolean | –        | Define whether to backup source files. Defaults to `false`.                             |
 | `autoload.overwriteExistingTargetFile` | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`. |
+| `autoload.excludeFromClassMap`         | Array   | –        | List of files to exclude from vendor libraries class map.                               |
 
 ## Path to vendor libraries
 

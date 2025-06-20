@@ -105,6 +105,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         $targetFile = $input->getOption('target-file') ?? $config->autoload()->targetFile();
         $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources();
         $overwrite = $input->getOption('overwrite') ?? $config->autoload()->overwriteExistingTargetFile();
+        $excludeFromClassMap = $config->autoload()->excludeFromClassMap();
 
         // Exit if libs directory is invalid
         if ('' === trim($libsDir)) {
@@ -116,13 +117,25 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         $autoloadBundler = new Bundler\AutoloadBundler($rootPath, $libsDir, $this->io);
 
         try {
-            $autoload = $autoloadBundler->bundle($targetFile, $dropComposerAutoload, $backupSources, $overwrite);
+            $autoload = $autoloadBundler->bundle(
+                $targetFile,
+                $dropComposerAutoload,
+                $backupSources,
+                $overwrite,
+                $excludeFromClassMap,
+            );
         } catch (Exception\FileAlreadyExists $exception) {
             if (!$this->io->confirm('Target file already exists. Overwrite file?', false)) {
                 throw $exception;
             }
 
-            $autoload = $autoloadBundler->bundle($targetFile, $dropComposerAutoload, $backupSources, true);
+            $autoload = $autoloadBundler->bundle(
+                $targetFile,
+                $dropComposerAutoload,
+                $backupSources,
+                true,
+                $excludeFromClassMap,
+            );
         }
 
         $this->io->success(

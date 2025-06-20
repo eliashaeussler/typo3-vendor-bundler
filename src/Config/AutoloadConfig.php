@@ -31,11 +31,15 @@ namespace EliasHaeussler\Typo3VendorBundler\Config;
  */
 final readonly class AutoloadConfig
 {
+    /**
+     * @param list<non-empty-string> $excludeFromClassMap
+     */
     public function __construct(
         private bool $dropComposerAutoload = true,
         private string $targetFile = 'ext_emconf.php',
         private bool $backupSources = false,
         private bool $overwriteExistingTargetFile = false,
+        private array $excludeFromClassMap = [],
     ) {}
 
     public function dropComposerAutoload(): bool
@@ -56,5 +60,13 @@ final readonly class AutoloadConfig
     public function overwriteExistingTargetFile(): bool
     {
         return $this->overwriteExistingTargetFile;
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    public function excludeFromClassMap(): array
+    {
+        return $this->excludeFromClassMap;
     }
 }

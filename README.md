@@ -37,6 +37,8 @@ autoload:
   targetFile: 'ext_emconf.php'
   backupSources: false
   overwriteExistingTargetFile: false
+  excludeFromClassMap:
+    - 'vendor/composer/InstalledVersions.php'
 pathToVendorLibraries: 'Resources/Private/Libs'
 ```
 

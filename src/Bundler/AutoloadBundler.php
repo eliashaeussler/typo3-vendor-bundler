@@ -40,6 +40,7 @@ use function count;
 use function is_array;
 use function is_dir;
 use function reset;
+use function sprintf;
 use function var_export;
 
 /**
@@ -81,6 +82,8 @@ final readonly class AutoloadBundler implements Bundler
     }
 
     /**
+     * @param list<non-empty-string> $excludeFromClassMap
+     *
      * @throws Exception\FileAlreadyExists
      * @throws Throwable
      */
@@ -89,6 +92,7 @@ final readonly class AutoloadBundler implements Bundler
         bool $dropComposerAutoload = true,
         bool $backupSources = false,
         bool $overwriteExistingTargetFile = false,
+        array $excludeFromClassMap = [],
     ): Entity\Autoload {
         $targetFile = Filesystem\Path::makeAbsolute($targetFile, $this->rootPath);
         $declarationFile = Filesystem\Path::join($this->rootPath, 'ext_emconf.php');
@@ -101,7 +105,7 @@ final readonly class AutoloadBundler implements Bundler
         );
 
         // Create class map and PSR-4 namespaces
-        $classMap = $this->mergeClassMaps($declarationFile, $extEmConf, $targetFile);
+        $classMap = $this->mergeClassMaps($declarationFile, $extEmConf, $targetFile, $excludeFromClassMap);
         $psr4Namespaces = $this->mergePsr4Namespaces($declarationFile, $extEmConf, $targetFile);
         $autoload = new Entity\Autoload($classMap, $psr4Namespaces, $targetFile, $this->rootPath);
 
@@ -159,12 +163,17 @@ PHP;
     }
 
     /**
-     * @param ExtEmConf $extEmConf
+     * @param ExtEmConf              $extEmConf
+     * @param list<non-empty-string> $excludeFromClassMap
      *
      * @throws Throwable
      */
-    private function mergeClassMaps(string $declarationFile, array &$extEmConf, string $targetFile): Entity\ClassMap
-    {
+    private function mergeClassMaps(
+        string $declarationFile,
+        array &$extEmConf,
+        string $targetFile,
+        array $excludeFromClassMap = [],
+    ): Entity\ClassMap {
         // Load class map from ext_emconf.php
         $extEmConfClassMap = $this->taskRunner->run(
             '🍄 Loading class map from ext_emconf.php',
@@ -173,11 +182,7 @@ PHP;
         );
 
         // Build class map from vendor libraries
-        $libsClassMap = $this->taskRunner->run(
-            '🌱 Building class map from vendor libraries',
-            fn () => $this->buildComposerClassMap(),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
-        );
+        $libsClassMap = $this->buildComposerClassMap($excludeFromClassMap);
 
         // Load class map from root package
         $rootClassMap = $this->taskRunner->run(
@@ -261,44 +266,72 @@ PHP;
     }
 
     /**
-     * @throws Exception\CannotInstallComposerDependencies
-     * @throws Exception\DeclarationFileIsInvalid
-     * @throws Exception\FileDoesNotExist
+     * @param list<non-empty-string> $excludeFromClassMap
+     *
+     * @throws Throwable
      */
-    private function buildComposerClassMap(): Entity\ClassMap
+    private function buildComposerClassMap(array $excludeFromClassMap = []): Entity\ClassMap
     {
-        $io = new IO\BufferIO(verbosity: $this->output->getVerbosity());
-        $composer = $this->createComposer($this->librariesPath, $io);
+        $classMap = $this->taskRunner->run(
+            '🌱 Building class map from vendor libraries',
+            function () {
+                $io = new IO\BufferIO(verbosity: $this->output->getVerbosity());
+                $composer = $this->createComposer($this->librariesPath, $io);
 
-        $vendorDir = $composer->getConfig()->get('vendor-dir');
-        $classMapFile = Filesystem\Path::join($vendorDir, 'composer', 'autoload_classmap.php');
+                $vendorDir = $composer->getConfig()->get('vendor-dir');
+                $classMapFile = Filesystem\Path::join($vendorDir, 'composer', 'autoload_classmap.php');
 
-        $installResult = Installer::create($io, $composer)
-            ->setClassMapAuthoritative(true)
-            ->setOptimizeAutoloader(true)
-            ->run();
+                $installResult = Installer::create($io, $composer)
+                    ->setClassMapAuthoritative(true)
+                    ->setOptimizeAutoloader(true)
+                    ->run();
 
-        if (Console\Command\Command::SUCCESS !== $installResult) {
-            $this->output->writeln($io->getOutput(), Console\Output\OutputInterface::OUTPUT_RAW);
+                if (Console\Command\Command::SUCCESS !== $installResult) {
+                    $this->output->writeln($io->getOutput(), Console\Output\OutputInterface::OUTPUT_RAW);
 
-            throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
+                    throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
+                }
+
+                if (!file_exists($classMapFile)) {
+                    throw new Exception\FileDoesNotExist($classMapFile);
+                }
+
+                $classMap = include $classMapFile;
+
+                // Throw exception if configured class map is invalid
+                if (!is_array($classMap)) {
+                    throw new Exception\DeclarationFileIsInvalid($classMapFile);
+                }
+
+                /** @var list<string> $classMap */
+                $classMap = array_values($classMap);
+
+                return new Entity\ClassMap($classMap, $classMapFile, $this->rootPath);
+            },
+            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+        );
+
+        // Drop excluded files from class map
+        if ([] !== $excludeFromClassMap) {
+            foreach ($excludeFromClassMap as $path) {
+                $fullPath = Filesystem\Path::join($this->librariesPath, $path);
+                $classMap = $this->taskRunner->run(
+                    sprintf('⛔ Removing "%s" from class map', $path),
+                    function (bool &$successful) use ($classMap, $fullPath) {
+                        if (!$classMap->has($fullPath)) {
+                            $successful = false;
+
+                            return $classMap;
+                        }
+
+                        return $classMap->remove($fullPath);
+                    },
+                    Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+                );
+            }
         }
 
-        if (!file_exists($classMapFile)) {
-            throw new Exception\FileDoesNotExist($classMapFile);
-        }
-
-        $classMap = include $classMapFile;
-
-        // Throw exception if configured class map is invalid
-        if (!is_array($classMap)) {
-            throw new Exception\DeclarationFileIsInvalid($classMapFile);
-        }
-
-        /** @var list<string> $classMap */
-        $classMap = array_values($classMap);
-
-        return new Entity\ClassMap($classMap, $classMapFile, $this->rootPath);
+        return $classMap;
     }
 
     /**

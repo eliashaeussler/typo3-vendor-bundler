@@ -25,8 +25,11 @@ namespace EliasHaeussler\Typo3VendorBundler\Bundler\Entity;
 
 use Symfony\Component\Filesystem;
 
+use function array_diff;
 use function array_map;
 use function array_merge;
+use function array_values;
+use function in_array;
 
 /**
  * ClassMap.
@@ -61,6 +64,28 @@ final readonly class ClassMap extends PathAwareBundle
             $map,
         );
         $this->filename = $this->convertToAbsolutePath($filename);
+    }
+
+    public function has(string $path): bool
+    {
+        $fullPath = $this->convertToAbsolutePath($path);
+
+        return in_array($fullPath, $this->map, true);
+    }
+
+    public function remove(string $path): self
+    {
+        $fullPath = $this->convertToAbsolutePath($path);
+
+        if (!$this->has($fullPath)) {
+            return $this;
+        }
+
+        return new self(
+            array_values(array_diff($this->map, [$fullPath])),
+            $this->filename,
+            $this->rootPath,
+        );
     }
 
     /**
