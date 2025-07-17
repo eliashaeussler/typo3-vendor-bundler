@@ -5,9 +5,11 @@ The config file must follow a given schema:
 ```yaml
 autoload:
   dropComposerAutoload: true
-  targetFile: 'ext_emconf.php'
+  target:
+    file: 'composer.json'
+    manifest: 'composer'
+    overwrite: false
   backupSources: false
-  overwriteExistingTargetFile: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
 
@@ -23,14 +25,16 @@ rootPath: ../
 
 ## Autoload
 
-| Property                               | Type    | Required | Description                                                                             |
-|----------------------------------------|---------|----------|-----------------------------------------------------------------------------------------|
-| `autoload`                             | Object  | –        | Set of configuration options to respect when bundling autoload configuration.           |
-| `autoload.dropComposerAutoload`        | Boolean | –        | Define whether to drop `autoload` section in `composer.json`. Defaults to `true`.       |
-| `autoload.targetFile`                  | String  | –        | File where to bundle autoload configuration. Defaults to `ext_emconf.php`.              |
-| `autoload.backupSources`               | Boolean | –        | Define whether to backup source files. Defaults to `false`.                             |
-| `autoload.overwriteExistingTargetFile` | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`. |
-| `autoload.excludeFromClassMap`         | Array   | –        | List of files to exclude from vendor libraries class map.                               |
+| Property                        | Type    | Required | Description                                                                                |
+|---------------------------------|---------|----------|--------------------------------------------------------------------------------------------|
+| `autoload`                      | Object  | –        | Set of configuration options to respect when bundling autoload configuration.              |
+| `autoload.dropComposerAutoload` | Boolean | –        | Define whether to drop `autoload` section in `composer.json`. Defaults to `true`.          |
+| `autoload.target`               | Object  | –        | Set of configuration options related to the bundle target.                                 |
+| `autoload.target.file`          | String  | –        | File where to bundle autoload configuration. Defaults to `composer.json`.                  |
+| `autoload.target.manifest`      | String  | –        | Manifest which decides how to dump bundled autoload configuration. Defaults to `composer`. |
+| `autoload.target.overwrite`     | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`.    |
+| `autoload.backupSources`        | Boolean | –        | Define whether to backup source files. Defaults to `false`.                                |
+| `autoload.excludeFromClassMap`  | Array   | –        | List of files to exclude from vendor libraries class map.                                  |
 
 ## Path to vendor libraries
 

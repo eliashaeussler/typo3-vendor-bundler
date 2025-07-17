@@ -15,7 +15,9 @@ $autoloadBundler = new Typo3VendorBundler\Bundler\AutoloadBundler(
     $librariesPath,
     new \Symfony\Component\Console\Output\ConsoleOutput(),
 );
-$autoloadBundle = $autoloadBundler->bundle('ext_emconf.php');
+$autoloadBundle = $autoloadBundler->bundle(
+    Typo3VendorBundler\Config\AutoloadTarget::composer(),
+);
 
 // Display results
 echo 'Autoload configuration was bundled and dumped to '.$autoloadBundle->filename();

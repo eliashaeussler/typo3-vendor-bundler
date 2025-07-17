@@ -27,6 +27,7 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO;
+use EliasHaeussler\Typo3VendorBundler\Config;
 use EliasHaeussler\Typo3VendorBundler\Console\Output\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Resource;
@@ -35,10 +36,13 @@ use Symfony\Component\Filesystem;
 use Throwable;
 
 use function array_key_exists;
+use function array_shift;
 use function array_values;
 use function count;
+use function file_exists;
 use function is_array;
 use function is_dir;
+use function is_file;
 use function reset;
 use function sprintf;
 use function var_export;
@@ -88,13 +92,88 @@ final readonly class AutoloadBundler implements Bundler
      * @throws Throwable
      */
     public function bundle(
-        string $targetFile = 'ext_emconf.php',
+        Config\AutoloadTarget $target = new Config\AutoloadTarget(),
         bool $dropComposerAutoload = true,
         bool $backupSources = false,
-        bool $overwriteExistingTargetFile = false,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
-        $targetFile = Filesystem\Path::makeAbsolute($targetFile, $this->rootPath);
+        $config = new Config\AutoloadConfig(
+            $dropComposerAutoload,
+            new Config\AutoloadTarget(
+                Filesystem\Path::makeAbsolute($target->file(), $this->rootPath),
+                $target->manifest(),
+                $target->overwrite(),
+            ),
+            $backupSources,
+            $excludeFromClassMap,
+        );
+
+        return match ($config->target()->manifest()) {
+            Entity\Manifest::Composer => $this->bundleComposerManifest($config),
+            Entity\Manifest::ExtEmConf => $this->bundleExtEmConfManifest($config),
+        };
+    }
+
+    /**
+     * @throws Exception\FileAlreadyExists
+     * @throws Throwable
+     */
+    private function bundleComposerManifest(Config\AutoloadConfig $config): Entity\Autoload
+    {
+        // Build class maps
+        $classMaps = [
+            $this->loadRootComposerClassMap(),
+            $this->loadVendorComposerClassMap($config->excludeFromClassMap()),
+        ];
+
+        // Create class map and PSR-4 namespaces
+        $classMap = $this->mergeClassMaps($classMaps, $config->target()->file());
+        $psr4Namespaces = $this->loadRootComposerPsr4Namespaces();
+        $autoload = new Entity\Autoload($classMap, $psr4Namespaces, $config->target()->file(), $this->rootPath);
+
+        // Throw exception if target file already exists
+        if (!$config->target()->overwrite() && $this->filesystem->exists($config->target()->file())) {
+            throw new Exception\FileAlreadyExists($config->target()->file());
+        }
+
+        // Create composer.json backup
+        if ($config->backupSources()) {
+            $this->taskRunner->run(
+                '🦖 Backing up source files',
+                function () use ($config) {
+                    $composerJson = Filesystem\Path::join($this->rootPath, 'composer.json');
+
+                    if ($config->target()->file() === $composerJson) {
+                        $this->filesystem->copy($composerJson, $composerJson.'.bak');
+                    }
+                },
+            );
+        }
+
+        // Create modified composer.json file contents
+        $this->taskRunner->run(
+            '🎊 Dumping merged autoload configuration',
+            function () use ($autoload) {
+                if (!is_file($autoload->filename())) {
+                    $this->filesystem->dumpFile($autoload->filename(), '{}');
+                }
+
+                $composer = Factory::create(new IO\NullIO(), $autoload->filename());
+                $configSource = $composer->getConfig()->getConfigSource();
+                /* @phpstan-ignore argument.type */
+                $configSource->addProperty('autoload', $autoload->toArray(true));
+            },
+        );
+
+        return $autoload;
+    }
+
+    /**
+     * @throws Exception\FileAlreadyExists
+     * @throws Throwable
+     */
+    private function bundleExtEmConfManifest(Config\AutoloadConfig $config): Entity\Autoload
+    {
         $declarationFile = Filesystem\Path::join($this->rootPath, 'ext_emconf.php');
 
         // Parse ext_emconf.php file
@@ -104,26 +183,34 @@ final readonly class AutoloadBundler implements Bundler
             Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
+        // Load class maps
+        $classMaps = [
+            $this->loadRootComposerClassMap(),
+            $this->loadVendorComposerClassMap($config->excludeFromClassMap()),
+            $this->loadExtEmConfClassMap($declarationFile, $extEmConf),
+        ];
+
         // Create class map and PSR-4 namespaces
-        $classMap = $this->mergeClassMaps($declarationFile, $extEmConf, $targetFile, $excludeFromClassMap);
-        $psr4Namespaces = $this->mergePsr4Namespaces($declarationFile, $extEmConf, $targetFile);
-        $autoload = new Entity\Autoload($classMap, $psr4Namespaces, $targetFile, $this->rootPath);
+        $classMap = $this->mergeClassMaps($classMaps, $config->target()->file());
+        $psr4Namespaces = $this->mergePsr4Namespaces($declarationFile, $extEmConf, $config->target()->file());
+        $autoload = new Entity\Autoload($classMap, $psr4Namespaces, $config->target()->file(), $this->rootPath);
+        $extEmConf['autoload'] = $autoload->toArray(true);
 
         // Throw exception if target file already exists
-        if (!$overwriteExistingTargetFile && $this->filesystem->exists($targetFile)) {
-            throw new Exception\FileAlreadyExists($targetFile);
+        if (!$config->target()->overwrite() && $this->filesystem->exists($config->target()->file())) {
+            throw new Exception\FileAlreadyExists($config->target()->file());
         }
 
         // Create ext_emconf.php backup
-        if ($backupSources) {
+        if ($config->backupSources()) {
             $this->taskRunner->run(
                 '🦖 Backing up source files',
-                function () use ($declarationFile, $dropComposerAutoload, $targetFile) {
-                    if ($targetFile === $declarationFile) {
+                function () use ($config, $declarationFile) {
+                    if ($config->target()->file() === $declarationFile) {
                         $this->filesystem->copy($declarationFile, $declarationFile.'.bak');
                     }
 
-                    if ($dropComposerAutoload) {
+                    if ($config->dropComposerAutoload()) {
                         $composerJson = Filesystem\Path::join($this->rootPath, 'composer.json');
 
                         $this->filesystem->copy($composerJson, $composerJson.'.bak');
@@ -135,7 +222,7 @@ final readonly class AutoloadBundler implements Bundler
         // Create modified ext_emconf.php file contents
         $this->taskRunner->run(
             '🎊 Dumping merged autoload configuration',
-            function () use ($extEmConf, $targetFile) {
+            function () use ($config, $extEmConf) {
                 $extEmConfArray = var_export($extEmConf, true);
                 $contents = <<<PHP
 <?php
@@ -143,16 +230,19 @@ final readonly class AutoloadBundler implements Bundler
 \$EM_CONF[\$_EXTKEY] = $extEmConfArray;
 PHP;
 
-                $this->filesystem->dumpFile($targetFile, $contents);
+                $this->filesystem->dumpFile($config->target()->file(), $contents);
             },
         );
 
         // Remove autoload section from root composer.json
-        if ($dropComposerAutoload) {
+        if ($config->dropComposerAutoload()) {
             $this->taskRunner->run(
                 '✂️ Removing autoload section from composer.json',
                 function () {
-                    $composer = $this->createComposer($this->rootPath);
+                    $composer = Factory::create(
+                        new IO\NullIO(),
+                        Filesystem\Path::join($this->rootPath, 'composer.json'),
+                    );
                     $configSource = $composer->getConfig()->getConfigSource();
                     $configSource->removeProperty('autoload');
                 },
@@ -163,29 +253,25 @@ PHP;
     }
 
     /**
-     * @param ExtEmConf              $extEmConf
-     * @param list<non-empty-string> $excludeFromClassMap
+     * @param ExtEmConf $extEmConf
      *
      * @throws Throwable
      */
-    private function mergeClassMaps(
-        string $declarationFile,
-        array &$extEmConf,
-        string $targetFile,
-        array $excludeFromClassMap = [],
-    ): Entity\ClassMap {
-        // Load class map from ext_emconf.php
-        $extEmConfClassMap = $this->taskRunner->run(
+    private function loadExtEmConfClassMap(string $declarationFile, array $extEmConf): Entity\ClassMap
+    {
+        return $this->taskRunner->run(
             '🍄 Loading class map from ext_emconf.php',
             fn () => new Entity\ClassMap($extEmConf['autoload']['classmap'], $declarationFile, $this->rootPath),
             Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
+    }
 
-        // Build class map from vendor libraries
-        $libsClassMap = $this->buildComposerClassMap($excludeFromClassMap);
-
-        // Load class map from root package
-        $rootClassMap = $this->taskRunner->run(
+    /**
+     * @throws Throwable
+     */
+    private function loadRootComposerClassMap(): Entity\ClassMap
+    {
+        return $this->taskRunner->run(
             '🌱 Loading class map from root package',
             fn () => new Entity\ClassMap(
                 $this->fetchAutoloadFromComposerManifest()['classmap'],
@@ -194,75 +280,6 @@ PHP;
             ),
             Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
-
-        // Merge composer class map with class map from ext_emconf.php
-        return $this->taskRunner->run(
-            '♨️ Merging class maps',
-            function () use (&$extEmConf, $extEmConfClassMap, $libsClassMap, $rootClassMap, $targetFile) {
-                $mergedClassMap = $rootClassMap
-                    ->merge($libsClassMap, $targetFile)
-                    ->merge($extEmConfClassMap, $targetFile)
-                ;
-                $extEmConf['autoload']['classmap'] = $mergedClassMap->toArray(true);
-
-                return $mergedClassMap;
-            },
-        );
-    }
-
-    /**
-     * @param ExtEmConf $extEmConf
-     *
-     * @throws Throwable
-     */
-    private function mergePsr4Namespaces(string $declarationFile, array &$extEmConf, string $targetFile): Entity\Psr4Namespaces
-    {
-        // Load PSR-4 namespaces from ext_emconf.php
-        $extEmConfNamespaces = $this->taskRunner->run(
-            '🍄 Loading PSR-4 namespaces from ext_emconf.php',
-            fn () => new Entity\Psr4Namespaces($extEmConf['autoload']['psr-4'], $declarationFile, $this->rootPath),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
-        );
-
-        // Load PSR-4 namespaces from root package
-        $rootNamespaces = $this->taskRunner->run(
-            '🌱 Loading PSR-4 namespaces from root package',
-            function () {
-                $filename = Filesystem\Path::join($this->rootPath, 'composer.json');
-                $namespaces = $this->fetchAutoloadFromComposerManifest()['psr-4'];
-
-                foreach ($namespaces as $namespace => $path) {
-                    if (!is_array($path)) {
-                        continue;
-                    }
-
-                    // Flatten array if there's only one path
-                    if (1 === count($path)) {
-                        $namespaces[$namespace] = reset($path);
-
-                        continue;
-                    }
-
-                    // Throw exception for multiple paths
-                    throw new Exception\DeclarationFileIsInvalid($filename, '[autoload][psr-4]['.$namespace.']');
-                }
-
-                /* @phpstan-ignore argument.type */
-                return new Entity\Psr4Namespaces($namespaces, $filename, $this->rootPath);
-            },
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
-        );
-
-        // Merge composer PSR-4 namespaces with PSR-4 namespaces from ext_emconf.php
-        return $this->taskRunner->run(
-            '♨️ Merging PSR-4 namespaces',
-            function () use (&$extEmConf, $extEmConfNamespaces, $rootNamespaces, $targetFile) {
-                $mergedNamespaces = $rootNamespaces->merge($extEmConfNamespaces, $targetFile);
-                $extEmConf['autoload']['psr-4'] = $mergedNamespaces->toArray(true);
-
-                return $mergedNamespaces;
-            },
-        );
     }
 
     /**
@@ -270,13 +287,16 @@ PHP;
      *
      * @throws Throwable
      */
-    private function buildComposerClassMap(array $excludeFromClassMap = []): Entity\ClassMap
+    private function loadVendorComposerClassMap(array $excludeFromClassMap = []): Entity\ClassMap
     {
         $classMap = $this->taskRunner->run(
             '🌱 Building class map from vendor libraries',
             function () {
                 $io = new IO\BufferIO(verbosity: $this->output->getVerbosity());
-                $composer = $this->createComposer($this->librariesPath, $io);
+                $composer = Factory::create(
+                    $io,
+                    Filesystem\Path::join($this->librariesPath, 'composer.json'),
+                );
 
                 $vendorDir = $composer->getConfig()->get('vendor-dir');
                 $classMapFile = Filesystem\Path::join($vendorDir, 'composer', 'autoload_classmap.php');
@@ -335,15 +355,99 @@ PHP;
     }
 
     /**
+     * @param non-empty-list<Entity\ClassMap> $classMaps
+     *
+     * @throws Throwable
+     */
+    private function mergeClassMaps(array $classMaps, string $targetFile): Entity\ClassMap
+    {
+        return $this->taskRunner->run(
+            '♨️ Merging class maps',
+            function () use ($classMaps, $targetFile) {
+                $mergedClassMap = array_shift($classMaps);
+
+                foreach ($classMaps as $classMap) {
+                    $mergedClassMap = $mergedClassMap->merge($classMap, $targetFile);
+                }
+
+                return $mergedClassMap;
+            },
+        );
+    }
+
+    /**
+     * @param ExtEmConf $extEmConf
+     *
+     * @throws Throwable
+     */
+    private function mergePsr4Namespaces(string $declarationFile, array $extEmConf, string $targetFile): Entity\Psr4Namespaces
+    {
+        // Load PSR-4 namespaces from ext_emconf.php
+        $extEmConfNamespaces = $this->taskRunner->run(
+            '🍄 Loading PSR-4 namespaces from ext_emconf.php',
+            fn () => new Entity\Psr4Namespaces($extEmConf['autoload']['psr-4'], $declarationFile, $this->rootPath),
+            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+        );
+
+        // Load PSR-4 namespaces from root package
+        $rootNamespaces = $this->loadRootComposerPsr4Namespaces();
+
+        // Merge composer PSR-4 namespaces with PSR-4 namespaces from ext_emconf.php
+        return $this->taskRunner->run(
+            '♨️ Merging PSR-4 namespaces',
+            fn () => $rootNamespaces->merge($extEmConfNamespaces, $targetFile),
+        );
+    }
+
+    private function loadRootComposerPsr4Namespaces(): Entity\Psr4Namespaces
+    {
+        return $this->taskRunner->run(
+            '🌱 Loading PSR-4 namespaces from root package',
+            function () {
+                $filename = Filesystem\Path::join($this->rootPath, 'composer.json');
+                $namespaces = $this->fetchAutoloadFromComposerManifest()['psr-4'];
+
+                foreach ($namespaces as $namespace => $path) {
+                    if (!is_array($path)) {
+                        continue;
+                    }
+
+                    // Flatten array if there's only one path
+                    if (1 === count($path)) {
+                        $namespaces[$namespace] = reset($path);
+
+                        continue;
+                    }
+
+                    // Throw exception for multiple paths
+                    throw new Exception\DeclarationFileIsInvalid($filename, '[autoload][psr-4]['.$namespace.']');
+                }
+
+                /* @phpstan-ignore argument.type */
+                return new Entity\Psr4Namespaces($namespaces, $filename, $this->rootPath);
+            },
+            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+        );
+    }
+
+    /**
      * @return array{
      *     classmap: list<string>,
      *     psr-4: array<string, string|string[]>,
      * }
+     *
+     * @throws Exception\DeclarationFileIsInvalid
      */
     private function fetchAutoloadFromComposerManifest(): array
     {
         $configFile = Filesystem\Path::join($this->rootPath, 'composer.json');
-        $composer = Factory::create(new IO\NullIO(), $configFile);
+
+        try {
+            $composer = Factory::create(new IO\NullIO(), $configFile);
+        } catch (Throwable) {
+            throw new Exception\DeclarationFileIsInvalid($configFile);
+        }
+
         $autoload = $composer->getPackage()->getAutoload();
 
         if (!array_key_exists('classmap', $autoload)) {
@@ -396,12 +500,5 @@ PHP;
 
         /* @phpstan-ignore return.type */
         return $extEmConf;
-    }
-
-    private function createComposer(string $path, IO\IOInterface $io = new IO\NullIO()): Composer
-    {
-        $configFile = Filesystem\Path::join($path, 'composer.json');
-
-        return Factory::create($io, $configFile);
     }
 }

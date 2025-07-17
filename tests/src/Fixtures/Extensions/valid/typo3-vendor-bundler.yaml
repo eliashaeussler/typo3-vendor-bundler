@@ -1,6 +1,8 @@
 autoload:
   dropComposerAutoload: false
-  targetFile: 'ext_emconf_modified.php'
+  target:
+    file: 'ext_emconf_modified.php'
+    manifest: 'extEmConf'
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
 pathToVendorLibraries: 'libs'

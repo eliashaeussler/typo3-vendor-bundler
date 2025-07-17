@@ -26,47 +26,41 @@ namespace EliasHaeussler\Typo3VendorBundler\Config;
 use EliasHaeussler\Typo3VendorBundler\Bundler;
 
 /**
- * AutoloadConfig.
+ * AutoloadTarget.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final readonly class AutoloadConfig
+final readonly class AutoloadTarget
 {
-    /**
-     * @param list<non-empty-string> $excludeFromClassMap
-     */
     public function __construct(
-        private bool $dropComposerAutoload = true,
-        private AutoloadTarget $target = new AutoloadTarget(),
-        private bool $backupSources = false,
-        private array $excludeFromClassMap = [],
+        private string $file = 'composer.json',
+        private Bundler\Entity\Manifest $manifest = Bundler\Entity\Manifest::Composer,
+        private bool $overwrite = false,
     ) {}
 
-    public function dropComposerAutoload(): bool
+    public static function composer(string $file = 'composer.json', bool $overwrite = false): self
     {
-        if (Bundler\Entity\Manifest::Composer === $this->target->manifest()) {
-            return false;
-        }
-
-        return $this->dropComposerAutoload;
+        return new self($file, Bundler\Entity\Manifest::Composer, $overwrite);
     }
 
-    public function target(): AutoloadTarget
+    public static function extEmConf(string $file = 'ext_emconf.php', bool $overwrite = false): self
     {
-        return $this->target;
+        return new self($file, Bundler\Entity\Manifest::ExtEmConf, $overwrite);
     }
 
-    public function backupSources(): bool
+    public function file(): string
     {
-        return $this->backupSources;
+        return $this->file;
     }
 
-    /**
-     * @return list<non-empty-string>
-     */
-    public function excludeFromClassMap(): array
+    public function manifest(): Bundler\Entity\Manifest
     {
-        return $this->excludeFromClassMap;
+        return $this->manifest;
+    }
+
+    public function overwrite(): bool
+    {
+        return $this->overwrite;
     }
 }
