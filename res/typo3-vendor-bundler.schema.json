@@ -32,8 +32,18 @@
 				"targetFile": {
 					"type": "string",
 					"title": "File where to bundle autoload configuration",
-					"description": "This is usually the `ext_emconf.php` file",
-					"default": "ext_emconf.php"
+					"description": "This is usually the `composer.json` or `ext_emconf.php` file",
+					"default": "composer.json"
+				},
+				"targetManifest": {
+					"type": "string",
+					"enum": [
+						"composer",
+						"extEmConf"
+					],
+					"title": "Target manifest where to bundle autoload configuration",
+					"description": "Can be either \"composer\" (targeting `composer.json` file, default) or \"extEmConf\" (targeting `ext_emconf.php` file)",
+					"default": "composer"
 				},
 				"backupSources": {
 					"type": "boolean",

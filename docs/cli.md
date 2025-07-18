@@ -17,7 +17,7 @@ working directory.
 
 ## [`bundle-autoload`](../src/Command/BundleAutoloadCommand.php)
 
-Bundles autoloader for vendor libraries in `ext_emconf.php`.
+Bundles autoloader for vendor libraries in `composer.json` or `ext_emconf.php`.
 
 ```bash
 composer bundle-autoload \
@@ -25,6 +25,7 @@ composer bundle-autoload \
     [-c|--config CONFIG] \
     [-a|--[no-]drop-composer-autoload] \
     [-t|--target-file TARGET-FILE] \
+    [-m|--target-manifest TARGET-MANIFEST] \
     [-b|--[no-]backup-sources] \
     [-o|--[no-]overwrite]
 ```
@@ -53,9 +54,10 @@ the section will be removed in order to let `ext_emconf.php` manage all autoload
 parameters.
 
 > [!IMPORTANT]
-> You should always drop the `autoload` section from `composer.json`. Otherwise,
-> TYPO3 won't read configured `autoload` configuration from `ext_emconf.php` in
-> classic mode.
+> This option is not available when using the `composer` target manifest. When
+> using the `extEmConf` target manifest, you should always drop the `autoload`
+> section from `composer.json`. Otherwise, TYPO3 won't read configured `autoload`
+> configuration from `ext_emconf.php` in classic mode.
 
 > [!NOTE]
 > If omitted, the `autoload.dropComposerAutoload` option from the config file
@@ -63,12 +65,22 @@ parameters.
 
 ### `t|--target-file`
 
-File where to bundle final autoload configuration. This is usually the `ext_emconf.php`
-file, but you can also use a different file, especially for debugging and testing
-purposes.
+File where to bundle final autoload configuration. This is usually the `composer.json`
+file when using the `composer` target manifest or `ext_emconf.php` file when using
+the `extEmConf` target manifest. You can also use a different file, especially for
+debugging and testing purposes.
 
 > [!NOTE]
-> If omitted, the `autoload.targetFile` option from the config file will be used instead.
+> If omitted, the `autoload.target.file` option from the config file will be used instead.
+
+### `-m|--target-manifest`
+
+The manifest which decides how to dump bundled autoload configuration. Can be `composer`
+(default) or `extEmConf`.
+
+> [!NOTE]
+> If omitted, the `autoload.target.manifest` option from the config file will be used
+> instead.
 
 ### `-b|--[no-]backup-sources`
 
@@ -85,6 +97,5 @@ generated.
 Force overwriting the given target file if it already exists.
 
 > [!NOTE]
-> If omitted, the `autoload.overwriteExistingTargetFile` option from the config file will be
-> used instead. If `false` is configured, you will be asked whether the target file should be
-> overwritten.
+> If omitted, the `autoload.target.overwrite` option from the config file will be used instead.
+> If `false` is configured, you will be asked whether the target file should be overwritten.

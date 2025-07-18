@@ -23,7 +23,11 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Tests\Bundler;
 
+use Composer\Factory;
+use Composer\IO;
+use Composer\Package;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use Generator;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
@@ -69,7 +73,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function bundleThrowsExceptionIfDeclarationFileHasInvalidAutoloadSection(): void
+    public function bundleThrowsExceptionIfExtEmConfFileHasInvalidAutoloadSection(): void
     {
         $declarationFile = $this->getFixturePath('invalid-autoload').'/ext_emconf.php';
         $subject = $this->createSubject('invalid-autoload');
@@ -79,7 +83,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         );
 
         try {
-            $subject->bundle();
+            $subject->bundle(Src\Config\AutoloadTarget::extEmConf());
         } finally {
             self::assertSame(
                 '🔍 Parsing ext_emconf.php file... Failed',
@@ -89,7 +93,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function bundleThrowsExceptionIfDeclarationFileHasInvalidClassMapSection(): void
+    public function bundleThrowsExceptionIfExtEmConfFileHasInvalidClassMapSection(): void
     {
         $declarationFile = $this->getFixturePath('invalid-classmap').'/ext_emconf.php';
         $subject = $this->createSubject('invalid-classmap');
@@ -99,7 +103,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         );
 
         try {
-            $subject->bundle();
+            $subject->bundle(Src\Config\AutoloadTarget::extEmConf());
         } finally {
             self::assertSame(
                 '🔍 Parsing ext_emconf.php file... Failed',
@@ -109,7 +113,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function bundleThrowsExceptionIfDeclarationFileHasInvalidNamespacesSection(): void
+    public function bundleThrowsExceptionIfExtEmConfFileHasInvalidNamespacesSection(): void
     {
         $declarationFile = $this->getFixturePath('invalid-namespaces').'/ext_emconf.php';
         $subject = $this->createSubject('invalid-namespaces');
@@ -119,7 +123,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         );
 
         try {
-            $subject->bundle();
+            $subject->bundle(Src\Config\AutoloadTarget::extEmConf());
         } finally {
             self::assertSame(
                 '🔍 Parsing ext_emconf.php file... Failed',
@@ -131,11 +135,11 @@ final class AutoloadBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfComposerFileIsInvalid(): void
     {
-        $librariesPath = $this->getFixturePath('invalid-composer-file').'/libs';
+        $rootPath = $this->getFixturePath('invalid-composer-file');
         $subject = $this->createSubject('invalid-composer-file');
 
         $this->expectExceptionObject(
-            new Src\Exception\CannotInstallComposerDependencies($librariesPath),
+            new Src\Exception\DeclarationFileIsInvalid($rootPath.'/composer.json'),
         );
 
         try {
@@ -143,28 +147,54 @@ final class AutoloadBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🔍 Parsing ext_emconf.php file... Done', $output);
-            self::assertStringContainsString('🍄 Loading class map from ext_emconf.php... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries...', $output);
-            self::assertStringContainsString(
-                'Your requirements could not be resolved to an installable set of packages.',
-                $output,
-            );
+            self::assertStringContainsString('🌱 Loading class map from root package... Failed', $output);
         }
     }
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleExcludesFilesFromLibsClassMap(): void
+    public function bundleExcludesFilesFromLibsClassMapInComposerJsonFile(): void
+    {
+        $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
+
+        try {
+            $this->subject->bundle(
+                Src\Config\AutoloadTarget::composer('composer_modified.json', true),
+                false,
+                false,
+                [
+                    'vendor/composer/InstalledVersions.php',
+                ],
+            );
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString(
+                '⛔ Removing "vendor/composer/InstalledVersions.php" from class map... Done',
+                $output,
+            );
+            self::assertFileExists($targetFile);
+
+            $actual = $this->parseComposerJson($targetFile);
+
+            self::assertIsArray($actual->getAutoload()['classmap'] ?? null);
+            self::assertNotContains('libs/vendor/composer/InstalledVersions.php', $actual->getAutoload()['classmap']);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleExcludesFilesFromLibsClassMapInExtEmConfFile(): void
     {
         $targetFile = $this->getFixturePath('valid').'/ext_emconf_modified.php';
 
         try {
             $this->subject->bundle(
-                'ext_emconf_modified.php',
+                Src\Config\AutoloadTarget::extEmConf('ext_emconf_modified.php', true),
                 false,
                 false,
-                true,
                 [
                     'vendor/composer/InstalledVersions.php',
                 ],
@@ -190,14 +220,15 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMap(): void
-    {
+    #[Framework\Attributes\DataProvider('bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMapDataProvider')]
+    public function bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMap(
+        Src\Config\AutoloadTarget $target,
+    ): void {
         try {
             $this->subject->bundle(
-                'ext_emconf_modified.php',
+                $target,
                 false,
                 false,
-                true,
                 [
                     'foo.php',
                 ],
@@ -205,17 +236,16 @@ final class AutoloadBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🔍 Parsing ext_emconf.php file... Done', $output);
-            self::assertStringContainsString('🍄 Loading class map from ext_emconf.php... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
             self::assertStringContainsString('⛔ Removing "foo.php" from class map... Failed', $output);
         }
     }
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespace(): void
-    {
+    #[Framework\Attributes\DataProvider('bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespaceDataProvider')]
+    public function bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespace(
+        Src\Config\AutoloadTarget $target,
+    ): void {
         $composerJson = $this->getFixturePath('invalid-multiple-namespace-paths').'/composer.json';
         $subject = $this->createSubject('invalid-multiple-namespace-paths');
 
@@ -224,29 +254,53 @@ final class AutoloadBundlerTest extends Framework\TestCase
         );
 
         try {
-            $subject->bundle();
+            $subject->bundle($target);
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🔍 Parsing ext_emconf.php file... Done', $output);
-            self::assertStringContainsString('🍄 Loading class map from ext_emconf.php... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
-            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
-            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('🍄 Loading PSR-4 namespaces from ext_emconf.php... Done', $output);
             self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Failed', $output);
         }
     }
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleFlattensSingleValueArrayOfNamespacePaths(): void
+    public function bundleFlattensSingleValueArrayOfNamespacePathsInComposerJsonFile(): void
+    {
+        $targetFile = $this->getFixturePath('valid-single-array-namespace-path').'/composer_modified.json';
+        $subject = $this->createSubject('valid-single-array-namespace-path');
+
+        try {
+            $subject->bundle(
+                Src\Config\AutoloadTarget::composer('composer_modified.json', true),
+                false,
+            );
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
+            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+            self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
+
+            $actual = $this->parseComposerJson($targetFile);
+
+            self::assertIsArray($actual->getAutoload()['psr-4'] ?? null);
+            self::assertCount(1, $actual->getAutoload()['psr-4']);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleFlattensSingleValueArrayOfNamespacePathsInExtEmConfFile(): void
     {
         $targetFile = $this->getFixturePath('valid-single-array-namespace-path').'/ext_emconf_modified.php';
         $subject = $this->createSubject('valid-single-array-namespace-path');
 
         try {
-            $subject->bundle('ext_emconf_modified.php', false, false, true);
+            $subject->bundle(
+                Src\Config\AutoloadTarget::extEmConf('ext_emconf_modified.php', true),
+                false,
+            );
         } finally {
             $output = $this->output->fetch();
 
@@ -270,7 +324,29 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleThrowsExceptionIfTargetFileAlreadyExists(): void
+    public function bundleThrowsExceptionIfTargetComposerJsonFileAlreadyExists(): void
+    {
+        $targetFile = $this->getFixturePath('valid').'/composer.json';
+
+        $this->expectExceptionObject(
+            new Src\Exception\FileAlreadyExists($targetFile),
+        );
+
+        try {
+            $this->subject->bundle(Src\Config\AutoloadTarget::composer());
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
+            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleThrowsExceptionIfTargetExtEmConfFileAlreadyExists(): void
     {
         $targetFile = $this->getFixturePath('valid').'/ext_emconf.php';
 
@@ -279,7 +355,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         );
 
         try {
-            $this->subject->bundle();
+            $this->subject->bundle(Src\Config\AutoloadTarget::extEmConf());
         } finally {
             $output = $this->output->fetch();
 
@@ -296,7 +372,46 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleBacksUpSourceFiles(): void
+    public function bundleBacksUpSourceFilesWithComposerAsTarget(): void
+    {
+        $fixturePath = $this->getFixturePath('valid');
+        $composerJson = $fixturePath.'/composer.json';
+        $composerJsonBackup = $fixturePath.'/composer.json.bak';
+
+        $this->filesystem->remove($composerJsonBackup);
+
+        self::assertFileExists($composerJson);
+        self::assertFileDoesNotExist($composerJsonBackup);
+
+        $composerJsonSource = file_get_contents($composerJson);
+
+        try {
+            $this->subject->bundle(
+                Src\Config\AutoloadTarget::composer(overwrite: true),
+                true,
+                true,
+            );
+        } finally {
+            // Restore original source files
+            file_put_contents($composerJson, $composerJsonSource);
+
+            self::assertFileExists($composerJsonBackup);
+            self::assertIsString($composerJsonSource);
+            self::assertStringEqualsFile($composerJsonBackup, $composerJsonSource);
+
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
+            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+            self::assertStringContainsString('🦖 Backing up source files... Done', $output);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleBacksUpSourceFilesWithExtEmConfAsTarget(): void
     {
         $fixturePath = $this->getFixturePath('valid');
         $extEmConf = $fixturePath.'/ext_emconf.php';
@@ -317,7 +432,11 @@ final class AutoloadBundlerTest extends Framework\TestCase
         $composerJsonSource = file_get_contents($composerJson);
 
         try {
-            $this->subject->bundle('ext_emconf.php', true, true, true);
+            $this->subject->bundle(
+                Src\Config\AutoloadTarget::extEmConf(overwrite: true),
+                true,
+                true,
+            );
         } finally {
             // Restore original source files
             file_put_contents($extEmConf, $extEmConfSource);
@@ -347,12 +466,44 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleDumpsMergedAutoloadConfiguration(): void
+    public function bundleDumpsMergedAutoloadConfigurationWithComposerAsTarget(): void
+    {
+        $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
+
+        try {
+            $this->subject->bundle(
+                Src\Config\AutoloadTarget::composer('composer_modified.json', true),
+                false,
+            );
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
+            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
+            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+            self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
+
+            $actual = $this->parseComposerJson($targetFile);
+
+            self::assertIsArray($actual->getAutoload()['classmap'] ?? null);
+            self::assertGreaterThan(2, count($actual->getAutoload()['classmap']));
+            self::assertIsArray($actual->getAutoload()['psr-4'] ?? null);
+            self::assertCount(1, $actual->getAutoload()['psr-4']);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleDumpsMergedAutoloadConfigurationWithExtEmConfAsTarget(): void
     {
         $targetFile = $this->getFixturePath('valid').'/ext_emconf_modified.php';
 
         try {
-            $this->subject->bundle('ext_emconf_modified.php', false, false, true);
+            $this->subject->bundle(
+                Src\Config\AutoloadTarget::extEmConf('ext_emconf_modified.php', true),
+                false,
+            );
         } finally {
             $output = $this->output->fetch();
 
@@ -388,7 +539,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
         $composerJsonSource = file_get_contents($composerJson);
 
         try {
-            $this->subject->bundle('ext_emconf_modified.php', overwriteExistingTargetFile: true);
+            $this->subject->bundle(
+                Src\Config\AutoloadTarget::extEmConf('ext_emconf_modified.php', true),
+            );
         } finally {
             $actual = file_get_contents($composerJson);
 
@@ -412,6 +565,37 @@ final class AutoloadBundlerTest extends Framework\TestCase
             self::assertIsString($actual);
             self::assertJsonStringEqualsJsonString('{}', $actual);
         }
+    }
+
+    /**
+     * @return Generator<string, array{Src\Config\AutoloadTarget}>
+     */
+    public static function bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMapDataProvider(): Generator
+    {
+        yield 'composer' => [
+            Src\Config\AutoloadTarget::composer('composer_modified.json', true),
+        ];
+        yield 'extEmConf' => [
+            Src\Config\AutoloadTarget::extEmConf('ext_emconf_modified.php', true),
+        ];
+    }
+
+    /**
+     * @return Generator<string, array{Src\Config\AutoloadTarget}>
+     */
+    public static function bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespaceDataProvider(): Generator
+    {
+        yield 'composer' => [
+            Src\Config\AutoloadTarget::composer(),
+        ];
+        yield 'extEmConf' => [
+            Src\Config\AutoloadTarget::extEmConf(),
+        ];
+    }
+
+    private function parseComposerJson(string $filename): Package\RootPackageInterface
+    {
+        return Factory::create(new IO\NullIO(), $filename)->getPackage();
     }
 
     private function createSubject(string $extension, string $librariesPath = 'libs'): Src\Bundler\AutoloadBundler

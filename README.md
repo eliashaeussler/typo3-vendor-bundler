@@ -33,10 +33,11 @@ Add a `typo3-vendor-bundler.yaml` config file:
 # typo3-vendor-bundler.yaml
 
 autoload:
-  dropComposerAutoload: true
-  targetFile: 'ext_emconf.php'
+  target:
+    file: 'composer.json'
+    manifest: 'composer'
+    overwrite: true
   backupSources: false
-  overwriteExistingTargetFile: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
 pathToVendorLibraries: 'Resources/Private/Libs'
