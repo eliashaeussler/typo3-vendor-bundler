@@ -93,14 +93,13 @@ abstract class AbstractConfigurationAwareCommand extends Command\BaseCommand
     protected function decorateMappingError(Valinor\Mapper\MappingError $error, string $configFile): void
     {
         $errorMessages = [];
-        $errors = Valinor\Mapper\Tree\Message\Messages::flattenFromNode($error->node())->errors();
 
         $this->io->error(
             sprintf('The config file "%s" is invalid.', $configFile),
         );
 
-        foreach ($errors as $propertyError) {
-            $errorMessages[] = sprintf('%s: %s', $propertyError->node()->path(), $propertyError->toString());
+        foreach ($error->messages() as $propertyError) {
+            $errorMessages[] = sprintf('%s: %s', $propertyError->path(), $propertyError->toString());
         }
 
         $this->io->listing($errorMessages);
