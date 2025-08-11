@@ -27,7 +27,7 @@ jobs:
         composer-version: ["2.2", "2.4", "2.5", "2.6", "2.7", "2.8"]
         dependencies: ["highest", "lowest"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -56,7 +56,7 @@ jobs:
     needs: prepare
     if: needs.prepare.outputs.continue == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: coverage
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
