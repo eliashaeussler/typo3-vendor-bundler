@@ -83,7 +83,7 @@ final class BundleCommand extends AbstractConfigurationAwareCommand
         $this->io->title($bundler->getDescription());
         $this->io->writeln(
             /* @phpstan-ignore argument.type */
-            sprintf('💡 Run manually with <fg=cyan>%s %s</>', $_SERVER['PHP_SELF'], $bundler->getName()),
+            sprintf('💡 Run manually with <fg=cyan>%s %s</>', $_SERVER['PHP_SELF'], (string) $bundler->getName()),
         );
         $this->io->newLine();
 
