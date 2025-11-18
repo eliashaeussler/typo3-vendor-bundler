@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.2", "8.3", "8.4"]
+        php-version: ["8.2", "8.3", "8.4", "8.5"]
         # Composer 2.3 is broken and therefore not supported, Composer 2.2 (LTS) is supported
         composer-version: ["2.2", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9"]
         dependencies: ["highest", "lowest"]
@@ -64,7 +64,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.4
+          php-version: 8.5
           tools: composer:v2
           coverage: pcov
 

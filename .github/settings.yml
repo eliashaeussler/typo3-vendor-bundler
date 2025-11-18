@@ -104,6 +104,10 @@ rulesets:
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.2 & lowest dependencies)'
               integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.2 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.2 & lowest dependencies)'
+              integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.4 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.4 & lowest dependencies)'
@@ -115,6 +119,10 @@ rulesets:
             - context: 'Tests (PHP 8.4, Composer 2.4 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.4 & lowest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.4 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.4 & lowest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.5 & highest dependencies)'
               integration_id: 15368
@@ -128,6 +136,10 @@ rulesets:
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.5 & lowest dependencies)'
               integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.5 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.5 & lowest dependencies)'
+              integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.6 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.6 & lowest dependencies)'
@@ -139,6 +151,10 @@ rulesets:
             - context: 'Tests (PHP 8.4, Composer 2.6 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.6 & lowest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.6 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.6 & lowest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.7 & highest dependencies)'
               integration_id: 15368
@@ -152,6 +168,10 @@ rulesets:
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.7 & lowest dependencies)'
               integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.7 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.7 & lowest dependencies)'
+              integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.8 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.8 & lowest dependencies)'
@@ -164,6 +184,10 @@ rulesets:
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.8 & lowest dependencies)'
               integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.8 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.8 & lowest dependencies)'
+              integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.9 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.2, Composer 2.9 & lowest dependencies)'
@@ -175,6 +199,10 @@ rulesets:
             - context: 'Tests (PHP 8.4, Composer 2.9 & highest dependencies)'
               integration_id: 15368
             - context: 'Tests (PHP 8.4, Composer 2.9 & lowest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.9 & highest dependencies)'
+              integration_id: 15368
+            - context: 'Tests (PHP 8.5, Composer 2.9 & lowest dependencies)'
               integration_id: 15368
             - context: 'Test coverage'
               integration_id: 15368
