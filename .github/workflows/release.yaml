@@ -16,7 +16,7 @@ jobs:
       version: ${{ steps.get-version.outputs.version }}
       url: ${{ steps.create-release.outputs.url }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Check if tag is valid
       - name: Check tag
