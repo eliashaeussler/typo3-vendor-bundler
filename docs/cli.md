@@ -99,3 +99,18 @@ Force overwriting the given target file if it already exists.
 > [!NOTE]
 > If omitted, the `autoload.target.overwrite` option from the config file will be used instead.
 > If `false` is configured, you will be asked whether the target file should be overwritten.
+
+## [`validate-bundler-config`](../src/Command/ValidateBundlerConfigCommand.php)
+
+Checks if the given bundler configuration is valid.
+
+```bash
+composer validate-bundler-config [-c|--config CONFIG]
+```
+
+Pass the following options to the console command:
+
+### `-c|--config`
+
+Path to [config file](config-file), defaults to auto-detection in current
+working directory.
