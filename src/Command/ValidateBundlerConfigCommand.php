@@ -21,12 +21,33 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\Typo3VendorBundler\Command;
+namespace EliasHaeussler\Typo3VendorBundler\Command;
+
 use Symfony\Component\Console;
 
-$application = new Console\Application();
-$application->add(new Command\BundleCommand());
-$application->add(new Command\BundleAutoloadCommand());
-$application->add(new Command\ValidateBundlerConfigCommand());
+/**
+ * ValidateBundlerConfigCommand.
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-3.0-or-later
+ */
+final class ValidateBundlerConfigCommand extends AbstractConfigurationAwareCommand
+{
+    public function __construct()
+    {
+        parent::__construct('validate-bundler-config');
+    }
 
-return $application;
+    protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
+    {
+        $config = $this->readConfigFile($input->getOption('config'), (string) getcwd());
+
+        if (null === $config) {
+            return self::INVALID;
+        }
+
+        $this->io->success('Congratulations, your config file is valid.');
+
+        return self::SUCCESS;
+    }
+}

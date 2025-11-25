@@ -52,6 +52,10 @@ composer bundle
 You can also execute a single bundler. Read more about available
 [console commands](docs/cli.md).
 
+> [!TIP]
+> You can use the [`composer validate-bundler-config`](docs/cli.md#validate-bundler-config) command
+> to validate your config file.
+
 ## 📝 Documentation
 
 * Usage
