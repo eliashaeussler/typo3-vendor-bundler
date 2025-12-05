@@ -25,7 +25,7 @@
 		"composer/composer": "~2.2.18 || ^2.4",
 		"eliashaeussler/php-cs-fixer-config": "^3.0",
 		"eliashaeussler/phpstan-config": "^3.0",
-		"eliashaeussler/rector-config": "^3.1",
+		"eliashaeussler/rector-config": "^4.0",
 		"ergebnis/composer-normalize": "^2.47",
 		"phpstan/extension-installer": "^1.4",
 		"phpstan/phpstan-phpunit": "^2.0",
