@@ -25,8 +25,10 @@ use EliasHaeussler\Typo3VendorBundler\Command;
 use Symfony\Component\Console;
 
 $application = new Console\Application();
-$application->add(new Command\BundleCommand());
-$application->add(new Command\BundleAutoloadCommand());
-$application->add(new Command\ValidateBundlerConfigCommand());
+$application->addCommands([
+    new Command\BundleCommand(),
+    new Command\BundleAutoloadCommand(),
+    new Command\ValidateBundlerConfigCommand(),
+]);
 
 return $application;
