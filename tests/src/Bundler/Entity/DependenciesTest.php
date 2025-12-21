@@ -21,47 +21,36 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace EliasHaeussler\Typo3VendorBundler\Config;
+namespace EliasHaeussler\Typo3VendorBundler\Tests\Bundler\Entity;
+
+use EliasHaeussler\Typo3VendorBundler as Src;
+use PHPUnit\Framework;
 
 /**
- * Typo3VendorBundlerConfig.
+ * DependenciesTest.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class Typo3VendorBundlerConfig
+#[Framework\Attributes\CoversClass(Src\Bundler\Entity\Dependencies::class)]
+final class DependenciesTest extends Framework\TestCase
 {
-    public function __construct(
-        private readonly AutoloadConfig $autoload = new AutoloadConfig(),
-        private readonly DependenciesConfig $dependencies = new DependenciesConfig(),
-        private readonly string $pathToVendorLibraries = 'Resources/Private/Libs',
-        private ?string $rootPath = null,
-    ) {}
+    private Src\Bundler\Entity\Dependencies $subject;
 
-    public function autoload(): AutoloadConfig
+    public function setUp(): void
     {
-        return $this->autoload;
+        $this->subject = new Src\Bundler\Entity\Dependencies('sbom.json', __DIR__);
     }
 
-    public function dependencies(): DependenciesConfig
+    #[Framework\Attributes\Test]
+    public function sbomFileReturnsFilename(): void
     {
-        return $this->dependencies;
+        self::assertSame(__DIR__.'/sbom.json', $this->subject->sbomFile());
     }
 
-    public function pathToVendorLibraries(): string
+    #[Framework\Attributes\Test]
+    public function sbomFileReturnsFilenameAsRelativePath(): void
     {
-        return $this->pathToVendorLibraries;
-    }
-
-    public function rootPath(): ?string
-    {
-        return $this->rootPath;
-    }
-
-    public function setRootPath(string $rootPath): self
-    {
-        $this->rootPath = $rootPath;
-
-        return $this;
+        self::assertSame('sbom.json', $this->subject->sbomFile(true));
     }
 }

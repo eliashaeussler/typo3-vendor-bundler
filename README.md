@@ -40,6 +40,14 @@ autoload:
   backupSources: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
+
+dependencies:
+  sbom:
+    file: 'sbom.json'
+    version: '1.7'
+    includeDev: false
+    overwrite: true
+
 pathToVendorLibraries: 'Resources/Private/Libs'
 ```
 

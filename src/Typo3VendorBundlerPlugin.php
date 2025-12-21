@@ -47,12 +47,15 @@ final readonly class Typo3VendorBundlerPlugin implements Plugin\PluginInterface,
     public function getCommands(): array
     {
         $bundleAutoloadCommand = new Command\BundleAutoloadCommand();
+        $bundleDependenciesCommand = new Command\BundleDependenciesCommand();
 
         return [
             new Command\BundleCommand([
                 $bundleAutoloadCommand,
+                $bundleDependenciesCommand,
             ]),
             $bundleAutoloadCommand,
+            $bundleDependenciesCommand,
             new Command\ValidateBundlerConfigCommand(),
         ];
     }

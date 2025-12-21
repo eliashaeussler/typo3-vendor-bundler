@@ -21,27 +21,42 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\RectorConfig\Config\Config;
-use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\ValueObject\PhpVersion;
+namespace EliasHaeussler\Typo3VendorBundler\Config;
 
-return static function (RectorConfig $rectorConfig): void {
-    Config::create($rectorConfig, PhpVersion::PHP_82)
-        ->in(
-            __DIR__.'/src',
-            __DIR__.'/tests',
-        )
-        ->not(
-            __DIR__.'/tests/src/Fixtures',
-        )
-        ->withPHPUnit()
-        ->withSymfony()
-        ->skip(NullToStrictStringFuncCallArgRector::class, [
-            __DIR__.'/src/Command/BundleAutoloadCommand.php',
-            __DIR__.'/src/Command/BundleDependenciesCommand.php',
-        ])
-        ->apply()
-        ->cacheDirectory('.build/cache/rector')
-    ;
-};
+use CycloneDX\Core;
+
+/**
+ * Sbom.
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-3.0-or-later
+ */
+final readonly class Sbom
+{
+    public function __construct(
+        private string $file = 'sbom.json',
+        private Core\Spec\Version $version = Core\Spec\Version::v1dot7,
+        private ?bool $includeDev = null,
+        private ?bool $overwrite = null,
+    ) {}
+
+    public function file(): string
+    {
+        return $this->file;
+    }
+
+    public function version(): Core\Spec\Version
+    {
+        return $this->version;
+    }
+
+    public function includeDev(): ?bool
+    {
+        return $this->includeDev;
+    }
+
+    public function overwrite(): ?bool
+    {
+        return $this->overwrite;
+    }
+}

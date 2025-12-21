@@ -13,6 +13,13 @@ autoload:
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
 
+dependencies:
+  sbom:
+    file: 'sbom.json'
+    version: '1.7'
+    includeDev: false
+    overwrite: true
+
 # Path to composer.json where vendor libraries are managed
 pathToVendorLibraries: 'Resources/Private/Libs'
 
@@ -35,6 +42,17 @@ rootPath: ../
 | `autoload.target.overwrite`     | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`.    |
 | `autoload.backupSources`        | Boolean | –        | Define whether to backup source files. Defaults to `false`.                                |
 | `autoload.excludeFromClassMap`  | Array   | –        | List of files to exclude from vendor libraries class map.                                  |
+
+## Dependencies
+
+| Property                       | Type    | Required | Description                                                                                                                                                  |
+|--------------------------------|---------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dependencies`                 | Object  | –        | Set of configuration options to respect when bundling dependency information.                                                                                |
+| `dependencies.sbom`            | Object  | –        | Set of configuration options used to define SBOM file generation.                                                                                            |
+| `dependencies.sbom.file`       | String  | –        | File where to write the serialized SBOM. Can be a JSON or XML file. Relative paths are resolved based on the vendor libraries path. Defaults to `sbom.json`. |
+| `dependencies.sbom.version`    | String  | –        | CycloneDX BOM version to use. Defaults to `1.7`.                                                                                                             |
+| `dependencies.sbom.includeDev` | Boolean | –        | Define whether to include development dependencies in the serialized SBOM. Defaults to `true`.                                                               |
+| `dependencies.sbom.overwrite`  | Boolean | –        | Define whether to overwrite the SBOM file, if it already exists. Defaults to `false`.                                                                        |
 
 ## Path to vendor libraries
 

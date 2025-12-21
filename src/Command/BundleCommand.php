@@ -41,6 +41,7 @@ final class BundleCommand extends AbstractConfigurationAwareCommand
     public function __construct(
         private readonly array $bundlers = [
             new BundleAutoloadCommand(),
+            new BundleDependenciesCommand(),
         ],
     ) {
         parent::__construct('bundle');
