@@ -3,6 +3,7 @@ autoload:
   target:
     file: 'ext_emconf_modified.php'
     manifest: 'extEmConf'
+    overwrite: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
 pathToVendorLibraries: 'libs'
