@@ -112,11 +112,11 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
 
         $rootPath = $config->rootPath() ?? $rootPath;
         $libsDir = $input->getArgument('libs-dir') ?? $config->pathToVendorLibraries();
-        $dropComposerAutoload = $input->getOption('drop-composer-autoload') ?? $config->autoload()->dropComposerAutoload();
+        $dropComposerAutoload = $input->getOption('drop-composer-autoload') ?? $config->autoload()->dropComposerAutoload() ?? true;
         $targetFile = $input->getOption('target-file') ?? $config->autoload()->target()->file();
         $targetManifest = Bundler\Entity\Manifest::tryFrom((string) $input->getOption('target-manifest')) ?? $config->autoload()->target()->manifest();
-        $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources();
-        $overwrite = $input->getOption('overwrite') ?? $config->autoload()->target()->overwrite();
+        $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources() ?? false;
+        $overwrite = $input->getOption('overwrite') ?? $config->autoload()->target()->overwrite() ?? false;
         $excludeFromClassMap = $config->autoload()->excludeFromClassMap();
 
         // Exit if libs directory is invalid
