@@ -290,8 +290,8 @@ PHP;
     {
         $classMap = $this->taskRunner->run(
             '🌱 Building class map from vendor libraries',
-            function () {
-                $io = new IO\BufferIO(verbosity: $this->output->getVerbosity());
+            function (SymfonyConsole\Output\OutputInterface $output) {
+                $io = new IO\BufferIO(verbosity: $output->getVerbosity());
                 $composer = Factory::create(
                     $io,
                     Filesystem\Path::join($this->librariesPath, 'composer.json'),
@@ -306,7 +306,7 @@ PHP;
                     ->run();
 
                 if (SymfonyConsole\Command\Command::SUCCESS !== $installResult) {
-                    $this->output->writeln($io->getOutput(), SymfonyConsole\Output\OutputInterface::OUTPUT_RAW);
+                    $output->writeln($io->getOutput());
 
                     throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
                 }
@@ -336,7 +336,7 @@ PHP;
                 $fullPath = Filesystem\Path::join($this->librariesPath, $path);
                 $classMap = $this->taskRunner->run(
                     sprintf('⛔ Removing "%s" from class map', $path),
-                    function (bool &$successful) use ($classMap, $fullPath) {
+                    function (SymfonyConsole\Output\OutputInterface $output, bool &$successful) use ($classMap, $fullPath) {
                         if (!$classMap->has($fullPath)) {
                             $successful = false;
 
