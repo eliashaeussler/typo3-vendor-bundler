@@ -36,7 +36,7 @@ final readonly class AutoloadTarget
     public function __construct(
         private string $file = 'composer.json',
         private Bundler\Entity\Manifest $manifest = Bundler\Entity\Manifest::Composer,
-        private bool $overwrite = false,
+        private ?bool $overwrite = null,
     ) {}
 
     public static function composer(string $file = 'composer.json', bool $overwrite = false): self
@@ -59,7 +59,7 @@ final readonly class AutoloadTarget
         return $this->manifest;
     }
 
-    public function overwrite(): bool
+    public function overwrite(): ?bool
     {
         return $this->overwrite;
     }
