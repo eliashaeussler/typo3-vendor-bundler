@@ -35,27 +35,26 @@ use PHPUnit\Framework;
 #[Framework\Attributes\CoversClass(Src\Bundler\Entity\Autoload::class)]
 final class AutoloadTest extends Framework\TestCase
 {
-    private Src\Bundler\Entity\ClassMap $classMap;
-    private Src\Bundler\Entity\Psr4Namespaces $psr4Namespaces;
     private Src\Bundler\Entity\Autoload $subject;
 
     public function setUp(): void
     {
-        $this->classMap = new Src\Bundler\Entity\ClassMap(
+        $classMap = new Src\Bundler\Entity\ClassMap(
             ['foo'],
             'classmap.php',
             __DIR__,
         );
-        $this->psr4Namespaces = new Src\Bundler\Entity\Psr4Namespaces(
+        $psr4Namespaces = new Src\Bundler\Entity\Psr4Namespaces(
             [
                 'Foo\\' => 'src',
             ],
             'namespaces.php',
             __DIR__,
         );
+
         $this->subject = new Src\Bundler\Entity\Autoload(
-            $this->classMap,
-            $this->psr4Namespaces,
+            $classMap,
+            $psr4Namespaces,
             'merged.php',
             __DIR__,
         );
