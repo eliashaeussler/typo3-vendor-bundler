@@ -102,7 +102,8 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
     {
         $rootPath = (string) getcwd();
-        $config = $this->readConfigFile($input->getOption('config'), $rootPath);
+        $configFile = $input->getOption('config');
+        $config = $this->readConfigFile($configFile, $rootPath);
 
         // Exit if config cannot be read
         if (null === $config) {

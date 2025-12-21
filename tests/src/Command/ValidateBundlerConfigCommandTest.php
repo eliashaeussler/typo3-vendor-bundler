@@ -49,6 +49,15 @@ final class ValidateBundlerConfigCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function executeDisplaysErrorMessageAndFailsIfNoConfigIsAvailable(): void
+    {
+        $this->commandTester->execute([]);
+
+        self::assertSame(Console\Command\Command::INVALID, $this->commandTester->getStatusCode());
+        self::assertStringContainsString('No config file could be detected.', $this->commandTester->getDisplay());
+    }
+
+    #[Framework\Attributes\Test]
     public function executeDisplaysErrorMessageAndFailsIfConfigFileIsNotValid(): void
     {
         $this->commandTester->execute([
@@ -85,5 +94,25 @@ final class ValidateBundlerConfigCommandTest extends Framework\TestCase
             '[OK] Congratulations, your config file is valid.',
             $this->commandTester->getDisplay(),
         );
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeDisplaysAdditionalInformationOnVerboseOutput(): void
+    {
+        $this->commandTester->execute(
+            [
+                '--config' => dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config.json',
+            ],
+            [
+                'verbosity' => Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            ],
+        );
+
+        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+
+        $output = $this->commandTester->getDisplay();
+
+        self::assertStringContainsString('Found config file', $output);
+        self::assertStringContainsString('Config file contains no invalid options.', $output);
     }
 }

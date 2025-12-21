@@ -52,64 +52,74 @@ final class AbstractConfigurationAwareCommandTest extends Framework\TestCase
     public function readConfigFileAutoDetectsConfigFileIfNoConfigFileIsGiven(): void
     {
         $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $configFile = null;
 
-        $actual = $this->command->readConfigFile(null, $rootPath);
+        $actual = $this->command->readConfigFile($configFile, $rootPath);
 
         self::assertInstanceOf(Src\Config\Typo3VendorBundlerConfig::class, $actual);
+        self::assertSame($rootPath.'/typo3-vendor-bundler.php', $configFile);
     }
 
     #[Framework\Attributes\Test]
     public function readConfigFileReturnsEmptyConfigObjectIfNoConfigFileCouldBeFound(): void
     {
         $rootPath = __DIR__;
+        $configFile = null;
 
-        $actual = $this->command->readConfigFile(null, $rootPath);
+        $actual = $this->command->readConfigFile($configFile, $rootPath);
 
         self::assertEquals(
             new Src\Config\Typo3VendorBundlerConfig(rootPath: $rootPath),
             $actual,
         );
+        self::assertNull($configFile);
     }
 
     #[Framework\Attributes\Test]
     public function readConfigFileConvertsRelativeConfigFilePathToAbsolutePath(): void
     {
         $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $configFile = 'valid-config.php';
 
         /** @var Src\Config\Typo3VendorBundlerConfig $expected */
         $expected = include $rootPath.'/valid-config.php';
         $expected->setRootPath(dirname($rootPath));
 
-        $actual = $this->command->readConfigFile('valid-config.php', $rootPath);
+        $actual = $this->command->readConfigFile($configFile, $rootPath);
 
         self::assertEquals($expected, $actual);
+        self::assertSame($rootPath.'/valid-config.php', $configFile);
     }
 
     #[Framework\Attributes\Test]
     public function readConfigFileDecoratesMappingErrors(): void
     {
         $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $configFile = 'invalid-config.json';
 
-        $actual = $this->command->readConfigFile('invalid-config.json', $rootPath);
+        $actual = $this->command->readConfigFile($configFile, $rootPath);
 
         self::assertNull($actual);
         self::assertStringContainsString(
             'Unexpected key(s) `foo`, expected `autoload`, `pathToVendorLibraries`, `rootPath`.',
             $this->output->fetch(),
         );
+        self::assertSame($rootPath.'/invalid-config.json', $configFile);
     }
 
     #[Framework\Attributes\Test]
     public function readConfigFileDisplaysExceptionMessages(): void
     {
         $rootPath = dirname(__DIR__).'/Fixtures/ConfigFiles';
+        $configFile = 'foo.json';
 
-        $actual = $this->command->readConfigFile('foo.json', $rootPath);
+        $actual = $this->command->readConfigFile($configFile, $rootPath);
 
         self::assertNull($actual);
         self::assertMatchesRegularExpression(
             '/File ".+\/foo\.json"\s+does\s+not\s+exist\./',
             $this->output->fetch(),
         );
+        self::assertSame($rootPath.'/foo.json', $configFile);
     }
 }
