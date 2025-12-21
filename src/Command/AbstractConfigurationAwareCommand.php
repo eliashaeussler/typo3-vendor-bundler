@@ -65,7 +65,7 @@ abstract class AbstractConfigurationAwareCommand extends Command\BaseCommand
         $this->io = new Console\Style\SymfonyStyle($input, $output);
     }
 
-    protected function readConfigFile(?string $configFile, string $rootPath): ?Config\Typo3VendorBundlerConfig
+    protected function readConfigFile(?string &$configFile, string $rootPath): ?Config\Typo3VendorBundlerConfig
     {
         $configFile ??= $this->configReader->detectFile($rootPath);
 

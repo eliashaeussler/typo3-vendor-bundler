@@ -58,7 +58,7 @@ final class DummyCommand extends Command\AbstractConfigurationAwareCommand
         return self::SUCCESS;
     }
 
-    public function readConfigFile(?string $configFile, string $rootPath): ?Config\Typo3VendorBundlerConfig
+    public function readConfigFile(?string &$configFile, string $rootPath): ?Config\Typo3VendorBundlerConfig
     {
         return parent::readConfigFile($configFile, $rootPath);
     }

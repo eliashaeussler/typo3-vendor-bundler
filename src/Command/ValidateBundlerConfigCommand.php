@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace EliasHaeussler\Typo3VendorBundler\Command;
 
 use Symfony\Component\Console;
+use Symfony\Component\Filesystem;
+
+use function sprintf;
 
 /**
  * ValidateBundlerConfigCommand.
@@ -38,14 +41,45 @@ final class ValidateBundlerConfigCommand extends AbstractConfigurationAwareComma
         parent::__construct('validate-bundler-config');
     }
 
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->setDescription('Validate a given typo3-vendor-bundler configuration file');
+    }
+
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
     {
-        $config = $this->readConfigFile($input->getOption('config'), (string) getcwd());
+        $configFile = $input->getOption('config');
+        $autoDetected = null === $configFile;
+        $rootPath = (string) getcwd();
+        $config = $this->readConfigFile($configFile, $rootPath);
 
+        // Fail if config file is invalid
         if (null === $config) {
             return self::INVALID;
         }
 
+        // Fail if no config file could be detected
+        if (null === $configFile) {
+            $this->io->error('No config file could be detected.');
+            $this->io->writeln(
+                '💡 You can pass the path to your config file using the <comment>--config</comment> option.',
+            );
+
+            return self::INVALID;
+        }
+
+        $messages = [
+            sprintf('✅ Found config file: <info>%s</info>', Filesystem\Path::makeRelative($configFile, $rootPath)),
+            '✅ Config file contains no invalid options.',
+        ];
+
+        if ($autoDetected) {
+            $messages[0] .= ' <comment>(auto-detected)</comment>';
+        }
+
+        $this->io->writeln($messages, Console\Output\OutputInterface::VERBOSITY_VERBOSE);
         $this->io->success('Congratulations, your config file is valid.');
 
         return self::SUCCESS;
