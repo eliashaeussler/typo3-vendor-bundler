@@ -42,8 +42,8 @@ final readonly class TaskRunner
     /**
      * @template T
      *
-     * @param Closure(bool): T                            $task
-     * @param Console\Output\OutputInterface::VERBOSITY_* $verbosity
+     * @param Closure(Console\Output\OutputInterface, bool): T $task
+     * @param Console\Output\OutputInterface::VERBOSITY_*      $verbosity
      *
      * @return T
      */
@@ -53,11 +53,16 @@ final readonly class TaskRunner
         int $verbosity = Console\Output\OutputInterface::VERBOSITY_NORMAL,
     ): mixed {
         $successful = true;
+        $taskOutput = new Console\Output\BufferedOutput(
+            $this->output->getVerbosity(),
+            $this->output->isDecorated(),
+            $this->output->getFormatter(),
+        );
 
         $this->output->write($message.'... ', false, $verbosity);
 
         try {
-            $result = $task($successful);
+            $result = $task($taskOutput, $successful);
 
             /* @phpstan-ignore if.alwaysTrue */
             if ($successful) {
@@ -71,6 +76,8 @@ final readonly class TaskRunner
             $this->output->writeln('<error>Failed</error>', $verbosity);
 
             throw $exception;
+        } finally {
+            $this->output->write($taskOutput->fetch());
         }
     }
 }
