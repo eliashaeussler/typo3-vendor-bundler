@@ -99,7 +99,42 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwritten(): void
+    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwrittenAsPerInputOption(): void
+    {
+        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+
+        // Make sure file exists
+        $this->filesystem->touch($rootPath.'/ext_emconf_modified.php');
+
+        $this->expectExceptionObject(
+            new Src\Exception\FileAlreadyExists($rootPath.'/ext_emconf_modified.php'),
+        );
+
+        $this->commandTester->execute([
+            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
+            '--overwrite' => false,
+        ]);
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwrittenAsPerConfiguration(): void
+    {
+        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+
+        // Make sure file exists
+        $this->filesystem->touch($rootPath.'/ext_emconf_modified.php');
+
+        $this->expectExceptionObject(
+            new Src\Exception\FileAlreadyExists($rootPath.'/ext_emconf_modified.php'),
+        );
+
+        $this->commandTester->execute([
+            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
+        ]);
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwrittenAsPerUserInput(): void
     {
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 

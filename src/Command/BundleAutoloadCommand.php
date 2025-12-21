@@ -131,7 +131,9 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
             $target = new Config\AutoloadTarget($targetFile, $targetManifest, $overwrite);
             $autoload = $autoloadBundler->bundle($target, $dropComposerAutoload, $backupSources, $excludeFromClassMap);
         } catch (Exception\FileAlreadyExists $exception) {
-            if (!$this->io->confirm('Target file already exists. Overwrite file?', false)) {
+            if (false === $input->getOption('overwrite')
+                || !$this->io->confirm('Target file already exists. Overwrite file?', false)
+            ) {
                 throw $exception;
             }
 
