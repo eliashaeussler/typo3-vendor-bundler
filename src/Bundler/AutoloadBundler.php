@@ -23,15 +23,14 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
-use Composer\Composer;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO;
 use EliasHaeussler\Typo3VendorBundler\Config;
-use EliasHaeussler\Typo3VendorBundler\Console\Output\TaskRunner;
+use EliasHaeussler\Typo3VendorBundler\Console;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Resource;
-use Symfony\Component\Console;
+use Symfony\Component\Console as SymfonyConsole;
 use Symfony\Component\Filesystem;
 use Throwable;
 
@@ -64,7 +63,7 @@ final readonly class AutoloadBundler implements Bundler
 {
     private Resource\ExtEmConfParser $extEmConfParser;
     private Filesystem\Filesystem $filesystem;
-    private TaskRunner $taskRunner;
+    private Console\Output\TaskRunner $taskRunner;
     private string $librariesPath;
 
     /**
@@ -73,11 +72,11 @@ final readonly class AutoloadBundler implements Bundler
     public function __construct(
         private string $rootPath,
         string $librariesPath,
-        private Console\Output\OutputInterface $output,
+        private SymfonyConsole\Output\OutputInterface $output,
     ) {
         $this->extEmConfParser = new Resource\ExtEmConfParser();
         $this->filesystem = new Filesystem\Filesystem();
-        $this->taskRunner = new TaskRunner($this->output);
+        $this->taskRunner = new Console\Output\TaskRunner($this->output);
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
 
         if (!is_dir($this->librariesPath)) {
@@ -93,18 +92,18 @@ final readonly class AutoloadBundler implements Bundler
      */
     public function bundle(
         Config\AutoloadTarget $target = new Config\AutoloadTarget(),
-        ?bool $dropComposerAutoload = null,
-        ?bool $backupSources = null,
+        bool $dropComposerAutoload = true,
+        bool $backupSources = false,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
         $config = new Config\AutoloadConfig(
-            $dropComposerAutoload ?? true,
+            $dropComposerAutoload,
             new Config\AutoloadTarget(
                 Filesystem\Path::makeAbsolute($target->file(), $this->rootPath),
                 $target->manifest(),
                 $target->overwrite(),
             ),
-            $backupSources ?? false,
+            $backupSources,
             $excludeFromClassMap,
         );
 
@@ -180,7 +179,7 @@ final readonly class AutoloadBundler implements Bundler
         $extEmConf = $this->taskRunner->run(
             '🔍 Parsing ext_emconf.php file',
             fn () => $this->parseExtEmConf($declarationFile),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
         // Load class maps
@@ -262,7 +261,7 @@ PHP;
         return $this->taskRunner->run(
             '🍄 Loading class map from ext_emconf.php',
             fn () => new Entity\ClassMap($extEmConf['autoload']['classmap'], $declarationFile, $this->rootPath),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
     }
 
@@ -278,7 +277,7 @@ PHP;
                 Filesystem\Path::join($this->rootPath, 'composer.json'),
                 $this->rootPath,
             ),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
     }
 
@@ -306,8 +305,8 @@ PHP;
                     ->setOptimizeAutoloader(true)
                     ->run();
 
-                if (Console\Command\Command::SUCCESS !== $installResult) {
-                    $this->output->writeln($io->getOutput(), Console\Output\OutputInterface::OUTPUT_RAW);
+                if (SymfonyConsole\Command\Command::SUCCESS !== $installResult) {
+                    $this->output->writeln($io->getOutput(), SymfonyConsole\Output\OutputInterface::OUTPUT_RAW);
 
                     throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
                 }
@@ -328,7 +327,7 @@ PHP;
 
                 return new Entity\ClassMap($classMap, $classMapFile, $this->rootPath);
             },
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
         // Drop excluded files from class map
@@ -346,7 +345,7 @@ PHP;
 
                         return $classMap->remove($fullPath);
                     },
-                    Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+                    SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
                 );
             }
         }
@@ -386,7 +385,7 @@ PHP;
         $extEmConfNamespaces = $this->taskRunner->run(
             '🍄 Loading PSR-4 namespaces from ext_emconf.php',
             fn () => new Entity\Psr4Namespaces($extEmConf['autoload']['psr-4'], $declarationFile, $this->rootPath),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
         // Load PSR-4 namespaces from root package
@@ -426,7 +425,7 @@ PHP;
                 /* @phpstan-ignore argument.type */
                 return new Entity\Psr4Namespaces($namespaces, $filename, $this->rootPath);
             },
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
     }
 
