@@ -93,18 +93,18 @@ final readonly class AutoloadBundler implements Bundler
      */
     public function bundle(
         Config\AutoloadTarget $target = new Config\AutoloadTarget(),
-        bool $dropComposerAutoload = true,
-        bool $backupSources = false,
+        ?bool $dropComposerAutoload = null,
+        ?bool $backupSources = null,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
         $config = new Config\AutoloadConfig(
-            $dropComposerAutoload,
+            $dropComposerAutoload ?? true,
             new Config\AutoloadTarget(
                 Filesystem\Path::makeAbsolute($target->file(), $this->rootPath),
                 $target->manifest(),
                 $target->overwrite(),
             ),
-            $backupSources,
+            $backupSources ?? false,
             $excludeFromClassMap,
         );
 
@@ -132,12 +132,12 @@ final readonly class AutoloadBundler implements Bundler
         $autoload = new Entity\Autoload($classMap, $psr4Namespaces, $config->target()->file(), $this->rootPath);
 
         // Throw exception if target file already exists
-        if (!$config->target()->overwrite() && $this->filesystem->exists($config->target()->file())) {
+        if (true !== $config->target()->overwrite() && $this->filesystem->exists($config->target()->file())) {
             throw new Exception\FileAlreadyExists($config->target()->file());
         }
 
         // Create composer.json backup
-        if ($config->backupSources()) {
+        if (true === $config->backupSources()) {
             $this->taskRunner->run(
                 '🦖 Backing up source files',
                 function () use ($config) {
@@ -197,12 +197,12 @@ final readonly class AutoloadBundler implements Bundler
         $extEmConf['autoload'] = $autoload->toArray(true);
 
         // Throw exception if target file already exists
-        if (!$config->target()->overwrite() && $this->filesystem->exists($config->target()->file())) {
+        if (true !== $config->target()->overwrite() && $this->filesystem->exists($config->target()->file())) {
             throw new Exception\FileAlreadyExists($config->target()->file());
         }
 
         // Create ext_emconf.php backup
-        if ($config->backupSources()) {
+        if (true === $config->backupSources()) {
             $this->taskRunner->run(
                 '🦖 Backing up source files',
                 function () use ($config, $declarationFile) {
@@ -210,7 +210,7 @@ final readonly class AutoloadBundler implements Bundler
                         $this->filesystem->copy($declarationFile, $declarationFile.'.bak');
                     }
 
-                    if ($config->dropComposerAutoload()) {
+                    if (true === $config->dropComposerAutoload()) {
                         $composerJson = Filesystem\Path::join($this->rootPath, 'composer.json');
 
                         $this->filesystem->copy($composerJson, $composerJson.'.bak');
@@ -235,7 +235,7 @@ PHP;
         );
 
         // Remove autoload section from root composer.json
-        if ($config->dropComposerAutoload()) {
+        if (true === $config->dropComposerAutoload()) {
             $this->taskRunner->run(
                 '✂️ Removing autoload section from composer.json',
                 function () {

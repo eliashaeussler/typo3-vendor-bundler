@@ -37,13 +37,13 @@ final readonly class AutoloadConfig
      * @param list<non-empty-string> $excludeFromClassMap
      */
     public function __construct(
-        private bool $dropComposerAutoload = true,
+        private ?bool $dropComposerAutoload = null,
         private AutoloadTarget $target = new AutoloadTarget(),
-        private bool $backupSources = false,
+        private ?bool $backupSources = null,
         private array $excludeFromClassMap = [],
     ) {}
 
-    public function dropComposerAutoload(): bool
+    public function dropComposerAutoload(): ?bool
     {
         if (Bundler\Entity\Manifest::Composer === $this->target->manifest()) {
             return false;
@@ -57,7 +57,7 @@ final readonly class AutoloadConfig
         return $this->target;
     }
 
-    public function backupSources(): bool
+    public function backupSources(): ?bool
     {
         return $this->backupSources;
     }
