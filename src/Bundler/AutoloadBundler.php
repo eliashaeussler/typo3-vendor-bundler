@@ -291,7 +291,7 @@ PHP;
         $classMap = $this->taskRunner->run(
             '🌱 Building class map from vendor libraries',
             function (SymfonyConsole\Output\OutputInterface $output) {
-                $io = new IO\BufferIO(verbosity: $output->getVerbosity());
+                $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
                 $composer = Factory::create(
                     $io,
                     Filesystem\Path::join($this->librariesPath, 'composer.json'),
