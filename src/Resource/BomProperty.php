@@ -21,27 +21,17 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\RectorConfig\Config\Config;
-use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\ValueObject\PhpVersion;
+namespace EliasHaeussler\Typo3VendorBundler\Resource;
 
-return static function (RectorConfig $rectorConfig): void {
-    Config::create($rectorConfig, PhpVersion::PHP_82)
-        ->in(
-            __DIR__.'/src',
-            __DIR__.'/tests',
-        )
-        ->not(
-            __DIR__.'/tests/src/Fixtures',
-        )
-        ->withPHPUnit()
-        ->withSymfony()
-        ->skip(NullToStrictStringFuncCallArgRector::class, [
-            __DIR__.'/src/Command/BundleAutoloadCommand.php',
-            __DIR__.'/src/Command/BundleDependenciesCommand.php',
-        ])
-        ->apply()
-        ->cacheDirectory('.build/cache/rector')
-    ;
-};
+/**
+ * BomProperty.
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-3.0-or-later
+ */
+enum BomProperty: string
+{
+    case DistReference = 'cdx:composer:package:distReference';
+    case PackageType = 'cdx:composer:package:type';
+    case SourceReference = 'cdx:composer:package:sourceReference';
+}

@@ -16,6 +16,8 @@
 		"composer-plugin-api": "^2.0",
 		"composer": "~2.2.18 || ^2.4",
 		"cuyz/valinor": "^2.0",
+		"cyclonedx/cyclonedx-library": "^3.9",
+		"package-url/packageurl-php": "^1.0",
 		"symfony/console": "^5.4 || ^6.4 || ^7.0 || ^8.0",
 		"symfony/filesystem": "^5.4 || ^6.4 || ^7.0 || ^8.0",
 		"symfony/yaml": "^5.4 || ^6.4 || ^7.0 || ^8.0"
@@ -23,6 +25,7 @@
 	"require-dev": {
 		"armin/editorconfig-cli": "^2.1",
 		"composer/composer": "~2.2.18 || ^2.4",
+		"composer/semver": "^3.0",
 		"eliashaeussler/php-cs-fixer-config": "^3.0",
 		"eliashaeussler/phpstan-config": "^4.0",
 		"eliashaeussler/rector-config": "^4.0",

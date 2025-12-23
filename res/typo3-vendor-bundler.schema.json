@@ -6,6 +6,9 @@
 		"autoload": {
 			"$ref": "#/definitions/autoload"
 		},
+		"dependencies": {
+			"$ref": "#/definitions/dependencies"
+		},
 		"pathToVendorLibraries": {
 			"type": "string",
 			"title": "Absolute or relative path to composer.json where vendor libraries are managed",
@@ -74,6 +77,47 @@
 					"type": "boolean",
 					"title": "Define whether to overwrite the target file, if it already exists",
 					"description": "When enabled, the configured target file will be overwritten with the bundled autoload information, if the file already exists",
+					"default": false
+				}
+			},
+			"additionalProperties": false
+		},
+		"dependencies": {
+			"type": "object",
+			"title": "Set of options used to bundle dependency information",
+			"properties": {
+				"sbom": {
+					"$ref": "#/definitions/sbom"
+				}
+			},
+			"additionalProperties": false
+		},
+		"sbom": {
+			"type": "object",
+			"title": "Set of options used to define SBOM file generation",
+			"properties": {
+				"file": {
+					"type": "string",
+					"title": "File where to write the serialized SBOM",
+					"description": "Can be a JSON or XML file. Relative paths are resolved based on the vendor libraries path.",
+					"default": "sbom.json"
+				},
+				"version": {
+					"type": "string",
+					"title": "CycloneDX BOM version to use",
+					"description": "All BOM versions supported by CycloneDX can be used.",
+					"default": "1.7"
+				},
+				"includeDev": {
+					"type": "boolean",
+					"title": "Define whether to include dev dependencies in the serialized SBOM",
+					"description": "When enabled, all dev dependencies will be included in the generated SBOM. Otherwise, only production dependencies will be included.",
+					"default": true
+				},
+				"overwrite": {
+					"type": "boolean",
+					"title": "Define whether to overwrite the SBOM file, if it already exists",
+					"description": "When enabled, the configured SBOM file will be overwritten with serialized SBOM, if the file already exists.",
 					"default": false
 				}
 			},

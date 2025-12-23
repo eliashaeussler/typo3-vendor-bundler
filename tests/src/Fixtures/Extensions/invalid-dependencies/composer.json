@@ -1,0 +1,6 @@
+{
+	"name": "eliashaeussler/foo",
+	"require": {
+		"eliashaeussler/foo-baz": "*"
+	}
+}

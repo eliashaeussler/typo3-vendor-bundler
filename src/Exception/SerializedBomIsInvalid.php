@@ -21,27 +21,23 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\RectorConfig\Config\Config;
-use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\ValueObject\PhpVersion;
+namespace EliasHaeussler\Typo3VendorBundler\Exception;
 
-return static function (RectorConfig $rectorConfig): void {
-    Config::create($rectorConfig, PhpVersion::PHP_82)
-        ->in(
-            __DIR__.'/src',
-            __DIR__.'/tests',
-        )
-        ->not(
-            __DIR__.'/tests/src/Fixtures',
-        )
-        ->withPHPUnit()
-        ->withSymfony()
-        ->skip(NullToStrictStringFuncCallArgRector::class, [
-            __DIR__.'/src/Command/BundleAutoloadCommand.php',
-            __DIR__.'/src/Command/BundleDependenciesCommand.php',
-        ])
-        ->apply()
-        ->cacheDirectory('.build/cache/rector')
-    ;
-};
+use function sprintf;
+
+/**
+ * SerializedBomIsInvalid.
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-3.0-or-later
+ */
+final class SerializedBomIsInvalid extends Exception
+{
+    public function __construct(string $error)
+    {
+        parent::__construct(
+            sprintf('The generated SBOM is invalid: %s', $error),
+            1766322188,
+        );
+    }
+}

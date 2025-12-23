@@ -21,27 +21,33 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\RectorConfig\Config\Config;
-use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\ValueObject\PhpVersion;
+namespace EliasHaeussler\Typo3VendorBundler\Bundler\Entity;
 
-return static function (RectorConfig $rectorConfig): void {
-    Config::create($rectorConfig, PhpVersion::PHP_82)
-        ->in(
-            __DIR__.'/src',
-            __DIR__.'/tests',
-        )
-        ->not(
-            __DIR__.'/tests/src/Fixtures',
-        )
-        ->withPHPUnit()
-        ->withSymfony()
-        ->skip(NullToStrictStringFuncCallArgRector::class, [
-            __DIR__.'/src/Command/BundleAutoloadCommand.php',
-            __DIR__.'/src/Command/BundleDependenciesCommand.php',
-        ])
-        ->apply()
-        ->cacheDirectory('.build/cache/rector')
-    ;
-};
+use Symfony\Component\Filesystem;
+
+/**
+ * Dependencies.
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-3.0-or-later
+ */
+final readonly class Dependencies extends PathAwareBundle
+{
+    private string $sbomFile;
+
+    public function __construct(string $sbomFile, string $rootPath)
+    {
+        parent::__construct($rootPath);
+
+        $this->sbomFile = $this->convertToAbsolutePath($sbomFile);
+    }
+
+    public function sbomFile(bool $asRelativePath = false): string
+    {
+        if ($asRelativePath) {
+            return Filesystem\Path::makeRelative($this->sbomFile, $this->rootPath);
+        }
+
+        return $this->sbomFile;
+    }
+}
