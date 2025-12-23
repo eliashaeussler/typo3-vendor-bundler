@@ -152,7 +152,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleExcludesFilesFromLibsClassMapInComposerJsonFile(): void
     {
         $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
@@ -185,7 +184,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleExcludesFilesFromLibsClassMapInExtEmConfFile(): void
     {
         $targetFile = $this->getFixturePath('valid').'/ext_emconf_modified.php';
@@ -219,7 +217,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     #[Framework\Attributes\DataProvider('bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMapDataProvider')]
     public function bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMap(
         Src\Config\AutoloadTarget $target,
@@ -241,7 +238,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     #[Framework\Attributes\DataProvider('bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespaceDataProvider')]
     public function bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespace(
         Src\Config\AutoloadTarget $target,
@@ -263,7 +259,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleFlattensSingleValueArrayOfNamespacePathsInComposerJsonFile(): void
     {
         $targetFile = $this->getFixturePath('valid-single-array-namespace-path').'/composer_modified.json';
@@ -290,7 +285,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleFlattensSingleValueArrayOfNamespacePathsInExtEmConfFile(): void
     {
         $targetFile = $this->getFixturePath('valid-single-array-namespace-path').'/ext_emconf_modified.php';
@@ -323,7 +317,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleThrowsExceptionIfTargetComposerJsonFileAlreadyExists(): void
     {
         $targetFile = $this->getFixturePath('valid').'/composer.json';
@@ -345,7 +338,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleThrowsExceptionIfTargetExtEmConfFileAlreadyExists(): void
     {
         $targetFile = $this->getFixturePath('valid').'/ext_emconf.php';
@@ -371,7 +363,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleBacksUpSourceFilesWithComposerAsTarget(): void
     {
         $fixturePath = $this->getFixturePath('valid');
@@ -410,7 +401,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleBacksUpSourceFilesWithExtEmConfAsTarget(): void
     {
         $fixturePath = $this->getFixturePath('valid');
@@ -465,7 +455,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsMergedAutoloadConfigurationWithComposerAsTarget(): void
     {
         $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
@@ -494,7 +483,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsMergedAutoloadConfigurationWithExtEmConfAsTarget(): void
     {
         $targetFile = $this->getFixturePath('valid').'/ext_emconf_modified.php';
@@ -528,7 +516,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleRemovesAutoloadSectionFromRootComposerJson(): void
     {
         $fixturePath = $this->getFixturePath('valid');
