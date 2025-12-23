@@ -3,7 +3,6 @@
 # TYPO3 Vendor Bundler
 
 [![Coverage](https://img.shields.io/coverallsCoverage/github/eliashaeussler/typo3-vendor-bundler?logo=coveralls)](https://coveralls.io/github/eliashaeussler/typo3-vendor-bundler)
-[![Maintainability](https://qlty.sh/badges/74cdd425-7600-478e-9663-8f4aa4806a36/maintainability.svg)](https://qlty.sh/gh/eliashaeussler/projects/typo3-vendor-bundler)
 [![CGL](https://img.shields.io/github/actions/workflow/status/eliashaeussler/typo3-vendor-bundler/cgl.yaml?label=cgl&logo=github)](https://github.com/eliashaeussler/typo3-vendor-bundler/actions/workflows/cgl.yaml)
 [![Tests](https://img.shields.io/github/actions/workflow/status/eliashaeussler/typo3-vendor-bundler/tests.yaml?label=tests&logo=github)](https://github.com/eliashaeussler/typo3-vendor-bundler/actions/workflows/tests.yaml)
 [![Supported PHP Versions](https://img.shields.io/packagist/dependency-v/eliashaeussler/typo3-vendor-bundler/php?logo=php)](https://packagist.org/packages/eliashaeussler/typo3-vendor-bundler)
