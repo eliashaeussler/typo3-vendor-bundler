@@ -29,32 +29,13 @@
 					"description": "When enabled, the configured \"autoload\" section in composer.json will be removed in order to let ext_emconf.php manage all autoload parameters",
 					"default": true
 				},
-				"targetFile": {
-					"type": "string",
-					"title": "File where to bundle autoload configuration",
-					"description": "This is usually the `composer.json` or `ext_emconf.php` file",
-					"default": "composer.json"
-				},
-				"targetManifest": {
-					"type": "string",
-					"enum": [
-						"composer",
-						"extEmConf"
-					],
-					"title": "Target manifest where to bundle autoload configuration",
-					"description": "Can be either \"composer\" (targeting `composer.json` file, default) or \"extEmConf\" (targeting `ext_emconf.php` file)",
-					"default": "composer"
+				"target": {
+					"$ref": "#/definitions/autoloadTarget"
 				},
 				"backupSources": {
 					"type": "boolean",
 					"title": "Define whether to backup source files",
 					"description": "When enabled, original contents of source files, which are to be modified, will be backed up in a separate file",
-					"default": false
-				},
-				"overwriteExistingTargetFile": {
-					"type": "boolean",
-					"title": "Define whether to overwrite the target file, if it already exists",
-					"description": "When enabled, the configured target file will be overwritten with the bundled autoload information, if the file already exists",
 					"default": false
 				},
 				"excludeFromClassMap": {
@@ -65,6 +46,35 @@
 						"type": "string",
 						"minLength": 1
 					}
+				}
+			},
+			"additionalProperties": false
+		},
+		"autoloadTarget": {
+			"type": "object",
+			"title": "Set of options used to define the target for bundled autoload configuration",
+			"properties": {
+				"file": {
+					"type": "string",
+					"title": "File where to bundle autoload configuration",
+					"description": "This is usually the `composer.json` or `ext_emconf.php` file",
+					"default": "composer.json"
+				},
+				"manifest": {
+					"type": "string",
+					"enum": [
+						"composer",
+						"extEmConf"
+					],
+					"title": "Target manifest where to bundle autoload configuration",
+					"description": "Can be either \"composer\" (targeting `composer.json` file, default) or \"extEmConf\" (targeting `ext_emconf.php` file)",
+					"default": "composer"
+				},
+				"overwrite": {
+					"type": "boolean",
+					"title": "Define whether to overwrite the target file, if it already exists",
+					"description": "When enabled, the configured target file will be overwritten with the bundled autoload information, if the file already exists",
+					"default": false
 				}
 			},
 			"additionalProperties": false
