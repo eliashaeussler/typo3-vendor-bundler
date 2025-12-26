@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Config;
 
-use EliasHaeussler\Typo3VendorBundler\Bundler;
-
 /**
  * AutoloadTarget.
  *
@@ -35,28 +33,12 @@ final readonly class AutoloadTarget
 {
     public function __construct(
         private string $file = 'composer.json',
-        private Bundler\Entity\Manifest $manifest = Bundler\Entity\Manifest::Composer,
         private ?bool $overwrite = null,
     ) {}
-
-    public static function composer(string $file = 'composer.json', bool $overwrite = false): self
-    {
-        return new self($file, Bundler\Entity\Manifest::Composer, $overwrite);
-    }
-
-    public static function extEmConf(string $file = 'ext_emconf.php', bool $overwrite = false): self
-    {
-        return new self($file, Bundler\Entity\Manifest::ExtEmConf, $overwrite);
-    }
 
     public function file(): string
     {
         return $this->file;
-    }
-
-    public function manifest(): Bundler\Entity\Manifest
-    {
-        return $this->manifest;
     }
 
     public function overwrite(): ?bool

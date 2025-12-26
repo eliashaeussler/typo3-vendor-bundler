@@ -104,10 +104,10 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 
         // Make sure file exists
-        $this->filesystem->touch($rootPath.'/ext_emconf_modified.php');
+        $this->filesystem->touch($rootPath.'/composer_modified.json');
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/ext_emconf_modified.php'),
+            new Src\Exception\FileAlreadyExists($rootPath.'/composer_modified.json'),
         );
 
         $this->commandTester->execute([
@@ -122,10 +122,10 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 
         // Make sure file exists
-        $this->filesystem->touch($rootPath.'/ext_emconf_modified.php');
+        $this->filesystem->touch($rootPath.'/composer_modified.json');
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/ext_emconf_modified.php'),
+            new Src\Exception\FileAlreadyExists($rootPath.'/composer_modified.json'),
         );
 
         $this->commandTester->execute([
@@ -139,12 +139,12 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 
         // Make sure file exists
-        $this->filesystem->touch($rootPath.'/ext_emconf_modified.php');
+        $this->filesystem->touch($rootPath.'/composer_modified.json');
 
         $this->commandTester->setInputs(['no']);
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/ext_emconf_modified.php'),
+            new Src\Exception\FileAlreadyExists($rootPath.'/composer_modified.json'),
         );
 
         $this->commandTester->execute([
@@ -158,7 +158,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 
         // Clear target file
-        $this->filesystem->dumpFile($rootPath.'/ext_emconf_modified.php', '');
+        $this->filesystem->dumpFile($rootPath.'/composer_modified.json', '{}');
 
         $this->commandTester->setInputs(['yes']);
 
@@ -166,7 +166,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
         ]);
 
-        self::assertStringNotEqualsFile($rootPath.'/ext_emconf_modified.php', '');
+        self::assertJsonStringNotEqualsJsonFile($rootPath.'/composer_modified.json', '{}');
         self::assertStringContainsString(
             'Successfully bundled autoload configurations',
             $this->commandTester->getDisplay(),
@@ -179,7 +179,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
 
         // Clear target file
-        $this->filesystem->dumpFile($rootPath.'/ext_emconf_modified.php', '');
+        $this->filesystem->dumpFile($rootPath.'/composer_modified.json', '{}');
 
         // Set inputs to test if user interaction is *not* triggered
         $this->commandTester->setInputs(['no']);
@@ -189,7 +189,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
             '--overwrite' => true,
         ]);
 
-        self::assertStringNotEqualsFile($rootPath.'/ext_emconf_modified.php', '');
+        self::assertJsonStringNotEqualsJsonFile($rootPath.'/composer_modified.json', '{}');
         self::assertStringContainsString(
             'Successfully bundled autoload configurations',
             $this->commandTester->getDisplay(),
@@ -209,24 +209,6 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
             'libs-dir' => 'foo',
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
         ]);
-    }
-
-    #[Framework\Attributes\Test]
-    public function executeUsesDropComposerAutoloadOptionFromCommandOption(): void
-    {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
-
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--drop-composer-autoload' => true,
-            '--overwrite' => true,
-        ]);
-
-        self::assertJsonStringEqualsJsonFile($rootPath.'/composer.json', '{}');
     }
 
     #[Framework\Attributes\Test]
@@ -259,12 +241,11 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
 
         $this->filesystem->remove($rootPath);
         $this->filesystem->mirror($sourcePath, $rootPath);
-        $this->filesystem->remove([$rootPath.'/composer.json.bak', $rootPath.'/ext_emconf.php.bak']);
+        $this->filesystem->remove($rootPath.'/composer.json.bak');
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--drop-composer-autoload' => true,
-            '--target-file' => 'ext_emconf.php',
+            '--target-file' => 'composer.json',
             '--backup-sources' => false,
             '--overwrite' => true,
         ]);

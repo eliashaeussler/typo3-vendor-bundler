@@ -26,12 +26,6 @@
 			"type": "object",
 			"title": "Set of options used to bundle autoload configuration",
 			"properties": {
-				"dropComposerAutoload": {
-					"type": "boolean",
-					"title": "Define whether to drop \"autoload\" section in composer.json",
-					"description": "When enabled, the configured \"autoload\" section in composer.json will be removed in order to let ext_emconf.php manage all autoload parameters",
-					"default": true
-				},
 				"target": {
 					"$ref": "#/definitions/autoloadTarget"
 				},
@@ -62,16 +56,6 @@
 					"title": "File where to bundle autoload configuration",
 					"description": "This is usually the `composer.json` or `ext_emconf.php` file",
 					"default": "composer.json"
-				},
-				"manifest": {
-					"type": "string",
-					"enum": [
-						"composer",
-						"extEmConf"
-					],
-					"title": "Target manifest where to bundle autoload configuration",
-					"description": "Can be either \"composer\" (targeting `composer.json` file, default) or \"extEmConf\" (targeting `ext_emconf.php` file)",
-					"default": "composer"
 				},
 				"overwrite": {
 					"type": "boolean",
