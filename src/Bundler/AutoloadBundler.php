@@ -153,7 +153,6 @@ final readonly class AutoloadBundler implements Bundler
                 Filesystem\Path::join($this->rootPath, 'composer.json'),
                 $this->rootPath,
             ),
-            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
     }
 
@@ -203,7 +202,6 @@ final readonly class AutoloadBundler implements Bundler
 
                 return new Entity\ClassMap($classMap, $classMapFile, $this->rootPath);
             },
-            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
         // Drop excluded files from class map
@@ -277,7 +275,6 @@ final readonly class AutoloadBundler implements Bundler
                 /* @phpstan-ignore argument.type */
                 return new Entity\Psr4Namespaces($namespaces, $filename, $this->rootPath);
             },
-            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
     }
 
