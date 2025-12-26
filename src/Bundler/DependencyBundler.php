@@ -162,7 +162,6 @@ final readonly class DependencyBundler implements Bundler
                     throw new Exception\SerializedBomIsInvalid($error->getMessage());
                 }
             },
-            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
         // Dump serialized SBOM
