@@ -15,9 +15,7 @@ $autoloadBundler = new Typo3VendorBundler\Bundler\AutoloadBundler(
     $librariesPath,
     new \Symfony\Component\Console\Output\ConsoleOutput(),
 );
-$autoloadBundle = $autoloadBundler->bundle(
-    Typo3VendorBundler\Config\AutoloadTarget::composer(),
-);
+$autoloadBundle = $autoloadBundler->bundle();
 
 // Display results
 echo 'Autoload configuration was bundled and dumped to '.$autoloadBundle->filename();

@@ -59,26 +59,10 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         );
 
         $this->addOption(
-            'drop-composer-autoload',
-            'a',
-            Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
-            'Drop "autoload" section in composer.json',
-        );
-        $this->addOption(
             'target-file',
             't',
             Console\Input\InputOption::VALUE_REQUIRED,
             'File where to dump the generated classmap',
-        );
-        $this->addOption(
-            'target-manifest',
-            'm',
-            Console\Input\InputOption::VALUE_REQUIRED,
-            sprintf(
-                'Manifest which decides how to dump bundled autoload configuration (can be "%s" or "%s")',
-                Bundler\Entity\Manifest::Composer->value,
-                Bundler\Entity\Manifest::ExtEmConf->value,
-            ),
         );
         $this->addOption(
             'backup-sources',
@@ -112,9 +96,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
 
         $rootPath = $config->rootPath() ?? $rootPath;
         $libsDir = $input->getArgument('libs-dir') ?? $config->pathToVendorLibraries();
-        $dropComposerAutoload = $input->getOption('drop-composer-autoload') ?? $config->autoload()->dropComposerAutoload() ?? true;
         $targetFile = $input->getOption('target-file') ?? $config->autoload()->target()->file();
-        $targetManifest = Bundler\Entity\Manifest::tryFrom((string) $input->getOption('target-manifest')) ?? $config->autoload()->target()->manifest();
         $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources() ?? false;
         $overwrite = $input->getOption('overwrite') ?? $config->autoload()->target()->overwrite() ?? false;
         $excludeFromClassMap = $config->autoload()->excludeFromClassMap();
@@ -129,8 +111,8 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         $autoloadBundler = new Bundler\AutoloadBundler($rootPath, $libsDir, $this->io);
 
         try {
-            $target = new Config\AutoloadTarget($targetFile, $targetManifest, $overwrite);
-            $autoload = $autoloadBundler->bundle($target, $dropComposerAutoload, $backupSources, $excludeFromClassMap);
+            $target = new Config\AutoloadTarget($targetFile, $overwrite);
+            $autoload = $autoloadBundler->bundle($target, $backupSources, $excludeFromClassMap);
         } catch (Exception\FileAlreadyExists $exception) {
             if (false === $input->getOption('overwrite')
                 || !$this->io->confirm('Target file already exists. Overwrite file?', false)
@@ -138,8 +120,8 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
                 throw $exception;
             }
 
-            $target = new Config\AutoloadTarget($targetFile, $targetManifest, true);
-            $autoload = $autoloadBundler->bundle($target, $dropComposerAutoload, $backupSources, $excludeFromClassMap);
+            $target = new Config\AutoloadTarget($targetFile, true);
+            $autoload = $autoloadBundler->bundle($target, $backupSources, $excludeFromClassMap);
         }
 
         $this->io->success(

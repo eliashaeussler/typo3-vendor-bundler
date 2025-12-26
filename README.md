@@ -34,7 +34,6 @@ Add a `typo3-vendor-bundler.yaml` config file:
 autoload:
   target:
     file: 'composer.json'
-    manifest: 'composer'
     overwrite: true
   backupSources: false
   excludeFromClassMap:

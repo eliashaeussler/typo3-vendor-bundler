@@ -1,8 +1,6 @@
 autoload:
-  dropComposerAutoload: false
   target:
-    file: 'ext_emconf_modified.php'
-    manifest: 'extEmConf'
+    file: 'composer_modified.json'
     overwrite: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'

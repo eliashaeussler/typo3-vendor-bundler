@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Config;
 
-use EliasHaeussler\Typo3VendorBundler\Bundler;
-
 /**
  * AutoloadConfig.
  *
@@ -37,20 +35,10 @@ final readonly class AutoloadConfig
      * @param list<non-empty-string> $excludeFromClassMap
      */
     public function __construct(
-        private ?bool $dropComposerAutoload = null,
         private AutoloadTarget $target = new AutoloadTarget(),
         private ?bool $backupSources = null,
         private array $excludeFromClassMap = [],
     ) {}
-
-    public function dropComposerAutoload(): ?bool
-    {
-        if (Bundler\Entity\Manifest::Composer === $this->target->manifest()) {
-            return false;
-        }
-
-        return $this->dropComposerAutoload;
-    }
 
     public function target(): AutoloadTarget
     {
