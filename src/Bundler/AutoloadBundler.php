@@ -26,10 +26,10 @@ namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO;
+use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Config;
-use EliasHaeussler\Typo3VendorBundler\Console;
 use EliasHaeussler\Typo3VendorBundler\Exception;
-use Symfony\Component\Console as SymfonyConsole;
+use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
 
@@ -60,7 +60,7 @@ use function sprintf;
 final readonly class AutoloadBundler implements Bundler
 {
     private Filesystem\Filesystem $filesystem;
-    private Console\Output\TaskRunner $taskRunner;
+    private TaskRunner\TaskRunner $taskRunner;
     private string $librariesPath;
 
     /**
@@ -69,10 +69,10 @@ final readonly class AutoloadBundler implements Bundler
     public function __construct(
         private string $rootPath,
         string $librariesPath,
-        private SymfonyConsole\Output\OutputInterface $output,
+        private Console\Output\OutputInterface $output,
     ) {
         $this->filesystem = new Filesystem\Filesystem();
-        $this->taskRunner = new Console\Output\TaskRunner($this->output);
+        $this->taskRunner = new TaskRunner\TaskRunner($this->output);
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
 
         if (!is_dir($this->librariesPath)) {
@@ -165,7 +165,8 @@ final readonly class AutoloadBundler implements Bundler
     {
         $classMap = $this->taskRunner->run(
             '🌱 Building class map from vendor libraries',
-            function (SymfonyConsole\Output\OutputInterface $output) {
+            function (TaskRunner\RunnerContext $context) {
+                $output = $context->output;
                 $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
                 $composer = Factory::create(
                     $io,
@@ -180,7 +181,7 @@ final readonly class AutoloadBundler implements Bundler
                     ->setOptimizeAutoloader(true)
                     ->run();
 
-                if (SymfonyConsole\Command\Command::SUCCESS !== $installResult) {
+                if (Console\Command\Command::SUCCESS !== $installResult) {
                     $output->writeln($io->getOutput());
 
                     throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
@@ -210,16 +211,16 @@ final readonly class AutoloadBundler implements Bundler
                 $fullPath = Filesystem\Path::join($this->librariesPath, $path);
                 $classMap = $this->taskRunner->run(
                     sprintf('⛔ Removing "%s" from class map', $path),
-                    function (SymfonyConsole\Output\OutputInterface $output, bool &$successful) use ($classMap, $fullPath) {
+                    function (TaskRunner\RunnerContext $context) use ($classMap, $fullPath) {
                         if (!$classMap->has($fullPath)) {
-                            $successful = false;
+                            $context->markAsFailed();
 
                             return $classMap;
                         }
 
                         return $classMap->remove($fullPath);
                     },
-                    SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
+                    Console\Output\OutputInterface::VERBOSITY_VERBOSE,
                 );
             }
         }

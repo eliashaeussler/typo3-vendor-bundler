@@ -28,10 +28,10 @@ use Composer\Factory;
 use Composer\Installer;
 use Composer\IO;
 use CycloneDX\Core;
-use EliasHaeussler\Typo3VendorBundler\Console;
+use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Resource;
-use Symfony\Component\Console as SymfonyConsole;
+use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
 
@@ -47,7 +47,7 @@ final readonly class DependencyBundler implements Bundler
 {
     private Resource\BomGenerator $bomGenerator;
     private Filesystem\Filesystem $filesystem;
-    private Console\Output\TaskRunner $taskRunner;
+    private TaskRunner\TaskRunner $taskRunner;
     private string $librariesPath;
 
     /**
@@ -56,11 +56,11 @@ final readonly class DependencyBundler implements Bundler
     public function __construct(
         private string $rootPath,
         string $librariesPath,
-        private SymfonyConsole\Output\OutputInterface $output,
+        private Console\Output\OutputInterface $output,
     ) {
         $this->bomGenerator = new Resource\BomGenerator($this->rootPath);
         $this->filesystem = new Filesystem\Filesystem();
-        $this->taskRunner = new Console\Output\TaskRunner($this->output);
+        $this->taskRunner = new TaskRunner\TaskRunner($this->output);
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
 
         if (!is_dir($this->librariesPath)) {
@@ -116,7 +116,8 @@ final readonly class DependencyBundler implements Bundler
     {
         return $this->taskRunner->run(
             '📦 Installing vendor libraries',
-            function (SymfonyConsole\Output\OutputInterface $output) use ($includeDevDependencies) {
+            function (TaskRunner\RunnerContext $context) use ($includeDevDependencies) {
+                $output = $context->output;
                 $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
                 $composer = Factory::create(
                     $io,
@@ -127,7 +128,7 @@ final readonly class DependencyBundler implements Bundler
                     ->setDevMode($includeDevDependencies)
                     ->run();
 
-                if (SymfonyConsole\Command\Command::SUCCESS !== $installResult) {
+                if (Console\Command\Command::SUCCESS !== $installResult) {
                     $output->writeln($io->getOutput());
 
                     throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
@@ -148,7 +149,7 @@ final readonly class DependencyBundler implements Bundler
         $serialized = $this->taskRunner->run(
             '🌱 Serializing generated SBOM',
             static fn () => $format->createSerializer($version)->serialize($bom),
-            SymfonyConsole\Output\OutputInterface::VERBOSITY_VERBOSE,
+            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
 
         // Validate serialized SBOM
