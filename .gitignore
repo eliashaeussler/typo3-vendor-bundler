@@ -5,6 +5,5 @@
 /tests/src/Fixtures/Extensions/*/libs/sbom_generated.json
 /tests/src/Fixtures/Extensions/*/composer.json.bak
 /tests/src/Fixtures/Extensions/*/composer_modified.json
-/tests/src/Fixtures/Extensions/*/ext_emconf.php.bak
 /tests/src/Fixtures/Extensions/valid-temporary
 /vendor/

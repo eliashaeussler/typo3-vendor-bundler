@@ -54,7 +54,7 @@
 				"file": {
 					"type": "string",
 					"title": "File where to bundle autoload configuration",
-					"description": "This is usually the `composer.json` or `ext_emconf.php` file",
+					"description": "This is usually the root `composer.json` file of an extension",
 					"default": "composer.json"
 				},
 				"overwrite": {
