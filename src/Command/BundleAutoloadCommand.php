@@ -50,7 +50,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
     {
         parent::configure();
 
-        $this->setDescription('Bundle autoloader for vendor libraries in composer.json or ext_emconf.php');
+        $this->setDescription('Bundle autoloader for vendor libraries in composer.json');
 
         $this->addArgument(
             'libs-dir',

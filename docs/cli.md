@@ -17,7 +17,8 @@ working directory.
 
 ## [`bundle-autoload`](../src/Command/BundleAutoloadCommand.php)
 
-Bundles autoloader for vendor libraries in `composer.json` or `ext_emconf.php`.
+Bundles autoloader for vendor libraries in `composer.json` file of
+the extension.
 
 ```bash
 composer bundle-autoload \
@@ -56,7 +57,7 @@ debugging and testing purposes.
 
 ### `-b|--[no-]backup-sources`
 
-Define whether to backup source files (normally `composer.json` and `ext_emconf.php`).
+Define whether to backup source files (normally the root `composer.json` file of the extension).
 When enabled, original contents of source files, which are to be modified, will be backed
 up in a separate file. If no contents would be modified, no backup files will be
 generated.
