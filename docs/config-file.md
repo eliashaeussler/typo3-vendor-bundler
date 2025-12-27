@@ -41,6 +41,9 @@ return new Typo3VendorBundler\Config\Typo3VendorBundlerConfig(
             includeDev: false,
         ),
     ),
+    dependencyExtraction: new Typo3VendorBundler\Config\DependencyExtractionConfig(
+        enabled: true,
+    ),
     pathToVendorLibraries: 'Build/Libraries',
 );
 ```

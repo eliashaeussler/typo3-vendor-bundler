@@ -21,32 +21,28 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace EliasHaeussler\Typo3VendorBundler\Exception;
-
-use Throwable;
-
-use function sprintf;
+namespace EliasHaeussler\Typo3VendorBundler\Config;
 
 /**
- * DeclarationFileIsInvalid.
+ * DependencyExtractionConfig.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class DeclarationFileIsInvalid extends Exception
+final readonly class DependencyExtractionConfig
 {
-    public function __construct(string $file, ?string $invalidPath = null, ?Throwable $previous = null)
+    public function __construct(
+        private ?bool $enabled = null,
+        private ?bool $failOnProblems = null,
+    ) {}
+
+    public function enabled(): ?bool
     {
-        $additional = '';
+        return $this->enabled;
+    }
 
-        if (null !== $invalidPath) {
-            $additional .= sprintf(' Invalid configuration path: %s', $invalidPath);
-        }
-
-        parent::__construct(
-            sprintf('The declaration file "%s" does not contain a valid configuration structure.%s', $file, $additional),
-            1750143303,
-            $previous,
-        );
+    public function failOnProblems(): ?bool
+    {
+        return $this->failOnProblems;
     }
 }

@@ -29,6 +29,7 @@ use PHPUnit\Framework;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 
+use function chdir;
 use function dirname;
 
 /**
@@ -82,20 +83,30 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesConfigurationOptionsIfNoCommandOptionsAreGiven(): void
     {
         $workingDirectory = getcwd();
+        $temporaryDirectory = dirname(__DIR__, 3).'/.build/tests';
 
         self::assertIsString($workingDirectory);
 
-        $libsDir = $workingDirectory.'/Resources/Private/Libs';
+        // Prepare temporary directory
+        $this->filesystem->remove($temporaryDirectory);
+        $this->filesystem->dumpFile($temporaryDirectory.'/composer.json', '{}');
+
+        // Switch to temporary directory to avoid interference with other tests
+        chdir($temporaryDirectory);
 
         // Exception is intended, it shows that default config options are used
         $this->expectExceptionObject(
-            new Src\Exception\DirectoryDoesNotExist($libsDir),
+            new Src\Exception\FileAlreadyExists($temporaryDirectory.'/composer.json'),
         );
 
         $this->commandTester->execute([]);
+
+        // Go back to initial directory
+        chdir($workingDirectory);
     }
 
     #[Framework\Attributes\Test]
@@ -208,6 +219,7 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
         $this->commandTester->execute([
             'libs-dir' => 'foo',
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
+            '--extract' => false,
         ]);
     }
 

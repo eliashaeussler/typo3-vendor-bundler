@@ -45,14 +45,14 @@ use function is_dir;
  */
 final readonly class DependencyBundler implements Bundler
 {
+    use CanExtractDependencies;
+
     private Resource\BomGenerator $bomGenerator;
     private Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
+    private Resource\DependencyExtractor $dependencyExtractor;
     private string $librariesPath;
 
-    /**
-     * @throws Exception\DirectoryDoesNotExist
-     */
     public function __construct(
         private string $rootPath,
         string $librariesPath,
@@ -61,11 +61,8 @@ final readonly class DependencyBundler implements Bundler
         $this->bomGenerator = new Resource\BomGenerator($this->rootPath);
         $this->filesystem = new Filesystem\Filesystem();
         $this->taskRunner = new TaskRunner\TaskRunner($this->output);
+        $this->dependencyExtractor = new Resource\DependencyExtractor();
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
-
-        if (!is_dir($this->librariesPath)) {
-            throw new Exception\DirectoryDoesNotExist($this->librariesPath);
-        }
     }
 
     /**
@@ -77,6 +74,8 @@ final readonly class DependencyBundler implements Bundler
     public function bundle(
         string $filename = 'sbom.json',
         Core\Spec\Version $version = Core\Spec\Version::v1dot7,
+        bool $extractDependencies = true,
+        bool $failOnExtractionProblems = true,
         bool $includeDevDependencies = true,
         bool $overwrite = false,
     ): Entity\Dependencies {
@@ -85,6 +84,13 @@ final readonly class DependencyBundler implements Bundler
         // Validate file format
         if (!$format->supports($version)) {
             throw new Exception\BomFormatIsNotSupported($format, $version);
+        }
+
+        // Extract vendor libraries from root package if necessary
+        if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
+            $this->extractVendorLibrariesFromRootPackage($this->buildRootComposerInstance(), $failOnExtractionProblems);
+        } elseif (!is_dir($this->librariesPath)) {
+            throw new Exception\DirectoryDoesNotExist($this->librariesPath);
         }
 
         // Resolve filename
@@ -176,5 +182,19 @@ final readonly class DependencyBundler implements Bundler
                 }
             },
         );
+    }
+
+    /**
+     * @throws Exception\DeclarationFileIsInvalid
+     */
+    private function buildRootComposerInstance(): Composer
+    {
+        $configFile = Filesystem\Path::join($this->rootPath, 'composer.json');
+
+        try {
+            return Factory::create(new IO\NullIO(), $configFile);
+        } catch (Throwable $exception) {
+            throw new Exception\DeclarationFileIsInvalid($configFile, previous: $exception);
+        }
     }
 }

@@ -1,0 +1,6 @@
+{
+	"require": {
+		"eliashaeussler/sssseee": "*",
+		"typo3/cms-core": "*"
+	}
+}

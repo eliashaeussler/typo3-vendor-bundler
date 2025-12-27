@@ -85,6 +85,18 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
             Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
             'Force overwriting the given SBOM file, if it already exists',
         );
+        $this->addOption(
+            'extract',
+            'x',
+            Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
+            'Auto-detect and extract vendor libraries from root composer.json',
+        );
+        $this->addOption(
+            'fail',
+            null,
+            Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
+            'Fail execution if dependency extraction finishes with problems',
+        );
     }
 
     /**
@@ -105,6 +117,8 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
 
         $rootPath = $config->rootPath() ?? $rootPath;
         $libsDir = $input->getArgument('libs-dir') ?? $config->pathToVendorLibraries();
+        $extract = $input->getOption('extract') ?? $config->dependencyExtraction()->enabled() ?? true;
+        $fail = $input->getOption('fail') ?? $config->dependencyExtraction()->failOnProblems() ?? true;
         $sbomFile = $input->getOption('sbom-file') ?? $config->dependencies()->sbom()->file();
         $includeDev = $input->getOption('dev') ?? $config->dependencies()->sbom()->includeDev() ?? true;
         $overwrite = $input->getOption('overwrite') ?? $config->dependencies()->sbom()->overwrite() ?? false;
@@ -133,7 +147,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
         $dependencyBundler = new Bundler\DependencyBundler($rootPath, $libsDir, $this->io);
 
         try {
-            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $includeDev, $overwrite);
+            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $extract, $fail, $includeDev, $overwrite);
         } catch (Exception\FileAlreadyExists $exception) {
             if (false === $input->getOption('overwrite')
                 || !$this->io->confirm('SBOM file already exists. Overwrite file?', false)
@@ -141,7 +155,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
                 throw $exception;
             }
 
-            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $includeDev, true);
+            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $extract, $fail, $includeDev, true);
         }
 
         $this->io->success(

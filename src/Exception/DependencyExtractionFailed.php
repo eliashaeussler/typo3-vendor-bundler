@@ -23,30 +23,36 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Exception;
 
-use Throwable;
-
+use function array_map;
+use function implode;
 use function sprintf;
 
 /**
- * DeclarationFileIsInvalid.
+ * DependencyExtractionFailed.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class DeclarationFileIsInvalid extends Exception
+final class DependencyExtractionFailed extends Exception
 {
-    public function __construct(string $file, ?string $invalidPath = null, ?Throwable $previous = null)
+    /**
+     * @param non-empty-list<string> $problems
+     */
+    public function __construct(array $problems)
     {
-        $additional = '';
-
-        if (null !== $invalidPath) {
-            $additional .= sprintf(' Invalid configuration path: %s', $invalidPath);
-        }
-
         parent::__construct(
-            sprintf('The declaration file "%s" does not contain a valid configuration structure.%s', $file, $additional),
-            1750143303,
-            $previous,
+            sprintf(
+                'Failed to extract some dependencies from composer.json file:%s%s',
+                PHP_EOL,
+                implode(
+                    PHP_EOL,
+                    array_map(
+                        static fn (string $problem) => sprintf(' * %s', $problem),
+                        $problems,
+                    ),
+                ),
+            ),
+            1766868664,
         );
     }
 }

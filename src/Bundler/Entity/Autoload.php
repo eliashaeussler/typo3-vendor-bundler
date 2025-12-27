@@ -46,16 +46,24 @@ final readonly class Autoload implements Bundle
 
     /**
      * @return array{
-     *     classmap: list<string>,
-     *     psr-4: array<string, string>,
+     *     classmap?: list<string>,
+     *     psr-4?: array<string, string>,
      * }
      */
     public function toArray(bool $useRelativePaths = false): array
     {
-        return [
-            'classmap' => $this->classMap->toArray($useRelativePaths),
-            'psr-4' => $this->psr4Namespaces->toArray($useRelativePaths),
-        ];
+        $autoload = [];
+        $classMap = $this->classMap->toArray($useRelativePaths);
+        $psr4Namespaces = $this->psr4Namespaces->toArray($useRelativePaths);
+
+        if ([] !== $classMap) {
+            $autoload['classmap'] = $classMap;
+        }
+        if ([] !== $psr4Namespaces) {
+            $autoload['psr-4'] = $psr4Namespaces;
+        }
+
+        return $autoload;
     }
 
     public function filename(bool $asRelativePath = false): string

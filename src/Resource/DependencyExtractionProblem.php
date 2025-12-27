@@ -21,32 +21,26 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace EliasHaeussler\Typo3VendorBundler\Exception;
-
-use Throwable;
-
-use function sprintf;
+namespace EliasHaeussler\Typo3VendorBundler\Resource;
 
 /**
- * DeclarationFileIsInvalid.
+ * DependencyExtractionProblem.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class DeclarationFileIsInvalid extends Exception
+enum DependencyExtractionProblem
 {
-    public function __construct(string $file, ?string $invalidPath = null, ?Throwable $previous = null)
+    case NoMatchingVersionFound;
+    case RequirementNotResolvable;
+
+    public function describe(string $packageName): string
     {
-        $additional = '';
+        $pattern = match ($this) {
+            self::NoMatchingVersionFound => 'Could not find a matching version for the Composer package "%s".',
+            self::RequirementNotResolvable => 'Could not resolve a dedicated Composer package for the requirement "%s".',
+        };
 
-        if (null !== $invalidPath) {
-            $additional .= sprintf(' Invalid configuration path: %s', $invalidPath);
-        }
-
-        parent::__construct(
-            sprintf('The declaration file "%s" does not contain a valid configuration structure.%s', $file, $additional),
-            1750143303,
-            $previous,
-        );
+        return sprintf($pattern, $packageName);
     }
 }
