@@ -58,6 +58,23 @@ management tools to perform the following steps:
 5. Find best matching version for collected vendor libraries and apply it as
    version constraint to the resulting `composer.json` file.
 
+## Error Handling
+
+During dependency extraction, problems may occur when dealing with package
+resolving. Once extraction is done, these problems can be looked up. Bundlers
+can also be configured to fail on extraction errors.
+
+Add the following configuration to your `typo3-vendor-bundler.yaml` configuration
+file, if bundling should fail on extraction errors:
+
+```yaml
+dependencyExtraction:
+  failOnProblems: true
+```
+
+You can also use the command option `--fail` for all supported commands, e.g.
+`composer bundle-autoload --fail` or `composer bundle-dependencies --fail`.
+
 ## Example
 
 Given the following root `composer.json` file:
