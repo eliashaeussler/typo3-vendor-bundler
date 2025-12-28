@@ -5,6 +5,10 @@ preparations before uploading an extension to
 [TYPO3 Extension Repository (TER)](https://extensions.typo3.org/). This mostly
 happens in an automated way using Continuous Integration (CI).
 
+> [!NOTE]
+> The following examples assume you require the `eliashaeussler/typo3-vendor-bundler`
+> package in the `composer.json` file of your extension.
+
 ## GitHub Actions
 
 Assuming you have a single release workflow called `release.yaml`, you can
@@ -28,18 +32,31 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.3
-          tools: composer:v2, eliashaeussler/typo3-vendor-bundler, typo3/tailor
+          php-version: 8.5
+          tools: composer:v2, typo3/tailor
           coverage: none
 
-      - name: Cleanup files
-        run: git reset --hard HEAD && git clean -fx
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
 
       - name: Bundle vendor libraries
-        run: composer bundle
+        run: composer bundle -v
+
+      - name: Stash bundled files
+        run: |
+          git add -f Resources/Private/Libs
+          git stash push -- composer.json Resources/Private/Libs
+
+      - name: Reset files
+        run: git reset --hard HEAD && git clean -dfx
+
+      - name: Restore bundled files
+        run: git stash pop
 
       - name: Publish to TER
-        run: ~/.composer/vendor/bin/tailor ter:publish "${{ github.ref_name }}" "${{ secrets.TYPO3_EXTENSION_KEY }}"
+        run: |
+          ~/.composer/vendor/bin/tailor set-version "${{ github.ref_name }}"
+          ~/.composer/vendor/bin/tailor ter:publish "${{ github.ref_name }}" "${{ secrets.TYPO3_EXTENSION_KEY }}"
 ```
 
 ## GitLab CI
@@ -56,15 +73,23 @@ release:
   rules:
     - if: '$CI_COMMIT_TAG'
   script:
-    # Require libraries
-    - composer global require eliashaeussler/typo3-vendor-bundler typo3/tailor
-
-    # Cleanup files
-    - git reset --hard HEAD && git clean -fx
+    # Install Composer dependencies
+    - composer install
 
     # Bundle vendor libraries
     - composer bundle
 
+    # Stash bundled files
+    - git add -f Resources/Private/Libs
+    - git stash push -- composer.json Resources/Private/Libs
+
+    # Reset files
+    - git reset --hard HEAD && git clean -dfx
+
+    # Restore bundled files
+    - git stash pop
+
     # Publish to TER
+    - /tmp/vendor/bin/tailor set-version "$CI_COMMIT_TAG"
     - /tmp/vendor/bin/tailor ter:publish "$CI_COMMIT_TAG" "$TYPO3_EXTENSION_KEY"
 ```
