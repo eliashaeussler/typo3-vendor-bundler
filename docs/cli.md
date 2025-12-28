@@ -83,7 +83,7 @@ Auto-detect and extract vendor libraries from root `composer.json`.
 > If omitted, the `autoload.dependencyExtraction.enabled` option from the config file will be
 > used instead.
 
-### `---[no-]fail`
+### `--[no-]fail`
 
 Fail execution if dependency extraction finishes with problems.
 
@@ -166,7 +166,7 @@ Auto-detect and extract vendor libraries from root `composer.json`.
 > If omitted, the `autoload.dependencyExtraction.enabled` option from the config file will be
 > used instead.
 
-### `---[no-]fail`
+### `--[no-]fail`
 
 Fail execution if dependency extraction finishes with problems.
 

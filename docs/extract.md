@@ -70,8 +70,8 @@ Given the following root `composer.json` file:
         "php": "^8.2",
         "eliashaeussler/cache-warmup": "^5.0",
         "eliashaeussler/sse": "^2.0",
-        "typo3/cms-backend": "^13.4 || 14.3",
-        "typo3/cms-core": "^13.4 || 14.3"
+        "typo3/cms-backend": "^13.4 || ^14.3",
+        "typo3/cms-core": "^13.4 || ^14.3"
     }
 }
 ```
