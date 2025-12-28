@@ -174,6 +174,58 @@ Fail execution if dependency extraction finishes with problems.
 > If omitted, the `autoload.dependencyExtraction.failOnProblems` option from the config file
 > will be used instead.
 
+## [`extract-dependencies`](../src/Command/ExtractDependenciesCommand.php)
+
+Extracts dependencies from root `composer.json` file and optionally prints or writes
+the corresponding `composer.json` file. This can be useful for debugging, especially
+when testing the behavior of bundlers in case automatic dependency extraction is enabled.
+
+```bash
+composer extract-dependencies \
+    [<libs-dir>] \
+    [-c|--config CONFIG] \
+    [-f|--[no-]fail] \
+    [-p|--print-file-contents] \
+    [-w|--dump-to-file]
+```
+
+Pass the following options to the console command:
+
+### `<libs-dir>`
+
+Absolute or relative path to `composer.json` where vendor libraries are managed.
+This is usually a separate `composer.json` file which requires and prepares all
+vendor libraries for use in classic mode.
+
+> [!NOTE]
+> If omitted, the `pathToVendorLibraries` option from the config file will be
+> used instead. If no config file is available, the command will fail.
+
+### `-c|--config`
+
+Path to [config file](config-file), defaults to auto-detection in current
+working directory.
+
+### `-f|--[no-]fail`
+
+Fail execution if dependency extraction finishes with problems.
+
+> [!NOTE]
+> If omitted, the `autoload.dependencyExtraction.failOnProblems` option from the config file
+> will be used instead.
+
+### `p|--print-file-contents`
+
+Display the file contents of a `composer.json` file which contains extracted
+dependencies as well as excluded libraries. This can be useful for debugging,
+because it does not write any files to disk.
+
+### `-w|--dump-to-file`
+
+Dump extracted dependencies to a `composer.json` file in the path to vendor
+libraries. Use this option to prepare (and optionally commit) a `composer.json`
+file with the extracted dependencies, useable for further bundling.
+
 ## [`validate-bundler-config`](../src/Command/ValidateBundlerConfigCommand.php)
 
 Checks if the given bundler configuration is valid.

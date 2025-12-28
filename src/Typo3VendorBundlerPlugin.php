@@ -56,6 +56,7 @@ final readonly class Typo3VendorBundlerPlugin implements Plugin\PluginInterface,
             ]),
             $bundleAutoloadCommand,
             $bundleDependenciesCommand,
+            new Command\ExtractDependenciesCommand(),
             new Command\ValidateBundlerConfigCommand(),
         ];
     }

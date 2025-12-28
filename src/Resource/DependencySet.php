@@ -27,7 +27,9 @@ use Composer\Composer;
 use Composer\Factory;
 use Composer\IO;
 use Composer\Package;
+use EliasHaeussler\Typo3VendorBundler\Exception;
 use Symfony\Component\Filesystem;
+use Throwable;
 
 use function is_array;
 use function ksort;
@@ -99,13 +101,24 @@ final readonly class DependencySet
         return $messages;
     }
 
-    public function dumpToFile(string $composerJson, ?Composer $origin = null): void
+    /**
+     * @throws Exception\DeclarationFileIsInvalid
+     */
+    public function dumpToFile(string $filename, ?Composer $origin = null): void
     {
-        // Make sure composer.json file exists
         $filesystem = new Filesystem\Filesystem();
-        $filesystem->dumpFile($composerJson, '{}');
 
-        $composer = Factory::create(new IO\NullIO(), $composerJson);
+        // Make sure composer.json file exists
+        if (!$filesystem->exists($filename)) {
+            $filesystem->dumpFile($filename, '{}');
+        }
+
+        try {
+            $composer = Factory::create(new IO\NullIO(), $filename);
+        } catch (Throwable $exception) {
+            throw new Exception\DeclarationFileIsInvalid($filename, previous: $exception);
+        }
+
         $name = $origin?->getPackage()->getName() ?? '';
 
         if (!str_contains($name, '/')) {

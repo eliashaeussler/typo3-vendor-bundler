@@ -78,7 +78,7 @@ final class DependencyBundlerTest extends Framework\TestCase
         $output = $this->output->fetch();
 
         self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
-        self::assertStringContainsString('✍️ Creating temporary composer.json file for extracted vendor libraries... Done', $output);
+        self::assertStringContainsString('✍️ Creating composer.json file for extracted vendor libraries... Done', $output);
 
         $actual = $this->parseComposerJson($librariesPath.'/composer.json');
         $requires = $actual->getRequires();

@@ -40,6 +40,7 @@ return static function (RectorConfig $rectorConfig): void {
         ->skip(NullToStrictStringFuncCallArgRector::class, [
             __DIR__.'/src/Command/BundleAutoloadCommand.php',
             __DIR__.'/src/Command/BundleDependenciesCommand.php',
+            __DIR__.'/src/Command/ExtractDependenciesCommand.php',
         ])
         ->apply()
         ->cacheDirectory('.build/cache/rector')
