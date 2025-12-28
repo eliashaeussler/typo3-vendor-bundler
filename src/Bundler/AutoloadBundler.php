@@ -23,12 +23,14 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
+use Composer\Composer;
 use Composer\Factory;
 use Composer\Installer;
 use Composer\IO;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Config;
 use EliasHaeussler\Typo3VendorBundler\Exception;
+use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
@@ -59,12 +61,16 @@ use function sprintf;
  */
 final readonly class AutoloadBundler implements Bundler
 {
+    use CanExtractDependencies;
+
     private Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
+    private Resource\DependencyExtractor $dependencyExtractor;
+    private Composer $rootComposer;
     private string $librariesPath;
 
     /**
-     * @throws Exception\DirectoryDoesNotExist
+     * @throws Exception\DeclarationFileIsInvalid
      */
     public function __construct(
         private string $rootPath,
@@ -73,25 +79,33 @@ final readonly class AutoloadBundler implements Bundler
     ) {
         $this->filesystem = new Filesystem\Filesystem();
         $this->taskRunner = new TaskRunner\TaskRunner($this->output);
+        $this->dependencyExtractor = new Resource\DependencyExtractor();
+        $this->rootComposer = $this->buildRootComposerInstance();
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
-
-        if (!is_dir($this->librariesPath)) {
-            throw new Exception\DirectoryDoesNotExist($this->librariesPath);
-        }
     }
 
     /**
      * @param list<non-empty-string> $excludeFromClassMap
      *
+     * @throws Exception\DirectoryDoesNotExist
      * @throws Exception\FileAlreadyExists
      * @throws Throwable
      */
     public function bundle(
         Config\AutoloadTarget $target = new Config\AutoloadTarget(),
+        bool $extractDependencies = true,
+        bool $failOnExtractionProblems = true,
         bool $backupSources = false,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
         $targetFile = Filesystem\Path::makeAbsolute($target->file(), $this->rootPath);
+
+        // Extract vendor libraries from root package if necessary
+        if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
+            $this->extractVendorLibrariesFromRootPackage($this->rootComposer, $failOnExtractionProblems);
+        } elseif (!is_dir($this->librariesPath)) {
+            throw new Exception\DirectoryDoesNotExist($this->librariesPath);
+        }
 
         // Build class maps
         $classMaps = [
@@ -134,7 +148,7 @@ final readonly class AutoloadBundler implements Bundler
                 $composer = Factory::create(new IO\NullIO(), $autoload->filename());
                 $configSource = $composer->getConfig()->getConfigSource();
                 /* @phpstan-ignore argument.type */
-                $configSource->addProperty('autoload', $autoload->toArray(true));
+                $configSource->addProperty('autoload', (object) $autoload->toArray(true));
             },
         );
 
@@ -284,20 +298,10 @@ final readonly class AutoloadBundler implements Bundler
      *     classmap: list<string>,
      *     psr-4: array<string, string|string[]>,
      * }
-     *
-     * @throws Exception\DeclarationFileIsInvalid
      */
     private function fetchAutoloadFromComposerManifest(): array
     {
-        $configFile = Filesystem\Path::join($this->rootPath, 'composer.json');
-
-        try {
-            $composer = Factory::create(new IO\NullIO(), $configFile);
-        } catch (Throwable) {
-            throw new Exception\DeclarationFileIsInvalid($configFile);
-        }
-
-        $autoload = $composer->getPackage()->getAutoload();
+        $autoload = $this->rootComposer->getPackage()->getAutoload();
 
         if (!array_key_exists('classmap', $autoload)) {
             $autoload['classmap'] = [];
@@ -307,5 +311,19 @@ final readonly class AutoloadBundler implements Bundler
         }
 
         return $autoload;
+    }
+
+    /**
+     * @throws Exception\DeclarationFileIsInvalid
+     */
+    private function buildRootComposerInstance(): Composer
+    {
+        $configFile = Filesystem\Path::join($this->rootPath, 'composer.json');
+
+        try {
+            return Factory::create(new IO\NullIO(), $configFile);
+        } catch (Throwable $exception) {
+            throw new Exception\DeclarationFileIsInvalid($configFile, previous: $exception);
+        }
     }
 }

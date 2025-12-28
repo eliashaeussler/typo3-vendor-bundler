@@ -23,10 +23,14 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Tests\Bundler;
 
+use Composer\Factory;
+use Composer\IO;
+use Composer\Package;
 use CycloneDX\Core;
 use EliasHaeussler\Typo3VendorBundler as Src;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
+use Symfony\Component\Filesystem;
 
 use function dirname;
 
@@ -39,25 +43,15 @@ use function dirname;
 #[Framework\Attributes\CoversClass(Src\Bundler\DependencyBundler::class)]
 final class DependencyBundlerTest extends Framework\TestCase
 {
+    private Filesystem\Filesystem $filesystem;
     private Console\Output\BufferedOutput $output;
     private Src\Bundler\DependencyBundler $subject;
 
     public function setUp(): void
     {
+        $this->filesystem = new Filesystem\Filesystem();
         $this->output = new Console\Output\BufferedOutput(Console\Output\OutputInterface::VERBOSITY_VERBOSE);
         $this->subject = $this->createSubject('valid');
-    }
-
-    #[Framework\Attributes\Test]
-    public function constructorThrowsExceptionIfPathToVendorLibrariesDoesNotExist(): void
-    {
-        $librariesPath = $this->getFixturePath('valid').'/foo';
-
-        $this->expectExceptionObject(
-            new Src\Exception\DirectoryDoesNotExist($librariesPath),
-        );
-
-        $this->createSubject('valid', 'foo');
     }
 
     #[Framework\Attributes\Test]
@@ -68,6 +62,66 @@ final class DependencyBundlerTest extends Framework\TestCase
         );
 
         $this->subject->bundle(version: Core\Spec\Version::v1dot1);
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleExtractsVendorLibrariesFromRootPackageIfComposerJsonForVendorLibrariesIsMissing(): void
+    {
+        $librariesPath = $this->getFixturePath('valid-no-libs').'/libs';
+        $subject = $this->createSubject('valid-no-libs');
+
+        $this->filesystem->remove($librariesPath);
+
+        $subject->bundle();
+
+        $output = $this->output->fetch();
+
+        self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
+        self::assertStringContainsString('✍️ Creating temporary composer.json file for extracted vendor libraries... Done', $output);
+
+        $actual = $this->parseComposerJson($librariesPath.'/composer.json');
+        $requires = $actual->getRequires();
+
+        self::assertCount(1, $requires);
+        self::assertArrayHasKey('eliashaeussler/sse', $requires);
+    }
+
+    #[Framework\Attributes\Test]
+    public function bundleThrowsExceptionIfProblemsOccurDuringDependencyExtraction(): void
+    {
+        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
+        $subject = $this->createSubject('invalid-libs');
+
+        $this->filesystem->remove($librariesPath);
+
+        $this->expectExceptionObject(
+            new Src\Exception\DependencyExtractionFailed([
+                'Could not resolve a dedicated Composer package for the requirement "eliashaeussler/sssseee".',
+            ]),
+        );
+
+        try {
+            $subject->bundle();
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('🔎 Extracting dependencies from root package... Failed', $output);
+            self::assertStringContainsString('Could not resolve a dedicated Composer package for the requirement "eliashaeussler/sssseee".', $output);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function bundleThrowsExceptionIfPathToVendorLibrariesDoesNotExist(): void
+    {
+        $librariesPath = $this->getFixturePath('valid').'/foo';
+        $subject = $this->createSubject('valid', 'foo');
+
+        $this->expectExceptionObject(
+            new Src\Exception\DirectoryDoesNotExist($librariesPath),
+        );
+
+        $subject->bundle(extractDependencies: false);
     }
 
     #[Framework\Attributes\Test]
@@ -141,6 +195,13 @@ final class DependencyBundlerTest extends Framework\TestCase
             self::assertStringContainsString('🧩 Generating Software Bill of Materials... Done', $output);
             self::assertFileExists($sbomFile);
         }
+    }
+
+    private function parseComposerJson(string $filename): Package\RootPackageInterface
+    {
+        self::assertFileExists($filename);
+
+        return Factory::create(new IO\NullIO(), $filename)->getPackage();
     }
 
     private function createSubject(string $extension, string $librariesPath = 'libs'): Src\Bundler\DependencyBundler

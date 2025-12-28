@@ -18,6 +18,10 @@ dependencies:
     includeDev: false
     overwrite: true
 
+dependencyExtraction:
+  enabled: true
+  failOnProblems: true
+
 # Path to composer.json where vendor libraries are managed
 pathToVendorLibraries: 'Resources/Private/Libs'
 
@@ -30,14 +34,14 @@ rootPath: ../
 
 ## Autoload
 
-| Property                       | Type    | Required | Description                                                                                |
-|--------------------------------|---------|----------|--------------------------------------------------------------------------------------------|
-| `autoload`                     | Object  | –        | Set of configuration options to respect when bundling autoload configuration.              |
-| `autoload.target`              | Object  | –        | Set of configuration options related to the bundle target.                                 |
-| `autoload.target.file`         | String  | –        | File where to bundle autoload configuration. Defaults to `composer.json`.                  |
-| `autoload.target.overwrite`    | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`.    |
-| `autoload.backupSources`       | Boolean | –        | Define whether to backup source files. Defaults to `false`.                                |
-| `autoload.excludeFromClassMap` | Array   | –        | List of files to exclude from vendor libraries class map.                                  |
+| Property                       | Type    | Required | Description                                                                             |
+|--------------------------------|---------|----------|-----------------------------------------------------------------------------------------|
+| `autoload`                     | Object  | –        | Set of configuration options to respect when bundling autoload configuration.           |
+| `autoload.target`              | Object  | –        | Set of configuration options related to the bundle target.                              |
+| `autoload.target.file`         | String  | –        | File where to bundle autoload configuration. Defaults to `composer.json`.               |
+| `autoload.target.overwrite`    | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`. |
+| `autoload.backupSources`       | Boolean | –        | Define whether to backup source files. Defaults to `false`.                             |
+| `autoload.excludeFromClassMap` | Array   | –        | List of files to exclude from vendor libraries class map.                               |
 
 ## Dependencies
 
@@ -49,6 +53,14 @@ rootPath: ../
 | `dependencies.sbom.version`    | String  | –        | CycloneDX BOM version to use. Defaults to `1.7`.                                                                                                             |
 | `dependencies.sbom.includeDev` | Boolean | –        | Define whether to include development dependencies in the serialized SBOM. Defaults to `true`.                                                               |
 | `dependencies.sbom.overwrite`  | Boolean | –        | Define whether to overwrite the SBOM file, if it already exists. Defaults to `false`.                                                                        |
+
+## Dependency extraction
+
+| Property                              | Type    | Required | Description                                                                                                     |
+|---------------------------------------|---------|----------|-----------------------------------------------------------------------------------------------------------------|
+| `dependencyExtraction`                | Object  | –        | Set of options used to configure automatic dependency extraction of vendor libraries from root `composer.json`. |
+| `dependencyExtraction.enabled`        | Boolean | –        | Define whether automatic dependency extraction is enabled. Defaults to `true`.                                  |
+| `dependencyExtraction.failOnProblems` | Boolean | –        | Define whether extraction should fail if problems are encountered. Defaults to `false`.                         |
 
 ## Path to vendor libraries
 

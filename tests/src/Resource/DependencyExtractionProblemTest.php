@@ -21,32 +21,30 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace EliasHaeussler\Typo3VendorBundler\Exception;
+namespace EliasHaeussler\Typo3VendorBundler\Tests\Resource;
 
-use Throwable;
-
-use function sprintf;
+use EliasHaeussler\Typo3VendorBundler as Src;
+use PHPUnit\Framework;
 
 /**
- * DeclarationFileIsInvalid.
+ * DependencyExtractionProblemTest.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final class DeclarationFileIsInvalid extends Exception
+#[Framework\Attributes\CoversClass(Src\Resource\DependencyExtractionProblem::class)]
+final class DependencyExtractionProblemTest extends Framework\TestCase
 {
-    public function __construct(string $file, ?string $invalidPath = null, ?Throwable $previous = null)
+    #[Framework\Attributes\Test]
+    public function describeReturnsFormattedProblemMessage(): void
     {
-        $additional = '';
-
-        if (null !== $invalidPath) {
-            $additional .= sprintf(' Invalid configuration path: %s', $invalidPath);
-        }
-
-        parent::__construct(
-            sprintf('The declaration file "%s" does not contain a valid configuration structure.%s', $file, $additional),
-            1750143303,
-            $previous,
+        self::assertSame(
+            'Could not find a matching version for the Composer package "foo".',
+            Src\Resource\DependencyExtractionProblem::NoMatchingVersionFound->describe('foo'),
+        );
+        self::assertSame(
+            'Could not resolve a dedicated Composer package for the requirement "foo".',
+            Src\Resource\DependencyExtractionProblem::RequirementNotResolvable->describe('foo'),
         );
     }
 }

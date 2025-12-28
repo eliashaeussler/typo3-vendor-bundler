@@ -9,6 +9,9 @@
 		"dependencies": {
 			"$ref": "#/definitions/dependencies"
 		},
+		"dependencyExtraction": {
+			"$ref": "#/definitions/dependencyExtraction"
+		},
 		"pathToVendorLibraries": {
 			"type": "string",
 			"title": "Absolute or relative path to composer.json where vendor libraries are managed",
@@ -103,6 +106,25 @@
 					"title": "Define whether to overwrite the SBOM file, if it already exists",
 					"description": "When enabled, the configured SBOM file will be overwritten with serialized SBOM, if the file already exists.",
 					"default": false
+				}
+			},
+			"additionalProperties": false
+		},
+		"dependencyExtraction": {
+			"type": "object",
+			"title": "Set of options used to configure automatic dependency extraction of vendor libraries from root composer.json",
+			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"title": "Define whether automatic dependency extraction is enabled",
+					"description": "When enabled, vendor libraries will be extracted from root composer.json, if no separate composer.json for vendor libraries exists already.",
+					"default": true
+				},
+				"failOnProblems": {
+					"type": "boolean",
+					"title": "Define whether extraction should fail if problems are encountered",
+					"description": "When enabled, extraction will fail if problems are encountered during extraction, e.g. if packages cannot be resolved.",
+					"default": true
 				}
 			},
 			"additionalProperties": false

@@ -1,0 +1,6 @@
+{
+	"require": {
+		"eliashaeussler/cache-warmup": "~0.7.0",
+		"typo3/cms-core": "*"
+	}
+}

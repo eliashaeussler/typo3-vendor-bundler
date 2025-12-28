@@ -76,6 +76,18 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
             Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
             'Force overwriting the given target file, if it already exists',
         );
+        $this->addOption(
+            'extract',
+            'x',
+            Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
+            'Auto-detect and extract vendor libraries from root composer.json',
+        );
+        $this->addOption(
+            'fail',
+            null,
+            Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
+            'Fail execution if dependency extraction finishes with problems',
+        );
     }
 
     /**
@@ -96,6 +108,8 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
 
         $rootPath = $config->rootPath() ?? $rootPath;
         $libsDir = $input->getArgument('libs-dir') ?? $config->pathToVendorLibraries();
+        $extract = $input->getOption('extract') ?? $config->dependencyExtraction()->enabled() ?? true;
+        $fail = $input->getOption('fail') ?? $config->dependencyExtraction()->failOnProblems() ?? true;
         $targetFile = $input->getOption('target-file') ?? $config->autoload()->target()->file();
         $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources() ?? false;
         $overwrite = $input->getOption('overwrite') ?? $config->autoload()->target()->overwrite() ?? false;
@@ -112,7 +126,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
 
         try {
             $target = new Config\AutoloadTarget($targetFile, $overwrite);
-            $autoload = $autoloadBundler->bundle($target, $backupSources, $excludeFromClassMap);
+            $autoload = $autoloadBundler->bundle($target, $extract, $fail, $backupSources, $excludeFromClassMap);
         } catch (Exception\FileAlreadyExists $exception) {
             if (false === $input->getOption('overwrite')
                 || !$this->io->confirm('Target file already exists. Overwrite file?', false)
@@ -121,7 +135,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
             }
 
             $target = new Config\AutoloadTarget($targetFile, true);
-            $autoload = $autoloadBundler->bundle($target, $backupSources, $excludeFromClassMap);
+            $autoload = $autoloadBundler->bundle($target, $extract, $fail, $backupSources, $excludeFromClassMap);
         }
 
         $this->io->success(

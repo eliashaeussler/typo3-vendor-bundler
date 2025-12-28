@@ -1,0 +1,9 @@
+{
+	"name": "foo/root",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "../valid-no-libs"
+		}
+	]
+}

@@ -46,6 +46,10 @@ dependencies:
     includeDev: false
     overwrite: true
 
+dependencyExtraction:
+  enabled: true
+  failOnProblems: true
+
 pathToVendorLibraries: 'Resources/Private/Libs'
 ```
 
@@ -67,6 +71,7 @@ You can also execute a single bundler. Read more about available
 * Usage
   * [Console commands](docs/cli.md)
   * [Continuous Integration](docs/ci.md)
+  * [Automatic dependency extraction](docs/extract.md)
   * [PHP API](docs/api.md)
 * Configuration
   * [Config file](docs/config-file.md)

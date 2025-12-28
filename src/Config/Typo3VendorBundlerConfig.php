@@ -34,6 +34,7 @@ final class Typo3VendorBundlerConfig
     public function __construct(
         private readonly AutoloadConfig $autoload = new AutoloadConfig(),
         private readonly DependenciesConfig $dependencies = new DependenciesConfig(),
+        private readonly DependencyExtractionConfig $dependencyExtraction = new DependencyExtractionConfig(),
         private readonly string $pathToVendorLibraries = 'Resources/Private/Libs',
         private ?string $rootPath = null,
     ) {}
@@ -46,6 +47,11 @@ final class Typo3VendorBundlerConfig
     public function dependencies(): DependenciesConfig
     {
         return $this->dependencies;
+    }
+
+    public function dependencyExtraction(): DependencyExtractionConfig
+    {
+        return $this->dependencyExtraction;
     }
 
     public function pathToVendorLibraries(): string
