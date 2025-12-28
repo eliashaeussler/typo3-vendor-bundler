@@ -224,7 +224,7 @@ final readonly class AutoloadBundler implements Bundler
             foreach ($excludeFromClassMap as $path) {
                 $fullPath = Filesystem\Path::join($this->librariesPath, $path);
                 $classMap = $this->taskRunner->run(
-                    sprintf('⛔ Removing "%s" from class map', $path),
+                    sprintf('⛔ Removing <comment>%s</comment> from class map', $path),
                     function (TaskRunner\RunnerContext $context) use ($classMap, $fullPath) {
                         if (!$classMap->has($fullPath)) {
                             $context->markAsFailed();

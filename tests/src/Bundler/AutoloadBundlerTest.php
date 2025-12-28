@@ -150,7 +150,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
             self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
             self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
             self::assertStringContainsString(
-                '⛔ Removing "vendor/composer/InstalledVersions.php" from class map... Done',
+                '⛔ Removing vendor/composer/InstalledVersions.php from class map... Done',
                 $output,
             );
             self::assertFileExists($targetFile);
@@ -178,7 +178,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('⛔ Removing "foo.php" from class map... Failed', $output);
+            self::assertStringContainsString('⛔ Removing foo.php from class map... Failed', $output);
         }
     }
 
