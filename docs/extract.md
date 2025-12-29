@@ -1,7 +1,7 @@
 # Automatic dependency extraction
 
 When vendor libraries are being bundled for usage in classic mode installations,
-there are several ways to define those dependencies:
+there are two ways to define those dependencies:
 
 1. **Manually** using a dedicated, separate `composer.json` file, located at the
    configured path to vendor libraries.
@@ -57,7 +57,16 @@ You can also use the command option `--extract` for all supported commands, e.g.
 > Read more about available [configuration options](schema.md#dependency-extraction)
 > and [command options](cli.md).
 
-### Standalone
+### Standalone (CLI)
+
+The console command [`composer extract-dependencies`](cli.md#extract-dependencies) can be
+used to extract dependencies from the root `composer.json` file, without executing any
+bundlers. This is especially useful for debugging purposes.
+
+Please refer to the [CLI command documentation](cli.md#extract-dependencies) for more
+information about how to use this command.
+
+### Standalone (PHP API)
 
 Check out the example in [PHP API](api.md#extract-dependencies-from-composerjson) to learn
 how to use the provided PHP API for automatic dependency extraction.

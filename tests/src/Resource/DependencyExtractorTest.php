@@ -84,7 +84,8 @@ final class DependencyExtractorTest extends Framework\TestCase
 
         $actual = $this->subject->extract($this->createComposerInstance('invalid-libs-constraint'));
 
-        self::assertSame([], $actual->requiredPackages);
+        self::assertArrayHasKey('eliashaeussler/sse', $actual->requiredPackages);
+        self::assertArrayNotHasKey('eliashaeussler/cache-warmup', $actual->requiredPackages);
         self::assertSame($expected, $actual->extractionProblems);
     }
 

@@ -74,7 +74,7 @@ trait CanExtractDependencies
         );
 
         $this->taskRunner->run(
-            '✍️ Creating temporary <comment>composer.json</comment> file for extracted vendor libraries',
+            '✍️ Creating <comment>composer.json</comment> file for extracted vendor libraries',
             function () use ($dependencySet, $rootComposer) {
                 $composerJson = Filesystem\Path::join($this->librariesPath, 'composer.json');
                 $dependencySet->dumpToFile($composerJson, $rootComposer);

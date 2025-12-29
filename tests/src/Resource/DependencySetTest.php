@@ -104,17 +104,50 @@ final class DependencySetTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    public function dumpToFileThrowsExceptionIfGivenFileExistsAndIsNotValid(): void
+    {
+        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+
+        $this->expectExceptionObject(
+            new Src\Exception\DeclarationFileIsInvalid($filename),
+        );
+
+        try {
+            $this->subject->dumpToFile($filename);
+        } finally {
+            $this->filesystem->remove($filename);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    public function dumpToFileCreatesAndInitializesFileIfItDoesNotExistYet(): void
+    {
+        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+
+        $this->filesystem->remove($filename);
+
+        self::assertFileDoesNotExist($filename);
+
+        $this->subject->dumpToFile($filename);
+
+        self::assertFileExists($filename);
+        self::assertStringNotEqualsFile($filename, '');
+
+        $this->filesystem->remove($filename);
+    }
+
+    #[Framework\Attributes\Test]
     public function dumpToFileWritesDependenciesToGivenFile(): void
     {
-        $composerJson = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
 
-        $this->filesystem->dumpFile($composerJson, '{}');
+        $this->filesystem->dumpFile($filename, '{}');
 
-        $this->subject->dumpToFile($composerJson);
+        $this->subject->dumpToFile($filename);
 
-        self::assertFileExists($composerJson);
+        self::assertFileExists($filename);
 
-        $composer = Factory::create(new IO\NullIO(), $composerJson);
+        $composer = Factory::create(new IO\NullIO(), $filename);
         $requires = $composer->getPackage()->getRequires();
         $provides = $composer->getPackage()->getProvides();
 
@@ -137,22 +170,22 @@ final class DependencySetTest extends Framework\TestCase
         self::assertFalse($composer->getPackage()->getConfig()['allow-plugins'] ?? null);
         self::assertFalse($composer->getPackage()->getConfig()['lock'] ?? null);
 
-        $this->filesystem->remove($composerJson);
+        $this->filesystem->remove($filename);
     }
 
     #[Framework\Attributes\Test]
     public function dumpToFileWritesDependenciesToGivenFileAndIncludesContextFromOrigin(): void
     {
         $origin = Factory::create(new IO\NullIO(), dirname(__DIR__).'/Fixtures/Extensions/valid-composer-json/composer.json');
-        $composerJson = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
 
-        $this->filesystem->dumpFile($composerJson, '{}');
+        $this->filesystem->dumpFile($filename, '{}');
 
-        $this->subject->dumpToFile($composerJson, $origin);
+        $this->subject->dumpToFile($filename, $origin);
 
-        self::assertFileExists($composerJson);
+        self::assertFileExists($filename);
 
-        $composer = Factory::create(new IO\NullIO(), $composerJson);
+        $composer = Factory::create(new IO\NullIO(), $filename);
         $repositories = $composer->getPackage()->getRepositories();
         $expectedRepository = [
             'type' => 'path',
@@ -166,6 +199,6 @@ final class DependencySetTest extends Framework\TestCase
         self::assertCount(1, $repositories);
         self::assertSame($expectedRepository, reset($repositories));
 
-        $this->filesystem->remove($composerJson);
+        $this->filesystem->remove($filename);
     }
 }

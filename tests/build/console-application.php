@@ -29,6 +29,7 @@ $application->addCommands([
     new Command\BundleCommand(),
     new Command\BundleAutoloadCommand(),
     new Command\BundleDependenciesCommand(),
+    new Command\ExtractDependenciesCommand(),
     new Command\ValidateBundlerConfigCommand(),
 ]);
 
