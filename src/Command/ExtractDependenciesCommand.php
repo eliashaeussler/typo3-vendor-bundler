@@ -165,10 +165,7 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
         }
 
         $this->io->success('Successfully extracted dependencies from composer.json file.');
-        $this->io->writeln(
-            '💡 Run this command again with <comment>--dump-to-file</comment> or '.
-            '<comment>--print-file-contents</comment> to persist extracted dependencies.',
-        );
+        $this->io->writeln('💡 Run this command again with <comment>--dump-to-file</comment> to persist extracted dependencies.');
 
         return self::SUCCESS;
     }
