@@ -254,16 +254,16 @@
         },
         {
             "name": "eliashaeussler/task-runner",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/eliashaeussler/task-runner.git",
-                "reference": "c20d2913e96136f3d3b73dbf4004d8aacb071e8b"
+                "reference": "9876f8e9f428225ef56a826fbbc50095490331c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/eliashaeussler/task-runner/zipball/c20d2913e96136f3d3b73dbf4004d8aacb071e8b",
-                "reference": "c20d2913e96136f3d3b73dbf4004d8aacb071e8b",
+                "url": "https://api.github.com/repos/eliashaeussler/task-runner/zipball/9876f8e9f428225ef56a826fbbc50095490331c4",
+                "reference": "9876f8e9f428225ef56a826fbbc50095490331c4",
                 "shasum": ""
             },
             "require": {
@@ -302,9 +302,9 @@
             "description": "Progress helper for long-running CLI tasks, based on Symfony Console",
             "support": {
                 "issues": "https://github.com/eliashaeussler/task-runner/issues",
-                "source": "https://github.com/eliashaeussler/task-runner/tree/1.0.1"
+                "source": "https://github.com/eliashaeussler/task-runner/tree/1.1.0"
             },
-            "time": "2025-12-26T20:38:20+00:00"
+            "time": "2025-12-29T16:53:28+00:00"
         },
         {
             "name": "opis/json-schema",
