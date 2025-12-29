@@ -4,7 +4,7 @@ When vendor libraries are being bundled for usage in classic mode installations,
 there are several ways to define those dependencies:
 
 1. **Manually** using a dedicated, separate `composer.json` file, located at the
-   configured [`pathToVendorLibraries`](schema.md#path-to-vendor-libraries).
+   configured path to vendor libraries.
 2. **Automatically** by extracting relevant dependencies from the root
    `composer.json` file.
 
@@ -16,19 +16,34 @@ The following guide explains how to configure automatic dependency extraction.
 
 ## Prerequisites
 
-* Make sure all currently used vendor libraries are listed in the `composer.json`
+* Make sure all currently used vendor libraries are listed in the root `composer.json`
   file of your extension.
-* Add all TYPO3 framework packages (core extensions) to the `require` section of
-  the root `composer.json` file, e.g. `typo3/cms-core`, `typo3/cms-backend` etc.
+* Add all required TYPO3 framework packages (core extensions) to the `require` section
+  of the root `composer.json` file, e.g. `typo3/cms-core`, `typo3/cms-backend` etc.
 * Make sure to use package version constraints that satisfy all currently supported
   TYPO3 verisons.
 * If vendor libraries are not available via Packagist, make sure to add appropriate
-  `repositories` sections to the root `composer.json` file.
+  [`repositories`](https://getcomposer.org/doc/04-schema.md#repositories) sections
+  to the root `composer.json` file.
 
-## Configuration
+## Usage
 
-To enable automatic dependency extraction, add the following configuration to your
-`typo3-vendor-bundler.yaml` [configuration file](config-file.md):
+The automatic dependency extraction feature is a shared component, which can either
+be used as part of a bundler, or standalone by using the [PHP API](api.md#extract-dependencies-from-composerjson).
+
+### Bundlers
+
+The following bundlers currently have built-in support for automatic dependency
+extraction:
+
+* [Autoload bundler](bundlers/autoload.md)
+* [Dependency bundler](bundlers/dependencies.md)
+
+When using these bundlers, automatic dependency extraction is done by default, if no
+separate `composer.json` file  exists in the path to vendor libraries.
+
+To explicitly enable automatic dependency extraction, add the following configuration
+to your `typo3-vendor-bundler.yaml` [configuration file](config-file.md):
 
 ```yaml
 dependencyExtraction:
@@ -41,6 +56,11 @@ You can also use the command option `--extract` for all supported commands, e.g.
 > [!TIP]
 > Read more about available [configuration options](schema.md#dependency-extraction)
 > and [command options](cli.md).
+
+### Standalone
+
+Check out the example in [PHP API](api.md#extract-dependencies-from-composerjson) to learn
+how to use the provided PHP API for automatic dependency extraction.
 
 ## How it works
 
