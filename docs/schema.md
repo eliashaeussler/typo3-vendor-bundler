@@ -32,44 +32,48 @@ rootPath: ../
 > [!TIP]
 > Have a look at the shipped [JSON schema](../res/typo3-vendor-bundler.schema.json).
 
+## Core options
+
+| Property                                         | Type   | Default value               | Description                                                                                                                                                                                                                                         |
+|--------------------------------------------------|--------|-----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`autoload`](#autoload)                          | Object | –                           | Set of configuration options to respect when bundling autoload configuration.                                                                                                                                                                       |
+| [`dependencies`](#dependencies)                  | Object | –                           | Set of configuration options to respect when bundling dependency information.                                                                                                                                                                       |
+| [`dependencyExtraction`](#dependency-extraction) | Object | –                           | Set of options used to configure automatic dependency extraction of vendor libraries from root `composer.json`.                                                                                                                                     |
+| `pathToVendorLibraries`                          | String | `Resources/Private/Libs`    | Absolute or relative path to `composer.json` where vendor libraries are managed.                                                                                                                                                                    |
+| `rootPath`                                       | String | *current working directory* | Relative or absolute path to project root. This path will be used to calculate paths to configured files if they are configured as relative paths. If the root path is configured as relative path, it is calculated based on the config file path. |
+
 ## Autoload
 
-| Property                       | Type    | Required | Description                                                                             |
-|--------------------------------|---------|----------|-----------------------------------------------------------------------------------------|
-| `autoload`                     | Object  | –        | Set of configuration options to respect when bundling autoload configuration.           |
-| `autoload.target`              | Object  | –        | Set of configuration options related to the bundle target.                              |
-| `autoload.target.file`         | String  | –        | File where to bundle autoload configuration. Defaults to `composer.json`.               |
-| `autoload.target.overwrite`    | Boolean | –        | Define whether to overwrite the target file, if it already exists. Defaults to `false`. |
-| `autoload.backupSources`       | Boolean | –        | Define whether to backup source files. Defaults to `false`.                             |
-| `autoload.excludeFromClassMap` | Array   | –        | List of files to exclude from vendor libraries class map.                               |
+> [!TIP]
+> Read more about [autoload bundling](bundlers/autoload.md).
+
+| Property                       | Type    | Default value   | Description                                                        |
+|--------------------------------|---------|-----------------|--------------------------------------------------------------------|
+| `autoload.target`              | Object  | –               | Set of configuration options related to the bundle target.         |
+| `autoload.target.file`         | String  | `composer.json` | File where to bundle autoload configuration.                       |
+| `autoload.target.overwrite`    | Boolean | `false`         | Define whether to overwrite the target file, if it already exists. |
+| `autoload.backupSources`       | Boolean | `false`         | Define whether to backup source files.                             |
+| `autoload.excludeFromClassMap` | Array   | –               | List of files to exclude from vendor libraries class map.          |
 
 ## Dependencies
 
-| Property                       | Type    | Required | Description                                                                                                                                                  |
-|--------------------------------|---------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `dependencies`                 | Object  | –        | Set of configuration options to respect when bundling dependency information.                                                                                |
-| `dependencies.sbom`            | Object  | –        | Set of configuration options used to define SBOM file generation.                                                                                            |
-| `dependencies.sbom.file`       | String  | –        | File where to write the serialized SBOM. Can be a JSON or XML file. Relative paths are resolved based on the vendor libraries path. Defaults to `sbom.json`. |
-| `dependencies.sbom.version`    | String  | –        | CycloneDX BOM version to use. Defaults to `1.7`.                                                                                                             |
-| `dependencies.sbom.includeDev` | Boolean | –        | Define whether to include development dependencies in the serialized SBOM. Defaults to `true`.                                                               |
-| `dependencies.sbom.overwrite`  | Boolean | –        | Define whether to overwrite the SBOM file, if it already exists. Defaults to `false`.                                                                        |
+> [!TIP]
+> Read more about [dependency bundling](bundlers/dependencies.md).
+
+| Property                       | Type    | Default value | Description                                                                                                                         |
+|--------------------------------|---------|---------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `dependencies.sbom`            | Object  | –             | Set of configuration options used to define SBOM file generation.                                                                   |
+| `dependencies.sbom.file`       | String  | `sbom.json`   | File where to write the serialized SBOM. Can be a JSON or XML file. Relative paths are resolved based on the vendor libraries path. |
+| `dependencies.sbom.version`    | String  | `1.7`         | CycloneDX BOM version to use.                                                                                                       |
+| `dependencies.sbom.includeDev` | Boolean | `true`        | Define whether to include development dependencies in the serialized SBOM.                                                          |
+| `dependencies.sbom.overwrite`  | Boolean | `false`       | Define whether to overwrite the SBOM file, if it already exists.                                                                    |
 
 ## Dependency extraction
 
-| Property                              | Type    | Required | Description                                                                                                     |
-|---------------------------------------|---------|----------|-----------------------------------------------------------------------------------------------------------------|
-| `dependencyExtraction`                | Object  | –        | Set of options used to configure automatic dependency extraction of vendor libraries from root `composer.json`. |
-| `dependencyExtraction.enabled`        | Boolean | –        | Define whether automatic dependency extraction is enabled. Defaults to `true`.                                  |
-| `dependencyExtraction.failOnProblems` | Boolean | –        | Define whether extraction should fail if problems are encountered. Defaults to `false`.                         |
+> [!TIP]
+> Read more about [automatic dependency extraction](extract.md).
 
-## Path to vendor libraries
-
-| Property                | Type    | Required | Description                                                                                                            |
-|-------------------------|---------|----------|------------------------------------------------------------------------------------------------------------------------|
-| `pathToVendorLibraries` | String  | –        | Absolute or relative path to `composer.json` where vendor libraries are managed. Defaults to `Resources/Private/Libs`. |
-
-## Root path
-
-| Property   | Type   | Required | Description                                                                                                                                                                                                                                         |
-|------------|--------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `rootPath` | String | –        | Relative or absolute path to project root. This path will be used to calculate paths to configured files if they are configured as relative paths. If the root path is configured as relative path, it is calculated based on the config file path. |
+| Property                              | Type    | Default value | Description                                                        |
+|---------------------------------------|---------|---------------|--------------------------------------------------------------------|
+| `dependencyExtraction.enabled`        | Boolean | `true`        | Define whether automatic dependency extraction is enabled.         |
+| `dependencyExtraction.failOnProblems` | Boolean | `false`       | Define whether extraction should fail if problems are encountered. |

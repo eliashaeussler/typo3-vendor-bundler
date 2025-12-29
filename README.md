@@ -15,6 +15,24 @@ It allows to easily prepare dependencies, which are not part of TYPO3's
 bundled dependencies, in order to make TYPO3 extensions fully usable in
 classic mode installations.
 
+## 🚀 Features
+
+* [**Autoload bundler**](docs/bundlers/autoload.md): Bundles autoload information
+  from vendor libraries in root `composer.json` file. This enables deep integration
+  of vendor libraries directly into TYPO3, e.g. for use with dependency injection.
+* [**Dependency bundler**](docs/bundlers/dependencies.md): Bundles dependency
+  information of shipped vendor libraries. Uses the standardized
+  [CycloneDX](https://cyclonedx.org/) format to generate a
+  [Software Bill of Materials (SBOM)](https://en.wikipedia.org/wiki/Software_supply_chain).
+* [**Automatic dependency extraction**](docs/extract.md): Allows to automatically
+  extract used vendor libraries from the root `composer.json` file of an extension.
+* [**Various configuration options**](docs/config-file.md): Provides an extensive
+  configuration system, which allows to customize several parts of the bundling
+  system.
+* **Composer integration**: Built as Composer plugin, the package provides a smooth
+  integration in your Composer workflow. Bundlers can be executed directly by using
+  dedicated Composer commands, e.g. `composer bundle` to execute all available bundlers.
+
 ## 🔥 Installation
 
 [![Packagist](https://img.shields.io/packagist/v/eliashaeussler/typo3-vendor-bundler?label=version&logo=packagist)](https://packagist.org/packages/eliashaeussler/typo3-vendor-bundler)
@@ -68,10 +86,13 @@ You can also execute a single bundler. Read more about available
 
 ## 📝 Documentation
 
+* Features
+  * [Autoload bundler](docs/bundlers/autoload.md)
+  * [Dependencies bundler](docs/bundlers/dependencies.md)
+  * [Automatic dependency extraction](docs/extract.md)
 * Usage
   * [Console commands](docs/cli.md)
   * [Continuous Integration](docs/ci.md)
-  * [Automatic dependency extraction](docs/extract.md)
   * [PHP API](docs/api.md)
 * Configuration
   * [Config file](docs/config-file.md)
