@@ -80,30 +80,37 @@ final readonly class BomGenerator
 
         $repository = $locker->getLockedRepository($includeDevDependencies);
         $packages = $repository->getPackages();
-        $rootComponent = $this->createComponentForPackage($this->rootComposer->getPackage());
+        $rootPackage = $this->rootComposer->getPackage();
+        $rootComponent = $this->createComponentFromPackage($rootPackage);
         $components = [];
+
+        $bom = new Core\Models\Bom();
+        $bom->getMetadata()->setComponent($rootComponent);
+        $bom->getMetadata()->setTimestamp(new DateTimeImmutable());
+        $bom->getMetadata()->getTools()->addItems(...$this->createTools());
+        $bom->setSerialNumber(Contrib\Bom\Utils\BomUtils::randomSerialNumber());
 
         // Convert each installed package to a BOM component
         foreach ($packages as $package) {
-            $components[$package->getName()] = $this->createComponentForPackage($package);
+            $components[$package->getName()] = $this->createComponentFromPackage($package);
         }
+
+        // Register BOM components
+        $bom->getComponents()->addItems(...$components);
 
         // Build dependency tree for all installed packages
         foreach ($packages as $package) {
             $this->applyDependencyTree($package, $repository, $components);
         }
 
-        $bom = new Core\Models\Bom();
-        $bom->getMetadata()->setComponent($rootComponent);
-        $bom->getMetadata()->setTimestamp(new DateTimeImmutable());
-        $bom->getMetadata()->getTools()->addItems(...$this->createTools());
-        $bom->getComponents()->addItems(...$components);
-        $bom->setSerialNumber(Contrib\Bom\Utils\BomUtils::randomSerialNumber());
+        // Build dependency tree for root package
+        $components[$rootPackage->getName()] = $rootComponent;
+        $this->applyDependencyTree($rootPackage, $repository, $components);
 
         return $bom;
     }
 
-    private function createComponentForPackage(Package\PackageInterface $package): Core\Models\Component
+    private function createComponentFromPackage(Package\PackageInterface $package): Core\Models\Component
     {
         [$vendor, $name] = $this->splitPackageName($package->getName());
         $distReference = $package->getDistReference() ?? '';
@@ -264,17 +271,17 @@ final readonly class BomGenerator
      * @param array<string, Core\Models\Component> $components
      */
     private function applyDependencyTree(
-        Package\BasePackage $package,
+        Package\PackageInterface $package,
         Repository\LockArrayRepository $repository,
         array $components,
     ): void {
+        $component = $components[$package->getName()] ?? null;
+
+        if (null === $component) {
+            return;
+        }
+
         foreach ($package->getRequires() as $requirement) {
-            $component = $components[$package->getName()] ?? null;
-
-            if (null === $component) {
-                continue;
-            }
-
             $requiredPackage = $repository->findPackage($requirement->getTarget(), $requirement->getConstraint());
 
             if (null === $requiredPackage) {
