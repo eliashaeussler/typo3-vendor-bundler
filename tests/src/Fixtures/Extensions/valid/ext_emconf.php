@@ -3,7 +3,7 @@
 /*
  * This file is part of the Composer package "eliashaeussler/typo3-vendor-bundler".
  *
- * Copyright (C) 2025 Elias Häußler <elias@haeussler.dev>
+ * Copyright (C) 2025-2026 Elias Häußler <elias@haeussler.dev>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
