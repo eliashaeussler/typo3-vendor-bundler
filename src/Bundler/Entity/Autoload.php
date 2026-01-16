@@ -47,7 +47,7 @@ final readonly class Autoload implements Bundle
     /**
      * @return array{
      *     classmap?: list<string>,
-     *     psr-4?: array<string, string>,
+     *     psr-4?: array<string, array<string>>,
      * }
      */
     public function toArray(bool $useRelativePaths = false): array

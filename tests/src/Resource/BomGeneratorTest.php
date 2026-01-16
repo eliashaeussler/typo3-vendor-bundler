@@ -31,6 +31,9 @@ use EliasHaeussler\Typo3VendorBundler as Src;
 use PHPUnit\Framework;
 use Symfony\Component\Filesystem;
 
+use function chdir;
+use function dirname;
+
 /**
  * BomGeneratorTest.
  *
@@ -126,9 +129,17 @@ final class BomGeneratorTest extends Framework\TestCase
 
     private function installDependencies(bool $includeDevDependencies = true): void
     {
-        $installResult = Installer::create(new IO\NullIO(), $this->composer)
-            ->setDevMode($includeDevDependencies)
-            ->run();
+        $workingDirectory = (string) getcwd();
+
+        chdir(dirname($this->composer->getConfig()->getConfigSource()->getName()));
+
+        try {
+            $installResult = Installer::create(new IO\NullIO(), $this->composer)
+                ->setDevMode($includeDevDependencies)
+                ->run();
+        } finally {
+            chdir($workingDirectory);
+        }
 
         self::assertSame(0, $installResult);
     }
