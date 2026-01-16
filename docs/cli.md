@@ -8,11 +8,16 @@ Executes all available bundlers in a single run.
 composer bundle [-c|--config CONFIG]
 ```
 
+> [!TIP]
+> By default, all available bundlers are executed. This can be configured
+> by disabling individual bundlers in the [config file](config-file.md).
+> Read more in the [schema documentation](schema.md).
+
 Pass the following options to the console command:
 
 ### `-c|--config`
 
-Path to [config file](config-file), defaults to auto-detection in current
+Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.
 
 ## [`bundle-autoload`](../src/Command/BundleAutoloadCommand.php)
@@ -45,7 +50,7 @@ vendor libraries for use in classic mode.
 
 ### `-c|--config`
 
-Path to [config file](config-file), defaults to auto-detection in current
+Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.
 
 ### `t|--target-file`
@@ -123,7 +128,7 @@ vendor libraries for use in classic mode.
 
 ### `-c|--config`
 
-Path to [config file](config-file), defaults to auto-detection in current
+Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.
 
 ### `f|--sbom-file`
@@ -203,7 +208,7 @@ vendor libraries for use in classic mode.
 
 ### `-c|--config`
 
-Path to [config file](config-file), defaults to auto-detection in current
+Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.
 
 ### `-f|--[no-]fail`
@@ -238,5 +243,5 @@ Pass the following options to the console command:
 
 ### `-c|--config`
 
-Path to [config file](config-file), defaults to auto-detection in current
+Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.

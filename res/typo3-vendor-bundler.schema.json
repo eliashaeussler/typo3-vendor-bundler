@@ -29,6 +29,12 @@
 			"type": "object",
 			"title": "Set of options used to bundle autoload configuration",
 			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"title": "Define whether autoload bundling is enabled",
+					"description": "When enabled, the autoload bundler will be included when executing `composer bundle`.",
+					"default": true
+				},
 				"target": {
 					"$ref": "#/definitions/autoloadTarget"
 				},
@@ -73,6 +79,12 @@
 			"type": "object",
 			"title": "Set of options used to bundle dependency information",
 			"properties": {
+				"enabled": {
+					"type": "boolean",
+					"title": "Define whether dependency bundling is enabled",
+					"description": "When enabled, the dependency bundler will be included when executing `composer bundle`.",
+					"default": true
+				},
 				"sbom": {
 					"$ref": "#/definitions/sbom"
 				}

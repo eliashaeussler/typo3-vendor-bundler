@@ -35,10 +35,16 @@ final readonly class AutoloadConfig
      * @param list<non-empty-string> $excludeFromClassMap
      */
     public function __construct(
+        private bool $enabled = true,
         private AutoloadTarget $target = new AutoloadTarget(),
         private ?bool $backupSources = null,
         private array $excludeFromClassMap = [],
     ) {}
+
+    public function enabled(): bool
+    {
+        return $this->enabled;
+    }
 
     public function target(): AutoloadTarget
     {

@@ -29,6 +29,7 @@ use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
 
+use function dirname;
 use function sprintf;
 
 /**
@@ -48,15 +49,48 @@ final class BundleCommandTest extends Framework\TestCase
     {
         $this->firstCommand = new Tests\Fixtures\Classes\DummyCommand('first command');
         $this->secondCommand = new Tests\Fixtures\Classes\DummyCommand('second command');
+        $this->commandTester = $this->createTester([$this->firstCommand, $this->secondCommand]);
+    }
 
-        $application = new Application();
-        $command = new Src\Command\BundleCommand([
-            $this->firstCommand,
-            $this->secondCommand,
+    #[Framework\Attributes\Test]
+    public function executeFailsIfNoBundlersAreConfigured(): void
+    {
+        $commandTester = $this->createTester([]);
+
+        $actual = $commandTester->execute([]);
+
+        self::assertSame(Console\Command\Command::FAILURE, $actual);
+        self::assertStringContainsString('[WARNING] No bundlers registered.', $commandTester->getDisplay());
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeFailsIfAllConfiguredBundlersAreDisabledByConfig(): void
+    {
+        $commandTester = $this->createTester([new Src\Command\BundleAutoloadCommand()]);
+
+        $actual = $commandTester->execute([
+            '--config' => dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-autoload-disabled.yaml',
         ]);
-        $command->setApplication($application);
 
-        $this->commandTester = new Console\Tester\CommandTester($command);
+        self::assertSame(Console\Command\Command::FAILURE, $actual);
+        self::assertStringContainsString('[WARNING] No bundlers enabled.', $commandTester->getDisplay());
+    }
+
+    #[Framework\Attributes\Test]
+    public function executeSkipsBundlersIfDisabledByConfig(): void
+    {
+        $commandTester = $this->createTester([
+            new Src\Command\BundleAutoloadCommand(),
+            new Src\Command\BundleDependenciesCommand(),
+        ]);
+
+        $actual = $commandTester->execute([
+            '--config' => dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-autoload-disabled.yaml',
+        ]);
+
+        self::assertSame(Console\Command\Command::SUCCESS, $actual);
+        self::assertStringNotContainsString('Bundle autoloader for vendor libraries in composer.json', $commandTester->getDisplay());
+        self::assertStringContainsString('Bundle dependency information of vendor libraries', $commandTester->getDisplay());
     }
 
     #[Framework\Attributes\Test]
@@ -119,5 +153,17 @@ final class BundleCommandTest extends Framework\TestCase
         self::assertSame(Console\Command\Command::SUCCESS, $actual);
         self::assertStringContainsString('Hello world from first command!', $this->commandTester->getDisplay());
         self::assertStringContainsString('Hello world from second command!', $this->commandTester->getDisplay());
+    }
+
+    /**
+     * @param list<Console\Command\Command> $bundlers
+     */
+    private function createTester(array $bundlers): Console\Tester\CommandTester
+    {
+        $application = new Application();
+        $command = new Src\Command\BundleCommand($bundlers);
+        $command->setApplication($application);
+
+        return new Console\Tester\CommandTester($command);
     }
 }
