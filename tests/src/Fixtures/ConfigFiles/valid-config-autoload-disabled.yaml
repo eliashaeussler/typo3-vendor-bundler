@@ -1,0 +1,8 @@
+pathToVendorLibraries: libs
+rootPath: ../Extensions/valid
+autoload:
+  enabled: false
+dependencies:
+  sbom:
+    file: sbom_generated.json
+    overwrite: true

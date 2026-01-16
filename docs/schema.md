@@ -4,6 +4,7 @@ The config file must follow a given schema:
 
 ```yaml
 autoload:
+  enabled: true
   target:
     file: 'composer.json'
     overwrite: false
@@ -12,6 +13,7 @@ autoload:
     - 'vendor/composer/InstalledVersions.php'
 
 dependencies:
+  enabled: true
   sbom:
     file: 'sbom.json'
     version: '1.7'
@@ -47,13 +49,14 @@ rootPath: ../
 > [!TIP]
 > Read more about [autoload bundling](bundlers/autoload.md).
 
-| Property                       | Type    | Default value   | Description                                                        |
-|--------------------------------|---------|-----------------|--------------------------------------------------------------------|
-| `autoload.target`              | Object  | –               | Set of configuration options related to the bundle target.         |
-| `autoload.target.file`         | String  | `composer.json` | File where to bundle autoload configuration.                       |
-| `autoload.target.overwrite`    | Boolean | `false`         | Define whether to overwrite the target file, if it already exists. |
-| `autoload.backupSources`       | Boolean | `false`         | Define whether to backup source files.                             |
-| `autoload.excludeFromClassMap` | Array   | –               | List of files to exclude from vendor libraries class map.          |
+| Property                       | Type    | Default value   | Description                                                                                    |
+|--------------------------------|---------|-----------------|------------------------------------------------------------------------------------------------|
+| `autoload.enabled`             | Boolean | `true`          | Define whether autoload bundling is enabled when executing [`composer bundle`](cli.md#bundle). |
+| `autoload.target`              | Object  | –               | Set of configuration options related to the bundle target.                                     |
+| `autoload.target.file`         | String  | `composer.json` | File where to bundle autoload configuration.                                                   |
+| `autoload.target.overwrite`    | Boolean | `false`         | Define whether to overwrite the target file, if it already exists.                             |
+| `autoload.backupSources`       | Boolean | `false`         | Define whether to backup source files.                                                         |
+| `autoload.excludeFromClassMap` | Array   | –               | List of files to exclude from vendor libraries class map.                                      |
 
 ## Dependencies
 
@@ -62,6 +65,7 @@ rootPath: ../
 
 | Property                       | Type    | Default value | Description                                                                                                                         |
 |--------------------------------|---------|---------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| `dependencies.enabled`         | Boolean | `true`        | Define whether dependency bundling is enabled when executing [`composer bundle`](cli.md#bundle).                                    |
 | `dependencies.sbom`            | Object  | –             | Set of configuration options used to define SBOM file generation.                                                                   |
 | `dependencies.sbom.file`       | String  | `sbom.json`   | File where to write the serialized SBOM. Can be a JSON or XML file. Relative paths are resolved based on the vendor libraries path. |
 | `dependencies.sbom.version`    | String  | `1.7`         | CycloneDX BOM version to use.                                                                                                       |

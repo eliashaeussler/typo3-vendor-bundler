@@ -23,8 +23,10 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Command;
 
+use EliasHaeussler\Typo3VendorBundler\Config;
 use Symfony\Component\Console;
 
+use function array_filter;
 use function sprintf;
 
 /**
@@ -56,7 +58,27 @@ final class BundleCommand extends AbstractConfigurationAwareCommand
 
     protected function execute(Console\Input\InputInterface $input, Console\Output\OutputInterface $output): int
     {
-        foreach ($this->bundlers as $bundler) {
+        if ([] === $this->bundlers) {
+            $this->io->warning('No bundlers registered.');
+
+            return self::FAILURE;
+        }
+
+        $configFile = $input->getOption('config');
+        $config = $this->readConfigFile($configFile, (string) getcwd());
+        $bundlers = array_filter(
+            $this->bundlers,
+            fn (Console\Command\Command $bundler) => $this->isBundlerEnabled($bundler, $config),
+        );
+
+        // Exit early if no bundlers are enabled
+        if ([] === $bundlers) {
+            $this->io->warning('No bundlers enabled.');
+
+            return self::FAILURE;
+        }
+
+        foreach ($bundlers as $bundler) {
             $result = $this->runBundler($bundler, $input, $output);
 
             if (self::SUCCESS !== $result) {
@@ -92,5 +114,18 @@ final class BundleCommand extends AbstractConfigurationAwareCommand
             new Console\Input\ArrayInput($parameters, $bundler->getDefinition()),
             $output,
         );
+    }
+
+    private function isBundlerEnabled(Console\Command\Command $bundler, ?Config\Typo3VendorBundlerConfig $config): bool
+    {
+        if (null === $config) {
+            return true;
+        }
+
+        return match ($bundler::class) {
+            BundleAutoloadCommand::class => $config->autoload()->enabled(),
+            BundleDependenciesCommand::class => $config->dependencies()->enabled(),
+            default => true,
+        };
     }
 }

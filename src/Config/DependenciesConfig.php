@@ -32,8 +32,14 @@ namespace EliasHaeussler\Typo3VendorBundler\Config;
 final readonly class DependenciesConfig
 {
     public function __construct(
+        private bool $enabled = true,
         private Sbom $sbom = new Sbom(),
     ) {}
+
+    public function enabled(): bool
+    {
+        return $this->enabled;
+    }
 
     public function sbom(): Sbom
     {
