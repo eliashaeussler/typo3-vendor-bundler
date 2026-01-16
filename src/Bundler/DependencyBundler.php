@@ -24,9 +24,6 @@ declare(strict_types=1);
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
 use Composer\Composer;
-use Composer\Factory;
-use Composer\Installer;
-use Composer\IO;
 use CycloneDX\Core;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
@@ -46,6 +43,7 @@ use function is_dir;
 final readonly class DependencyBundler implements Bundler
 {
     use CanExtractDependencies;
+    use CanInstallDependencies;
 
     private Resource\BomGenerator $bomGenerator;
     private Filesystem\Filesystem $filesystem;
@@ -88,7 +86,7 @@ final readonly class DependencyBundler implements Bundler
 
         // Extract vendor libraries from root package if necessary
         if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
-            $this->extractVendorLibrariesFromRootPackage($this->buildRootComposerInstance(), $failOnExtractionProblems);
+            $this->extractVendorLibrariesFromRootPackage($this->buildComposerInstance($this->rootPath), $failOnExtractionProblems);
         } elseif (!is_dir($this->librariesPath)) {
             throw new Exception\DirectoryDoesNotExist($this->librariesPath);
         }
@@ -104,7 +102,7 @@ final readonly class DependencyBundler implements Bundler
         }
 
         // Make sure Composer dependencies are installed
-        $composer = $this->installDependencies($includeDevDependencies);
+        $composer = $this->installVendorLibraries($includeDevDependencies);
 
         // Generate SBOM
         $bom = $this->taskRunner->run(
@@ -116,33 +114,6 @@ final readonly class DependencyBundler implements Bundler
         $this->serializeBom($version, $bom, $format, $filename);
 
         return new Entity\Dependencies($filename, $this->rootPath);
-    }
-
-    private function installDependencies(bool $includeDevDependencies): Composer
-    {
-        return $this->taskRunner->run(
-            '📦 Installing vendor libraries',
-            function (TaskRunner\RunnerContext $context) use ($includeDevDependencies) {
-                $output = $context->output;
-                $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
-                $composer = Factory::create(
-                    $io,
-                    Filesystem\Path::join($this->librariesPath, 'composer.json'),
-                );
-
-                $installResult = Installer::create($io, $composer)
-                    ->setDevMode($includeDevDependencies)
-                    ->run();
-
-                if (Console\Command\Command::SUCCESS !== $installResult) {
-                    $output->writeln($io->getOutput());
-
-                    throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
-                }
-
-                return $composer;
-            },
-        );
     }
 
     private function serializeBom(
@@ -182,19 +153,5 @@ final readonly class DependencyBundler implements Bundler
                 }
             },
         );
-    }
-
-    /**
-     * @throws Exception\DeclarationFileIsInvalid
-     */
-    private function buildRootComposerInstance(): Composer
-    {
-        $configFile = Filesystem\Path::join($this->rootPath, 'composer.json');
-
-        try {
-            return Factory::create(new IO\NullIO(), $configFile);
-        } catch (Throwable $exception) {
-            throw new Exception\DeclarationFileIsInvalid($configFile, previous: $exception);
-        }
     }
 }

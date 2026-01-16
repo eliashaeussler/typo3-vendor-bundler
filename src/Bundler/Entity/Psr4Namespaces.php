@@ -26,6 +26,7 @@ namespace EliasHaeussler\Typo3VendorBundler\Bundler\Entity;
 use Symfony\Component\Filesystem;
 
 use function array_map;
+use function in_array;
 
 /**
  * Psr4Namespaces.
@@ -41,29 +42,27 @@ final readonly class Psr4Namespaces extends PathAwareBundle
     private string $filename;
 
     /**
-     * @var array<string, string>
+     * @var array<string, array<string>>
      */
     private array $namespaces;
 
     /**
-     * @param array<string, string> $namespaces
+     * @param array<string, array<string>> $namespaces
      */
-    public function __construct(
-        array $namespaces,
-        string $filename,
-        string $rootPath,
-    ) {
+    public function __construct(array $namespaces, string $filename, string $rootPath)
+    {
         parent::__construct($rootPath);
 
-        $this->namespaces = array_map(
-            $this->convertToAbsolutePath(...),
-            $namespaces,
-        );
+        foreach ($namespaces as $prefix => $paths) {
+            $namespaces[$prefix] = array_map($this->convertToAbsolutePath(...), $paths);
+        }
+
+        $this->namespaces = $namespaces;
         $this->filename = $this->convertToAbsolutePath($filename);
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, array<string>>
      */
     public function toArray(bool $useRelativePaths = false): array
     {
@@ -71,10 +70,13 @@ final readonly class Psr4Namespaces extends PathAwareBundle
             return $this->namespaces;
         }
 
-        return array_map(
-            $this->convertToRelativePath(...),
-            $this->namespaces,
-        );
+        $namespaces = [];
+
+        foreach ($this->namespaces as $prefix => $paths) {
+            $namespaces[$prefix] = array_map($this->convertToRelativePath(...), $paths);
+        }
+
+        return $namespaces;
     }
 
     public function filename(bool $asRelativePath = false): string
@@ -91,8 +93,14 @@ final readonly class Psr4Namespaces extends PathAwareBundle
         $theseNamespaces = $this->namespaces;
         $otherNamespaces = $other->namespaces;
 
-        foreach ($otherNamespaces as $class => $file) {
-            $theseNamespaces[$class] = $file;
+        foreach ($otherNamespaces as $prefix => $paths) {
+            $theseNamespaces[$prefix] ??= [];
+
+            foreach ($paths as $path) {
+                if (!in_array($path, $theseNamespaces[$prefix], true)) {
+                    $theseNamespaces[$prefix][] = $path;
+                }
+            }
         }
 
         return new self($theseNamespaces, $filename ?? $this->filename, $this->rootPath);

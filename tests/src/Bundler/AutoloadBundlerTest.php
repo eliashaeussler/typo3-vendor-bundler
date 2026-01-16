@@ -141,30 +141,33 @@ final class AutoloadBundlerTest extends Framework\TestCase
                 true,
                 false,
                 [
-                    'vendor/composer/InstalledVersions.php',
+                    'baz.php',
                 ],
             );
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
-            self::assertStringContainsString(
-                '⛔ Removing vendor/composer/InstalledVersions.php from class map... Done',
-                $output,
-            );
+            self::assertStringContainsString('🎶 Parsing composer.json of vendor libraries... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from composer.json... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from libs/composer.json... Done', $output);
+            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
+            self::assertStringContainsString('⛔ Removed baz.php from class map', $output);
+            self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
             self::assertFileExists($targetFile);
 
             $actual = $this->parseComposerJson($targetFile);
 
             self::assertIsArray($actual->getAutoload()['classmap'] ?? null);
-            self::assertNotContains('libs/vendor/composer/InstalledVersions.php', $actual->getAutoload()['classmap']);
+            self::assertNotContains('libs/baz.php', $actual->getAutoload()['classmap']);
         }
     }
 
     #[Framework\Attributes\Test]
-    public function bundleShowsErrorIfFileToExcludeFromClassMapIsNotIncludedInClassMap(): void
+    public function bundleShowsWarningIfFileToExcludeFromClassMapIsNotIncludedInClassMap(): void
     {
+        $this->output->setVerbosity(Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE);
+
         try {
             $this->subject->bundle(
                 new Src\Config\AutoloadTarget('composer_modified.json', true),
@@ -178,53 +181,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('⛔ Removing foo.php from class map... Failed', $output);
-        }
-    }
-
-    #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleThrowsExceptionIfRootComposerJsonContainsMultiplePathsForASingleNamespace(): void
-    {
-        $composerJson = $this->getFixturePath('invalid-multiple-namespace-paths').'/composer.json';
-        $subject = $this->createSubject('invalid-multiple-namespace-paths');
-
-        $this->expectExceptionObject(
-            new Src\Exception\DeclarationFileIsInvalid($composerJson, '[autoload][psr-4][Foo\\]'),
-        );
-
-        try {
-            $subject->bundle(new Src\Config\AutoloadTarget());
-        } finally {
-            $output = $this->output->fetch();
-
-            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Failed', $output);
-        }
-    }
-
-    #[Framework\Attributes\Test]
-    #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleFlattensSingleValueArrayOfNamespacePathsInComposerJsonFile(): void
-    {
-        $targetFile = $this->getFixturePath('valid-single-array-namespace-path').'/composer_modified.json';
-        $subject = $this->createSubject('valid-single-array-namespace-path');
-
-        try {
-            $subject->bundle(
-                new Src\Config\AutoloadTarget('composer_modified.json', true),
-            );
-        } finally {
-            $output = $this->output->fetch();
-
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
-            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
-            self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
-
-            $actual = $this->parseComposerJson($targetFile);
-
-            self::assertIsArray($actual->getAutoload()['psr-4'] ?? null);
-            self::assertCount(1, $actual->getAutoload()['psr-4']);
+            self::assertStringContainsString('⚠️ File foo.php not found in class map', $output);
         }
     }
 
@@ -242,10 +199,11 @@ final class AutoloadBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('🎶 Parsing composer.json of vendor libraries... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from composer.json... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from libs/composer.json... Done', $output);
             self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
         }
     }
 
@@ -280,15 +238,18 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('🎶 Parsing composer.json of vendor libraries... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from composer.json... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from libs/composer.json... Done', $output);
             self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
             self::assertStringContainsString('🦖 Backing up source files... Done', $output);
+            self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
         }
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsMergedAutoloadConfiguration(): void
     {
         $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
@@ -300,18 +261,19 @@ final class AutoloadBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🌱 Loading class map from root package... Done', $output);
-            self::assertStringContainsString('🌱 Building class map from vendor libraries... Done', $output);
+            self::assertStringContainsString('🎶 Parsing composer.json of vendor libraries... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from composer.json... Done', $output);
+            self::assertStringContainsString('🌱 Parsing autoloads from libs/composer.json... Done', $output);
             self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('🌱 Loading PSR-4 namespaces from root package... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
 
             $actual = $this->parseComposerJson($targetFile);
 
             self::assertIsArray($actual->getAutoload()['classmap'] ?? null);
-            self::assertGreaterThan(2, count($actual->getAutoload()['classmap']));
+            self::assertCount(2, $actual->getAutoload()['classmap']);
             self::assertIsArray($actual->getAutoload()['psr-4'] ?? null);
-            self::assertCount(1, $actual->getAutoload()['psr-4']);
+            self::assertGreaterThan(1, count($actual->getAutoload()['psr-4']));
         }
     }
 
