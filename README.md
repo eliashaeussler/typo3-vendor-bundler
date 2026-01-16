@@ -44,31 +44,14 @@ composer require --dev eliashaeussler/typo3-vendor-bundler
 
 ## ⚡ Quickstart
 
-Add a `typo3-vendor-bundler.yaml` config file:
+Add a `typo3-vendor-bundler.yaml` config file with a minimal recommended configuration:
 
 ```yaml
-# typo3-vendor-bundler.yaml
-
 autoload:
   target:
-    file: 'composer.json'
     overwrite: true
-  backupSources: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
-
-dependencies:
-  sbom:
-    file: 'sbom.json'
-    version: '1.7'
-    includeDev: false
-    overwrite: true
-
-dependencyExtraction:
-  enabled: true
-  failOnProblems: true
-
-pathToVendorLibraries: 'Resources/Private/Libs'
 ```
 
 Execute the main bundler:
