@@ -28,6 +28,7 @@ use Symfony\Component\Filesystem;
 use function array_diff;
 use function array_map;
 use function array_merge;
+use function array_unique;
 use function array_values;
 use function in_array;
 
@@ -114,7 +115,11 @@ final readonly class ClassMap extends PathAwareBundle
 
     public function merge(self $other, ?string $filename = null): self
     {
-        $map = array_merge($this->map, $other->map);
+        $map = array_values(
+            array_unique(
+                array_merge($this->map, $other->map),
+            ),
+        );
 
         return new self($map, $filename ?? $this->filename, $this->rootPath);
     }

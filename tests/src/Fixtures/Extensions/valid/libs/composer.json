@@ -4,5 +4,10 @@
 	},
 	"require-dev": {
 		"symfony/event-dispatcher-contracts": "*"
+	},
+	"autoload": {
+		"classmap": [
+			"baz.php"
+		]
 	}
 }

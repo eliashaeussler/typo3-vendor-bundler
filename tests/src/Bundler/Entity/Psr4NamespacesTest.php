@@ -43,8 +43,8 @@ final class Psr4NamespacesTest extends Framework\TestCase
     {
         $this->subject = new Src\Bundler\Entity\Psr4Namespaces(
             [
-                'Foo\\' => 'src',
-                'Baz\\' => 'other',
+                'Foo\\' => ['src'],
+                'Baz\\' => ['other'],
             ],
             'namespaces.php',
             __DIR__,
@@ -55,8 +55,8 @@ final class Psr4NamespacesTest extends Framework\TestCase
     public function toArrayReturnsPsr4Namespaces(): void
     {
         $expected = [
-            'Foo\\' => __DIR__.'/src',
-            'Baz\\' => __DIR__.'/other',
+            'Foo\\' => [__DIR__.'/src'],
+            'Baz\\' => [__DIR__.'/other'],
         ];
 
         self::assertSame($expected, $this->subject->toArray());
@@ -66,8 +66,8 @@ final class Psr4NamespacesTest extends Framework\TestCase
     public function toArrayReturnsPsr4NamespacesWithRelativePaths(): void
     {
         $expected = [
-            'Foo\\' => 'src',
-            'Baz\\' => 'other',
+            'Foo\\' => ['src'],
+            'Baz\\' => ['other'],
         ];
 
         self::assertSame($expected, $this->subject->toArray(true));
@@ -86,11 +86,11 @@ final class Psr4NamespacesTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function mergeMergesPsr4Namespacess(): void
+    public function mergeMergesPsr4Namespaces(): void
     {
         $other = new Src\Bundler\Entity\Psr4Namespaces(
             [
-                'Boo\\' => 'boo',
+                'Boo\\' => ['boo'],
             ],
             'other-namespaces.php',
             dirname(__DIR__),
@@ -98,9 +98,9 @@ final class Psr4NamespacesTest extends Framework\TestCase
 
         $expected = new Src\Bundler\Entity\Psr4Namespaces(
             [
-                'Foo\\' => __DIR__.'/src',
-                'Baz\\' => __DIR__.'/other',
-                'Boo\\' => dirname(__DIR__).'/boo',
+                'Foo\\' => [__DIR__.'/src'],
+                'Baz\\' => [__DIR__.'/other'],
+                'Boo\\' => [dirname(__DIR__).'/boo'],
             ],
             'namespaces.php',
             __DIR__,
@@ -114,7 +114,7 @@ final class Psr4NamespacesTest extends Framework\TestCase
     {
         $other = new Src\Bundler\Entity\Psr4Namespaces(
             [
-                'Boo\\' => 'boo',
+                'Boo\\' => ['boo'],
             ],
             'other-namespaces.php',
             dirname(__DIR__),
@@ -122,9 +122,9 @@ final class Psr4NamespacesTest extends Framework\TestCase
 
         $expected = new Src\Bundler\Entity\Psr4Namespaces(
             [
-                'Foo\\' => __DIR__.'/src',
-                'Baz\\' => __DIR__.'/other',
-                'Boo\\' => dirname(__DIR__).'/boo',
+                'Foo\\' => [__DIR__.'/src'],
+                'Baz\\' => [__DIR__.'/other'],
+                'Boo\\' => [dirname(__DIR__).'/boo'],
             ],
             'merged-namespaces.php',
             __DIR__,
