@@ -50,8 +50,6 @@ Add a `typo3-vendor-bundler.yaml` config file with a minimal recommended configu
 autoload:
   target:
     overwrite: true
-  excludeFromClassMap:
-    - 'vendor/composer/InstalledVersions.php'
 ```
 
 Execute the main bundler:

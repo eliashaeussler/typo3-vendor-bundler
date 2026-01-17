@@ -46,7 +46,7 @@ final class AutoloadTest extends Framework\TestCase
         );
         $psr4Namespaces = new Src\Bundler\Entity\Psr4Namespaces(
             [
-                'Foo\\' => 'src',
+                'Foo\\' => ['src'],
             ],
             'namespaces.php',
             __DIR__,
@@ -68,7 +68,7 @@ final class AutoloadTest extends Framework\TestCase
                 __DIR__.'/foo',
             ],
             'psr-4' => [
-                'Foo\\' => __DIR__.'/src',
+                'Foo\\' => [__DIR__.'/src'],
             ],
         ];
 
@@ -83,7 +83,7 @@ final class AutoloadTest extends Framework\TestCase
                 'foo',
             ],
             'psr-4' => [
-                'Foo\\' => 'src',
+                'Foo\\' => ['src'],
             ],
         ];
 

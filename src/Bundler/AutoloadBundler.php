@@ -25,7 +25,6 @@ namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
 use Composer\Composer;
 use Composer\Factory;
-use Composer\Installer;
 use Composer\IO;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Config;
@@ -35,15 +34,10 @@ use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
 
-use function array_key_exists;
-use function array_shift;
 use function array_values;
-use function count;
-use function file_exists;
-use function is_array;
 use function is_dir;
 use function is_file;
-use function reset;
+use function ksort;
 use function sprintf;
 
 /**
@@ -51,17 +45,11 @@ use function sprintf;
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
- *
- * @phpstan-type ExtEmConf array{
- *     autoload: array{
- *         classmap: list<string>,
- *         psr-4: array<string, string>,
- *     },
- * }
  */
 final readonly class AutoloadBundler implements Bundler
 {
     use CanExtractDependencies;
+    use CanInstallDependencies;
 
     private Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
@@ -80,7 +68,7 @@ final readonly class AutoloadBundler implements Bundler
         $this->filesystem = new Filesystem\Filesystem();
         $this->taskRunner = new TaskRunner\TaskRunner($this->output);
         $this->dependencyExtractor = new Resource\DependencyExtractor();
-        $this->rootComposer = $this->buildRootComposerInstance();
+        $this->rootComposer = $this->buildComposerInstance($this->rootPath);
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
     }
 
@@ -107,16 +95,8 @@ final readonly class AutoloadBundler implements Bundler
             throw new Exception\DirectoryDoesNotExist($this->librariesPath);
         }
 
-        // Build class maps
-        $classMaps = [
-            $this->loadRootComposerClassMap(),
-            $this->loadVendorComposerClassMap($excludeFromClassMap),
-        ];
-
-        // Create class map and PSR-4 namespaces
-        $classMap = $this->mergeClassMaps($classMaps, $targetFile);
-        $psr4Namespaces = $this->loadRootComposerPsr4Namespaces();
-        $autoload = new Entity\Autoload($classMap, $psr4Namespaces, $targetFile, $this->rootPath);
+        // Build autoload bundle from root package and vendor libraries
+        $autoload = $this->parseAutoloads($targetFile, $excludeFromClassMap);
 
         // Throw exception if target file already exists
         if (true !== $target->overwrite() && $this->filesystem->exists($targetFile)) {
@@ -156,174 +136,84 @@ final readonly class AutoloadBundler implements Bundler
     }
 
     /**
-     * @throws Throwable
-     */
-    private function loadRootComposerClassMap(): Entity\ClassMap
-    {
-        return $this->taskRunner->run(
-            '🌱 Loading class map from root package',
-            fn () => new Entity\ClassMap(
-                $this->fetchAutoloadFromComposerManifest()['classmap'],
-                Filesystem\Path::join($this->rootPath, 'composer.json'),
-                $this->rootPath,
-            ),
-        );
-    }
-
-    /**
      * @param list<non-empty-string> $excludeFromClassMap
-     *
-     * @throws Throwable
      */
-    private function loadVendorComposerClassMap(array $excludeFromClassMap = []): Entity\ClassMap
+    private function parseAutoloads(string $targetFile, array $excludeFromClassMap = []): Entity\Autoload
     {
+        $libsComposer = $this->installVendorLibraries();
+
+        [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces] = $this->taskRunner->run(
+            '🪄 Parsing autoloads',
+            function () use ($libsComposer) {
+                [$rootClassMap, $rootPsr4Namespaces] = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath);
+                [$libsClassMap, $libsPsr4Namespaces] = $this->parseAutoloadsFromPackage($libsComposer, $this->librariesPath);
+
+                return [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces];
+            },
+        );
+
         $classMap = $this->taskRunner->run(
-            '🌱 Building class map from vendor libraries',
-            function (TaskRunner\RunnerContext $context) {
-                $output = $context->output;
-                $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
-                $composer = Factory::create(
-                    $io,
-                    Filesystem\Path::join($this->librariesPath, 'composer.json'),
-                );
-
-                $vendorDir = $composer->getConfig()->get('vendor-dir');
-                $classMapFile = Filesystem\Path::join($vendorDir, 'composer', 'autoload_classmap.php');
-
-                $installResult = Installer::create($io, $composer)
-                    ->setClassMapAuthoritative(true)
-                    ->setOptimizeAutoloader(true)
-                    ->run();
-
-                if (Console\Command\Command::SUCCESS !== $installResult) {
-                    $output->writeln($io->getOutput());
-
-                    throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
-                }
-
-                if (!file_exists($classMapFile)) {
-                    throw new Exception\FileDoesNotExist($classMapFile);
-                }
-
-                $classMap = include $classMapFile;
-
-                // Throw exception if configured class map is invalid
-                if (!is_array($classMap)) {
-                    throw new Exception\DeclarationFileIsInvalid($classMapFile);
-                }
-
-                /** @var list<string> $classMap */
-                $classMap = array_values($classMap);
-
-                return new Entity\ClassMap($classMap, $classMapFile, $this->rootPath);
-            },
-        );
-
-        // Drop excluded files from class map
-        if ([] !== $excludeFromClassMap) {
-            foreach ($excludeFromClassMap as $path) {
-                $fullPath = Filesystem\Path::join($this->librariesPath, $path);
-                $classMap = $this->taskRunner->run(
-                    sprintf('⛔ Removing <comment>%s</comment> from class map', $path),
-                    function (TaskRunner\RunnerContext $context) use ($classMap, $fullPath) {
-                        if (!$classMap->has($fullPath)) {
-                            $context->markAsFailed();
-
-                            return $classMap;
-                        }
-
-                        return $classMap->remove($fullPath);
-                    },
-                    Console\Output\OutputInterface::VERBOSITY_VERBOSE,
-                );
-            }
-        }
-
-        return $classMap;
-    }
-
-    /**
-     * @param non-empty-list<Entity\ClassMap> $classMaps
-     *
-     * @throws Throwable
-     */
-    private function mergeClassMaps(array $classMaps, string $targetFile): Entity\ClassMap
-    {
-        return $this->taskRunner->run(
             '♨️ Merging class maps',
-            function () use ($classMaps, $targetFile) {
-                $mergedClassMap = array_shift($classMaps);
+            function (TaskRunner\RunnerContext $context) use ($excludeFromClassMap, $libsClassMap, $rootClassMap, $targetFile) {
+                $classMap = $rootClassMap->merge($libsClassMap, $targetFile);
 
-                foreach ($classMaps as $classMap) {
-                    $mergedClassMap = $mergedClassMap->merge($classMap, $targetFile);
+                // Drop excluded files from class map
+                foreach ($excludeFromClassMap as $path) {
+                    $fullPath = Filesystem\Path::join($this->librariesPath, $path);
+
+                    if ($classMap->has($fullPath)) {
+                        $classMap = $classMap->remove($fullPath);
+
+                        $context->output->writeln(
+                            sprintf('   ⛔ Removed <comment>%s</comment> from class map', $path),
+                            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
+                        );
+                    } else {
+                        $context->output->writeln(
+                            sprintf('   ⚠️ File <comment>%s</comment> not found in class map', $path),
+                            Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE,
+                        );
+                    }
                 }
 
-                return $mergedClassMap;
+                return $classMap;
             },
+            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
-    }
 
-    private function loadRootComposerPsr4Namespaces(): Entity\Psr4Namespaces
-    {
-        return $this->taskRunner->run(
-            '🌱 Loading PSR-4 namespaces from root package',
-            function () {
-                $filename = Filesystem\Path::join($this->rootPath, 'composer.json');
-                $namespaces = $this->fetchAutoloadFromComposerManifest()['psr-4'];
-
-                foreach ($namespaces as $namespace => $path) {
-                    if (!is_array($path)) {
-                        continue;
-                    }
-
-                    // Flatten array if there's only one path
-                    if (1 === count($path)) {
-                        $namespaces[$namespace] = reset($path);
-
-                        continue;
-                    }
-
-                    // Throw exception for multiple paths
-                    throw new Exception\DeclarationFileIsInvalid($filename, '[autoload][psr-4]['.$namespace.']');
-                }
-
-                /* @phpstan-ignore argument.type */
-                return new Entity\Psr4Namespaces($namespaces, $filename, $this->rootPath);
-            },
+        $psr4Namespaces = $this->taskRunner->run(
+            '♨️ Merging PSR-4 namespaces',
+            static fn () => $rootPsr4Namespaces->merge($libsPsr4Namespaces, $targetFile),
+            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
+
+        return new Entity\Autoload($classMap, $psr4Namespaces, $targetFile, $this->rootPath);
     }
 
     /**
-     * @return array{
-     *     classmap: list<string>,
-     *     psr-4: array<string, string|string[]>,
-     * }
+     * @return array{Entity\ClassMap, Entity\Psr4Namespaces}
      */
-    private function fetchAutoloadFromComposerManifest(): array
+    private function parseAutoloadsFromPackage(Composer $composer, string $rootPath): array
     {
-        $autoload = $this->rootComposer->getPackage()->getAutoload();
+        $filename = $composer->getConfig()->getConfigSource()->getName();
+        $autoloadGenerator = $composer->getAutoloadGenerator();
+        $packageMap = $autoloadGenerator->buildPackageMap(
+            $composer->getInstallationManager(),
+            $composer->getPackage(),
+            $composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages(),
+        );
 
-        if (!array_key_exists('classmap', $autoload)) {
-            $autoload['classmap'] = [];
-        }
-        if (!array_key_exists('psr-4', $autoload)) {
-            $autoload['psr-4'] = [];
-        }
+        ['psr-4' => $psr4, 'classmap' => $classMap] = $autoloadGenerator->parseAutoloads(
+            $packageMap,
+            $composer->getPackage(),
+            true,
+        );
 
-        return $autoload;
-    }
+        ksort($classMap);
 
-    /**
-     * @throws Exception\DeclarationFileIsInvalid
-     */
-    private function buildRootComposerInstance(): Composer
-    {
-        $configFile = Filesystem\Path::join($this->rootPath, 'composer.json');
-
-        try {
-            return Factory::create(new IO\NullIO(), $configFile);
-        } catch (Throwable $exception) {
-            throw new Exception\DeclarationFileIsInvalid($configFile, previous: $exception);
-        }
+        return [
+            new Entity\ClassMap(array_values($classMap), $filename, $rootPath),
+            new Entity\Psr4Namespaces($psr4, $filename, $rootPath),
+        ];
     }
 }
