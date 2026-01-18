@@ -143,7 +143,7 @@ final readonly class AutoloadBundler implements Bundler
         $libsComposer = $this->installVendorLibraries();
 
         [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces] = $this->taskRunner->run(
-            '🪄 Parsing autoloads',
+            '🪄 Parsing autoloads from <comment>composer.json</comment> files',
             function () use ($libsComposer) {
                 [$rootClassMap, $rootPsr4Namespaces] = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath, false);
                 [$libsClassMap, $libsPsr4Namespaces] = $this->parseAutoloadsFromPackage($libsComposer, $this->librariesPath);
@@ -153,7 +153,7 @@ final readonly class AutoloadBundler implements Bundler
         );
 
         $classMap = $this->taskRunner->run(
-            '♨️ Merging class maps',
+            '♨️ Merging class map declarations',
             function (TaskRunner\RunnerContext $context) use ($excludeFromClassMap, $libsClassMap, $rootClassMap, $targetFile) {
                 $classMap = $rootClassMap->merge($libsClassMap, $targetFile);
 
@@ -182,7 +182,7 @@ final readonly class AutoloadBundler implements Bundler
         );
 
         $psr4Namespaces = $this->taskRunner->run(
-            '♨️ Merging PSR-4 namespaces',
+            '♨️ Merging PSR-4 namespace declarations',
             static fn () => $rootPsr4Namespaces->merge($libsPsr4Namespaces, $targetFile),
             Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );

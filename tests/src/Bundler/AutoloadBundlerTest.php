@@ -147,9 +147,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
             $output = $this->output->fetch();
 
             self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
-            self::assertStringContainsString('🪄 Parsing autoloads... Done', $output);
-            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
+            self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
+            self::assertStringContainsString('♨️ Merging class map declarations... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespace declarations... Done', $output);
             self::assertStringContainsString('⛔ Removed baz.php from class map', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
             self::assertFileExists($targetFile);
@@ -198,9 +198,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
             $output = $this->output->fetch();
 
             self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
-            self::assertStringContainsString('🪄 Parsing autoloads... Done', $output);
-            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
+            self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
+            self::assertStringContainsString('♨️ Merging class map declarations... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespace declarations... Done', $output);
         }
     }
 
@@ -236,9 +236,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
             $output = $this->output->fetch();
 
             self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
-            self::assertStringContainsString('🪄 Parsing autoloads... Done', $output);
-            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
+            self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
+            self::assertStringContainsString('♨️ Merging class map declarations... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespace declarations... Done', $output);
             self::assertStringContainsString('🦖 Backing up source files... Done', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
         }
@@ -258,9 +258,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
             $output = $this->output->fetch();
 
             self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
-            self::assertStringContainsString('🪄 Parsing autoloads... Done', $output);
-            self::assertStringContainsString('♨️ Merging class maps... Done', $output);
-            self::assertStringContainsString('♨️ Merging PSR-4 namespaces... Done', $output);
+            self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
+            self::assertStringContainsString('♨️ Merging class map declarations... Done', $output);
+            self::assertStringContainsString('♨️ Merging PSR-4 namespace declarations... Done', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
 
             $actual = $this->parseComposerJson($targetFile);
