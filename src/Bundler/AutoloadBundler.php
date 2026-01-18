@@ -165,12 +165,12 @@ final readonly class AutoloadBundler implements Bundler
                         $classMap = $classMap->remove($fullPath);
 
                         $context->output->writeln(
-                            sprintf('   ⛔ Removed <comment>%s</comment> from class map', $path),
+                            sprintf(' <fg=cyan>∟</> ⛔ Removed <comment>%s</comment> from class map', $path),
                             Console\Output\OutputInterface::VERBOSITY_VERBOSE,
                         );
                     } else {
                         $context->output->writeln(
-                            sprintf('   ⚠️ File <comment>%s</comment> not found in class map', $path),
+                            sprintf(' <fg=cyan>∟</> ⚠️ File <comment>%s</comment> not found in class map', $path),
                             Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE,
                         );
                     }

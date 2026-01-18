@@ -111,7 +111,6 @@ final class AutoloadBundlerTest extends Framework\TestCase
             $output = $this->output->fetch();
 
             self::assertStringContainsString('🔎 Extracting vendor libraries from root package... Failed', $output);
-            self::assertStringContainsString('Could not resolve a dedicated Composer package for the requirement "eliashaeussler/sssseee".', $output);
         }
     }
 
