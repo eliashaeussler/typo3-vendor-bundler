@@ -145,7 +145,7 @@ final readonly class AutoloadBundler implements Bundler
         [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces] = $this->taskRunner->run(
             '🪄 Parsing autoloads',
             function () use ($libsComposer) {
-                [$rootClassMap, $rootPsr4Namespaces] = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath);
+                [$rootClassMap, $rootPsr4Namespaces] = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath, false);
                 [$libsClassMap, $libsPsr4Namespaces] = $this->parseAutoloadsFromPackage($libsComposer, $this->librariesPath);
 
                 return [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces];
@@ -193,14 +193,21 @@ final readonly class AutoloadBundler implements Bundler
     /**
      * @return array{Entity\ClassMap, Entity\Psr4Namespaces}
      */
-    private function parseAutoloadsFromPackage(Composer $composer, string $rootPath): array
+    private function parseAutoloadsFromPackage(Composer $composer, string $rootPath, bool $deep = true): array
     {
+        if ($deep) {
+            $packages = $composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
+        } else {
+            // Root package is automatically added in AutoloadGenerator->buildPackageMap()
+            $packages = [];
+        }
+
         $filename = $composer->getConfig()->getConfigSource()->getName();
         $autoloadGenerator = $composer->getAutoloadGenerator();
         $packageMap = $autoloadGenerator->buildPackageMap(
             $composer->getInstallationManager(),
             $composer->getPackage(),
-            $composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages(),
+            $packages,
         );
 
         ['psr-4' => $psr4, 'classmap' => $classMap] = $autoloadGenerator->parseAutoloads(
