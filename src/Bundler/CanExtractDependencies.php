@@ -59,6 +59,8 @@ trait CanExtractDependencies
                 $problems = $dependencySet->problems();
 
                 if ([] !== $problems) {
+                    $context->markAsFailed();
+
                     if ($failOnExtractionProblems) {
                         throw new Exception\DependencyExtractionFailed($problems);
                     }
