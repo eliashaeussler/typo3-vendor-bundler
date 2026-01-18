@@ -31,9 +31,9 @@ use Symfony\Component\Filesystem;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final readonly class Dependencies extends PathAwareBundle
+final class Dependencies extends PathAwareBundle
 {
-    private string $sbomFile;
+    private readonly string $sbomFile;
 
     public function __construct(string $sbomFile, string $rootPath)
     {

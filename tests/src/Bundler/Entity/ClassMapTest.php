@@ -72,22 +72,21 @@ final class ClassMapTest extends Framework\TestCase
     {
         $expected = $this->subject->toArray();
 
-        self::assertSame($this->subject, $this->subject->remove('baz'));
+        $this->subject->remove('baz');
+
         self::assertSame($expected, $this->subject->toArray());
     }
 
     #[Framework\Attributes\Test]
-    public function removeReturnsNewClassMapObjectWithoutGivenPath(): void
+    public function removeAppliesNewClassMapObjectWithoutGivenPath(): void
     {
-        $expected = new Src\Bundler\Entity\ClassMap(
-            [
-                'foo/baz',
-            ],
-            'classmap.php',
-            __DIR__,
-        );
+        $expected = [
+            __DIR__.'/foo/baz',
+        ];
 
-        self::assertEquals($expected, $this->subject->remove('foo'));
+        $this->subject->remove('foo');
+
+        self::assertEquals($expected, $this->subject->toArray());
     }
 
     #[Framework\Attributes\Test]
