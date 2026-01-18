@@ -41,9 +41,9 @@ use function in_array;
  * @see https://getcomposer.org/doc/04-schema.md#classmap
  * @see https://docs.typo3.org/permalink/t3coreapi:confval-ext-emconf-autoload
  */
-final readonly class ClassMap extends PathAwareBundle
+final class ClassMap extends PathAwareBundle
 {
-    private string $filename;
+    private readonly string $filename;
 
     /**
      * @var list<string>
@@ -74,19 +74,13 @@ final readonly class ClassMap extends PathAwareBundle
         return in_array($fullPath, $this->map, true);
     }
 
-    public function remove(string $path): self
+    public function remove(string $path): void
     {
         $fullPath = $this->convertToAbsolutePath($path);
 
-        if (!$this->has($fullPath)) {
-            return $this;
+        if ($this->has($fullPath)) {
+            $this->map = array_values(array_diff($this->map, [$fullPath]));
         }
-
-        return new self(
-            array_values(array_diff($this->map, [$fullPath])),
-            $this->filename,
-            $this->rootPath,
-        );
     }
 
     /**

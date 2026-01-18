@@ -36,10 +36,10 @@ final readonly class Autoload implements Bundle
     private string $filename;
 
     public function __construct(
-        private ClassMap $classMap,
-        private Psr4Namespaces $psr4Namespaces,
+        public ClassMap $classMap,
+        public Psr4Namespaces $psr4Namespaces,
         string $filename,
-        private string $rootPath,
+        public string $rootPath,
     ) {
         $this->filename = Filesystem\Path::makeAbsolute($filename, $this->rootPath);
     }
@@ -73,5 +73,15 @@ final readonly class Autoload implements Bundle
         }
 
         return $this->filename;
+    }
+
+    public function merge(self $other, ?string $filename = null): self
+    {
+        return new self(
+            $this->classMap->merge($other->classMap, $filename),
+            $this->psr4Namespaces->merge($other->psr4Namespaces, $filename),
+            $filename ?? $this->filename,
+            $this->rootPath,
+        );
     }
 }

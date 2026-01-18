@@ -142,27 +142,19 @@ final readonly class AutoloadBundler implements Bundler
     {
         $libsComposer = $this->installVendorLibraries();
 
-        [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces] = $this->taskRunner->run(
+        return $this->taskRunner->run(
             '🪄 Parsing autoloads from <comment>composer.json</comment> files',
-            function () use ($libsComposer) {
-                [$rootClassMap, $rootPsr4Namespaces] = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath, false);
-                [$libsClassMap, $libsPsr4Namespaces] = $this->parseAutoloadsFromPackage($libsComposer, $this->librariesPath);
-
-                return [$rootClassMap, $rootPsr4Namespaces, $libsClassMap, $libsPsr4Namespaces];
-            },
-        );
-
-        $classMap = $this->taskRunner->run(
-            '♨️ Merging class map declarations',
-            function (TaskRunner\RunnerContext $context) use ($excludeFromClassMap, $libsClassMap, $rootClassMap, $targetFile) {
-                $classMap = $rootClassMap->merge($libsClassMap, $targetFile);
+            function (TaskRunner\RunnerContext $context) use ($libsComposer, $targetFile, $excludeFromClassMap) {
+                $rootAutoloads = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath, false);
+                $libsAutoloads = $this->parseAutoloadsFromPackage($libsComposer, $this->librariesPath);
+                $autoload = $rootAutoloads->merge($libsAutoloads, $targetFile);
 
                 // Drop excluded files from class map
                 foreach ($excludeFromClassMap as $path) {
                     $fullPath = Filesystem\Path::join($this->librariesPath, $path);
 
-                    if ($classMap->has($fullPath)) {
-                        $classMap = $classMap->remove($fullPath);
+                    if ($autoload->classMap->has($fullPath)) {
+                        $autoload->classMap->remove($fullPath);
 
                         $context->output->writeln(
                             sprintf(' <fg=cyan>∟</> ⛔ Removed <comment>%s</comment> from class map', $path),
@@ -176,24 +168,12 @@ final readonly class AutoloadBundler implements Bundler
                     }
                 }
 
-                return $classMap;
+                return $autoload;
             },
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );
-
-        $psr4Namespaces = $this->taskRunner->run(
-            '♨️ Merging PSR-4 namespace declarations',
-            static fn () => $rootPsr4Namespaces->merge($libsPsr4Namespaces, $targetFile),
-            Console\Output\OutputInterface::VERBOSITY_VERBOSE,
-        );
-
-        return new Entity\Autoload($classMap, $psr4Namespaces, $targetFile, $this->rootPath);
     }
 
-    /**
-     * @return array{Entity\ClassMap, Entity\Psr4Namespaces}
-     */
-    private function parseAutoloadsFromPackage(Composer $composer, string $rootPath, bool $deep = true): array
+    private function parseAutoloadsFromPackage(Composer $composer, string $rootPath, bool $deep = true): Entity\Autoload
     {
         if ($deep) {
             $packages = $composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
@@ -210,7 +190,7 @@ final readonly class AutoloadBundler implements Bundler
             $packages,
         );
 
-        ['psr-4' => $psr4, 'classmap' => $classMap] = $autoloadGenerator->parseAutoloads(
+        ['psr-4' => $namespaces, 'classmap' => $classMap] = $autoloadGenerator->parseAutoloads(
             $packageMap,
             $composer->getPackage(),
             true,
@@ -218,9 +198,11 @@ final readonly class AutoloadBundler implements Bundler
 
         ksort($classMap);
 
-        return [
+        return new Entity\Autoload(
             new Entity\ClassMap(array_values($classMap), $filename, $rootPath),
-            new Entity\Psr4Namespaces($psr4, $filename, $rootPath),
-        ];
+            new Entity\Psr4Namespaces($namespaces, $filename, $rootPath),
+            $filename,
+            $rootPath,
+        );
     }
 }

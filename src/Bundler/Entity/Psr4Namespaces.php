@@ -37,14 +37,14 @@ use function in_array;
  * @see https://getcomposer.org/doc/04-schema.md#psr-4
  * @see https://docs.typo3.org/permalink/t3coreapi:confval-ext-emconf-autoload
  */
-final readonly class Psr4Namespaces extends PathAwareBundle
+final class Psr4Namespaces extends PathAwareBundle
 {
-    private string $filename;
+    private readonly string $filename;
 
     /**
      * @var array<string, array<string>>
      */
-    private array $namespaces;
+    private readonly array $namespaces;
 
     /**
      * @param array<string, array<string>> $namespaces

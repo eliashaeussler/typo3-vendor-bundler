@@ -31,12 +31,12 @@ use Symfony\Component\Filesystem;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-abstract readonly class PathAwareBundle implements Bundle
+abstract class PathAwareBundle implements Bundle
 {
-    protected Filesystem\Filesystem $filesystem;
+    protected readonly Filesystem\Filesystem $filesystem;
 
     public function __construct(
-        protected string $rootPath,
+        protected readonly string $rootPath,
     ) {
         $this->filesystem = new Filesystem\Filesystem();
     }
