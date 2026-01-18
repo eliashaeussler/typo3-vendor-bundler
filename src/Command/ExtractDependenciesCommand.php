@@ -187,7 +187,7 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
                 foreach ($dependencySet->requirements() as $packageName => $packageVersion) {
                     $context->output->writeln(
                         sprintf(
-                            '✅ Extracted <comment>%s</comment> (version: <comment>%s</comment>)',
+                            ' <fg=cyan>∟</> ✅ Extracted <comment>%s</comment> (version: <comment>%s</comment>)',
                             $packageName,
                             $packageVersion,
                         ),
@@ -198,7 +198,7 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
                 // Display exclusions (only on -vv mode)
                 foreach ($dependencySet->exclusions() as $packageName => $packageVersion) {
                     $context->output->writeln(
-                        sprintf('⛔️ Excluded <comment>%s</comment> (all versions)', $packageName),
+                        sprintf(' <fg=cyan>∟</> ⛔️ Excluded <comment>%s</comment> (all versions)', $packageName),
                         Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE,
                     );
                 }

@@ -56,17 +56,18 @@ trait CanExtractDependencies
             '🔎 Extracting vendor libraries from root package',
             function (TaskRunner\RunnerContext $context) use ($failOnExtractionProblems, $rootComposer) {
                 $dependencySet = $this->dependencyExtractor->extract($rootComposer);
-                $problems = [];
+                $problems = $dependencySet->problems();
 
-                foreach ($dependencySet->problems() as $problem) {
-                    $problems[] = $problem;
-                    $context->output->writeln(
-                        sprintf('⚠️ <warning>%s</warning>', $problem),
-                    );
-                }
+                if ([] !== $problems) {
+                    if ($failOnExtractionProblems) {
+                        throw new Exception\DependencyExtractionFailed($problems);
+                    }
 
-                if ($failOnExtractionProblems && [] !== $problems) {
-                    throw new Exception\DependencyExtractionFailed($problems);
+                    foreach ($problems as $problem) {
+                        $context->output->writeln(
+                            sprintf(' <fg=cyan>∟</> ⚠️ <warning>%s</warning>', $problem),
+                        );
+                    }
                 }
 
                 return $dependencySet;
