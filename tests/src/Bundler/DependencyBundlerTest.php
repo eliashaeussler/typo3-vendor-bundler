@@ -77,7 +77,7 @@ final class DependencyBundlerTest extends Framework\TestCase
 
         $output = $this->output->fetch();
 
-        self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
+        self::assertStringContainsString('🔎 Extracting vendor libraries from root package... Done', $output);
         self::assertStringContainsString('✍️ Creating composer.json file for extracted vendor libraries... Done', $output);
 
         $actual = $this->parseComposerJson($librariesPath.'/composer.json');
@@ -106,7 +106,7 @@ final class DependencyBundlerTest extends Framework\TestCase
         } finally {
             $output = $this->output->fetch();
 
-            self::assertStringContainsString('🔎 Extracting dependencies from root package... Failed', $output);
+            self::assertStringContainsString('🔎 Extracting vendor libraries from root package... Failed', $output);
             self::assertStringContainsString('Could not resolve a dedicated Composer package for the requirement "eliashaeussler/sssseee".', $output);
         }
     }
