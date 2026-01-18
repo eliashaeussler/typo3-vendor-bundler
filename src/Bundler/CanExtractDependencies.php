@@ -53,7 +53,7 @@ trait CanExtractDependencies
     ): void {
         /** @var Resource\DependencySet $dependencySet */
         $dependencySet = $this->taskRunner->run(
-            '🔎 Extracting dependencies from root package',
+            '🔎 Extracting vendor libraries from root package',
             function (TaskRunner\RunnerContext $context) use ($failOnExtractionProblems, $rootComposer) {
                 $dependencySet = $this->dependencyExtractor->extract($rootComposer);
                 $problems = [];
