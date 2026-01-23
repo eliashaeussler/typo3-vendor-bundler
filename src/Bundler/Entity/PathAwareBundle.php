@@ -33,13 +33,9 @@ use Symfony\Component\Filesystem;
  */
 abstract class PathAwareBundle implements Bundle
 {
-    protected readonly Filesystem\Filesystem $filesystem;
-
     public function __construct(
         protected readonly string $rootPath,
-    ) {
-        $this->filesystem = new Filesystem\Filesystem();
-    }
+    ) {}
 
     protected function convertToAbsolutePath(string $path): string
     {
