@@ -88,6 +88,26 @@ final class DependencyBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleDisplaysDependencyExtractionProblems(): void
+    {
+        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
+        $subject = $this->createSubject('invalid-libs');
+
+        $this->filesystem->remove($librariesPath);
+
+        $subject->bundle(
+            filename: 'sbom_modified.json',
+            failOnExtractionProblems: false,
+        );
+
+        $output = $this->output->fetch();
+
+        self::assertStringContainsString('🔎 Extracting vendor libraries from root package... Failed', $output);
+        self::assertStringContainsString('Could not resolve a dedicated Composer package for the requirement "eliashaeussler/sssseee".', $output);
+    }
+
+    #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfProblemsOccurDuringDependencyExtraction(): void
     {
         $librariesPath = $this->getFixturePath('invalid-libs').'/libs';

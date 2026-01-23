@@ -92,6 +92,26 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleDisplaysDependencyExtractionProblems(): void
+    {
+        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
+        $subject = $this->createSubject('invalid-libs');
+
+        $this->filesystem->remove($librariesPath);
+
+        $subject->bundle(
+            target: new Src\Config\AutoloadTarget('composer_modified.json', true),
+            failOnExtractionProblems: false,
+        );
+
+        $output = $this->output->fetch();
+
+        self::assertStringContainsString('🔎 Extracting vendor libraries from root package... Failed', $output);
+        self::assertStringContainsString('Could not resolve a dedicated Composer package for the requirement "eliashaeussler/sssseee".', $output);
+    }
+
+    #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfProblemsOccurDuringDependencyExtraction(): void
     {
         $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
