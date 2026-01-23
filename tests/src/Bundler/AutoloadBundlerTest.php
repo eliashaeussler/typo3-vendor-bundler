@@ -281,6 +281,8 @@ final class AutoloadBundlerTest extends Framework\TestCase
             self::assertCount(2, $actual->getAutoload()['classmap']);
             self::assertIsArray($actual->getAutoload()['psr-4'] ?? null);
             self::assertGreaterThan(1, count($actual->getAutoload()['psr-4']));
+            self::assertIsArray($actual->getAutoload()['files'] ?? null);
+            self::assertGreaterThan(2, count($actual->getAutoload()['files']));
         }
     }
 

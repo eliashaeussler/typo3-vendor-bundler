@@ -5,6 +5,9 @@
 		],
 		"psr-4": {
 			"Baz\\": "other"
-		}
+		},
+		"files": [
+			"foo.php"
+		]
 	}
 }

@@ -25,44 +25,36 @@ namespace EliasHaeussler\Typo3VendorBundler\Bundler\Entity;
 
 use Symfony\Component\Filesystem;
 
-use function array_diff;
 use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
-use function in_array;
 
 /**
- * ClassMap.
+ * FilesBundle.
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  *
- * @see https://getcomposer.org/doc/04-schema.md#classmap
+ * @see https://getcomposer.org/doc/04-schema.md#files
  */
-final class ClassMap extends PathAwareBundle implements MergeableBundle
+final class Files extends PathAwareBundle implements MergeableBundle
 {
     private readonly string $filename;
 
     /**
      * @var list<string>
      */
-    private array $map;
+    private array $files;
 
     /**
-     * @param list<string> $map
+     * @param list<string> $files
      */
-    public function __construct(
-        array $map,
-        string $filename,
-        string $rootPath,
-    ) {
+    public function __construct(array $files, string $filename, string $rootPath)
+    {
         parent::__construct($rootPath);
 
-        $this->map = array_map(
-            $this->convertToAbsolutePath(...),
-            $map,
-        );
+        $this->files = array_map($this->convertToAbsolutePath(...), $files);
         $this->filename = $this->convertToAbsolutePath($filename);
     }
 
@@ -70,7 +62,7 @@ final class ClassMap extends PathAwareBundle implements MergeableBundle
     {
         $fullPath = $this->convertToAbsolutePath($path);
 
-        return in_array($fullPath, $this->map, true);
+        return in_array($fullPath, $this->files, true);
     }
 
     public function remove(string $path): void
@@ -78,7 +70,7 @@ final class ClassMap extends PathAwareBundle implements MergeableBundle
         $fullPath = $this->convertToAbsolutePath($path);
 
         if ($this->has($fullPath)) {
-            $this->map = array_values(array_diff($this->map, [$fullPath]));
+            $this->files = array_values(array_diff($this->files, [$fullPath]));
         }
     }
 
@@ -88,12 +80,12 @@ final class ClassMap extends PathAwareBundle implements MergeableBundle
     public function toArray(bool $useRelativePaths = false): array
     {
         if (!$useRelativePaths) {
-            return $this->map;
+            return $this->files;
         }
 
         return array_map(
             $this->convertToRelativePath(...),
-            $this->map,
+            $this->files,
         );
     }
 
@@ -108,12 +100,12 @@ final class ClassMap extends PathAwareBundle implements MergeableBundle
 
     public function merge(MergeableBundle $other, ?string $filename = null): static
     {
-        $map = array_values(
+        $files = array_values(
             array_unique(
-                array_merge($this->map, $other->map),
+                array_merge($this->files, $other->files),
             ),
         );
 
-        return new self($map, $filename ?? $this->filename, $this->rootPath);
+        return new self($files, $filename ?? $this->filename, $this->rootPath);
     }
 }

@@ -35,9 +35,8 @@ use function in_array;
  * @license GPL-3.0-or-later
  *
  * @see https://getcomposer.org/doc/04-schema.md#psr-4
- * @see https://docs.typo3.org/permalink/t3coreapi:confval-ext-emconf-autoload
  */
-final class Psr4Namespaces extends PathAwareBundle
+final class Psr4Namespaces extends PathAwareBundle implements MergeableBundle
 {
     private readonly string $filename;
 
@@ -88,7 +87,7 @@ final class Psr4Namespaces extends PathAwareBundle
         return $this->filename;
     }
 
-    public function merge(self $other, ?string $filename = null): self
+    public function merge(MergeableBundle $other, ?string $filename = null): static
     {
         $theseNamespaces = $this->namespaces;
         $otherNamespaces = $other->namespaces;
