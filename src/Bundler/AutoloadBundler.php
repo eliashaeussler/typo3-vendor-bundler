@@ -129,7 +129,10 @@ final readonly class AutoloadBundler implements Bundler
             '🎊 Dumping merged autoload configuration',
             function () use ($autoload) {
                 if (!is_file($autoload->filename())) {
-                    $this->filesystem->dumpFile($autoload->filename(), '{}');
+                    $this->filesystem->copy(
+                        Filesystem\Path::join($this->rootPath, 'composer.json'),
+                        $autoload->filename(),
+                    );
                 }
 
                 $composer = Factory::create(new IO\NullIO(), $autoload->filename());
