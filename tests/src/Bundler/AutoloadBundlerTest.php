@@ -154,8 +154,8 @@ final class AutoloadBundlerTest extends Framework\TestCase
 
             $actual = $this->parseComposerJson($targetFile);
 
-            self::assertIsArray($actual->getAutoload()['classmap'] ?? null);
-            self::assertNotContains('libs/baz.php', $actual->getAutoload()['classmap']);
+            // Assert that libs/baz.php is not included in final class map
+            self::assertSame(['baz.php'], $actual->getAutoload()['classmap'] ?? null);
         }
     }
 

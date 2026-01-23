@@ -25,19 +25,25 @@ namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
 use Composer\Composer;
 use Composer\Factory;
+use Composer\InstalledVersions;
 use Composer\IO;
+use Composer\Repository;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Config;
 use EliasHaeussler\Typo3VendorBundler\Exception;
+use EliasHaeussler\Typo3VendorBundler\Helper;
 use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
 
-use function array_values;
+use function array_map;
+use function basename;
 use function is_dir;
 use function is_file;
-use function ksort;
+use function is_int;
+use function method_exists;
+use function sort;
 use function sprintf;
 
 /**
@@ -173,33 +179,93 @@ final readonly class AutoloadBundler implements Bundler
         );
     }
 
+    /**
+     * @throws Exception\CannotDetectWorkingDirectory
+     * @throws Exception\DirectoryDoesNotExist
+     */
     private function parseAutoloadsFromPackage(Composer $composer, string $rootPath, bool $deep = true): Entity\Autoload
     {
-        if ($deep) {
-            $packages = $composer->getRepositoryManager()->getLocalRepository()->getCanonicalPackages();
-        } else {
-            // Root package is automatically added in AutoloadGenerator->buildPackageMap()
-            $packages = [];
+        $autoloadGenerator = clone $composer->getAutoloadGenerator();
+        /* @phpstan-ignore function.alreadyNarrowedType */
+        $dryRun = method_exists($autoloadGenerator, 'setDryRun');
+
+        // Enable dry-run mode (Composer >= 2.6)
+        if ($dryRun) {
+            $autoloadGenerator->setDryRun(true);
         }
 
+        $autoloadGenerator->setDevMode(false);
+        $autoloadGenerator->setRunScripts(false);
+        $autoloadGenerator->setClassMapAuthoritative(false);
         $filename = $composer->getConfig()->getConfigSource()->getName();
-        $autoloadGenerator = $composer->getAutoloadGenerator();
+        $repository = $composer->getRepositoryManager()->getLocalRepository();
+        $targetDir = Filesystem\Path::join($composer->getConfig()->get('vendor-dir'), 'composer-bundled');
+
+        // Limit local repository to root package if dependencies should be omitted
+        if (!$deep) {
+            $repository = new Repository\InstalledArrayRepository([
+                // Cloning is important here since the package may already be added to another repository
+                // and Composer prohibits adding a package to multiple repositories
+                clone $composer->getPackage(),
+            ]);
+        }
+
+        // Resolve PSR-4 namespaces
         $packageMap = $autoloadGenerator->buildPackageMap(
             $composer->getInstallationManager(),
             $composer->getPackage(),
-            $packages,
+            $repository->getCanonicalPackages(),
         );
-
-        ['psr-4' => $namespaces, 'classmap' => $classMap] = $autoloadGenerator->parseAutoloads(
+        ['psr-4' => $namespaces] = $autoloadGenerator->parseAutoloads(
             $packageMap,
             $composer->getPackage(),
             true,
         );
 
-        ksort($classMap);
+        // Resolve class map
+        $classMap = Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            static fn () => $autoloadGenerator->dump(
+                $composer->getConfig(),
+                $repository,
+                $composer->getPackage(),
+                $composer->getInstallationManager(),
+                basename($targetDir),
+                false,
+                null,
+                $composer->getLocker(),
+            ),
+        );
+
+        /* @phpstan-ignore function.impossibleType */
+        if (is_int($classMap)) {
+            // Extract class map from file (Composer < 2.4)
+            $classMapFile = Filesystem\Path::join($targetDir, 'autoload_classmap.php');
+            /** @var array<class-string, string> $classMap */
+            $classMap = require $classMapFile;
+            $classMap = array_map(
+                static fn (string $path) => Filesystem\Path::makeRelative($path, $rootPath),
+                $classMap,
+            );
+        } else {
+            // Use provided ClassMap instance (Composer >= 2.4)
+            $classMap = $classMap->map;
+        }
+
+        // Make sure to remove temporary generated autoload files
+        if (!$dryRun && $this->filesystem->exists($targetDir)) {
+            $this->filesystem->remove($targetDir);
+        }
+
+        // Always exclude InstalledVersions class
+        unset($classMap[InstalledVersions::class]);
+
+        // Extract class map entries and sort them alphabetically
+        $classMapEntries = $classMap;
+        sort($classMapEntries);
 
         return new Entity\Autoload(
-            new Entity\ClassMap(array_values($classMap), $filename, $rootPath),
+            new Entity\ClassMap($classMapEntries, $filename, $rootPath),
             new Entity\Psr4Namespaces($namespaces, $filename, $rootPath),
             $filename,
             $rootPath,

@@ -23,6 +23,8 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Exception;
 
+use Throwable;
+
 use function sprintf;
 
 /**
@@ -33,11 +35,12 @@ use function sprintf;
  */
 final class CannotInstallComposerDependencies extends Exception
 {
-    public function __construct(string $directory)
+    public function __construct(string $directory, ?Throwable $previous = null)
     {
         parent::__construct(
             sprintf('There was an error while trying to install Composer dependencies in "%s".', $directory),
             1750143473,
+            $previous,
         );
     }
 }

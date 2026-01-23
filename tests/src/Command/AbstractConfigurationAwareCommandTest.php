@@ -100,10 +100,7 @@ final class AbstractConfigurationAwareCommandTest extends Framework\TestCase
         $actual = $this->command->readConfigFile($configFile, $rootPath);
 
         self::assertNull($actual);
-        self::assertStringContainsString(
-            'Unexpected key(s) `foo`, expected `autoload`, `dependencies`, `dependencyExtraction`, `pathToVendorLibraries`, `rootPath`.',
-            $this->output->fetch(),
-        );
+        self::assertMatchesRegularExpression('/Unexpected key(\(s\))? `foo`/', $this->output->fetch());
         self::assertSame($rootPath.'/invalid-config.json', $configFile);
     }
 

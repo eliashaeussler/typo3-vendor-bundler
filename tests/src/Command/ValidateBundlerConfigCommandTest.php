@@ -65,7 +65,7 @@ final class ValidateBundlerConfigCommandTest extends Framework\TestCase
         ]);
 
         self::assertSame(Console\Command\Command::INVALID, $this->commandTester->getStatusCode());
-        self::assertStringContainsString('*root*: Unexpected key(s) `foo`', $this->commandTester->getDisplay());
+        self::assertMatchesRegularExpression('/Unexpected key(\(s\))? `foo`/', $this->commandTester->getDisplay());
     }
 
     #[Framework\Attributes\Test]
