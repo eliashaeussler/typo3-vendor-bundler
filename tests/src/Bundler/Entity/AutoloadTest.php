@@ -40,13 +40,17 @@ final class AutoloadTest extends Framework\TestCase
     public function setUp(): void
     {
         $classMap = new Src\Bundler\Entity\ClassMap(
-            ['foo'],
+            [
+                'foo',
+                'foo/baz',
+            ],
             'classmap.php',
             __DIR__,
         );
         $psr4Namespaces = new Src\Bundler\Entity\Psr4Namespaces(
             [
                 'Foo\\' => ['src'],
+                'Baz\\' => ['other'],
             ],
             'namespaces.php',
             __DIR__,
@@ -66,9 +70,11 @@ final class AutoloadTest extends Framework\TestCase
         $expected = [
             'classmap' => [
                 __DIR__.'/foo',
+                __DIR__.'/foo/baz',
             ],
             'psr-4' => [
                 'Foo\\' => [__DIR__.'/src'],
+                'Baz\\' => [__DIR__.'/other'],
             ],
         ];
 
@@ -81,9 +87,11 @@ final class AutoloadTest extends Framework\TestCase
         $expected = [
             'classmap' => [
                 'foo',
+                'foo/baz',
             ],
             'psr-4' => [
                 'Foo\\' => ['src'],
+                'Baz\\' => ['other'],
             ],
         ];
 
@@ -100,5 +108,148 @@ final class AutoloadTest extends Framework\TestCase
     public function filenameReturnsFilenameAsRelativePath(): void
     {
         self::assertSame('merged.php', $this->subject->filename(true));
+    }
+
+    #[Framework\Attributes\Test]
+    public function mergeMergesClassMaps(): void
+    {
+        $other = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    'baz',
+                    'baz/foo',
+                ],
+                'other-classmap.php',
+                dirname(__DIR__),
+            ),
+            $this->subject->psr4Namespaces,
+            'other.json',
+            dirname(__DIR__),
+        );
+
+        $expected = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    __DIR__.'/foo',
+                    __DIR__.'/foo/baz',
+                    dirname(__DIR__).'/baz',
+                    dirname(__DIR__).'/baz/foo',
+                ],
+                'classmap.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Psr4Namespaces(
+                [
+                    'Foo\\' => ['src'],
+                    'Baz\\' => ['other'],
+                ],
+                'namespaces.php',
+                __DIR__,
+            ),
+            'merged.php',
+            __DIR__,
+        );
+
+        self::assertEquals($expected, $this->subject->merge($other));
+    }
+
+    #[Framework\Attributes\Test]
+    public function mergeMergesPsr4Namespaces(): void
+    {
+        $other = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    'baz',
+                    'baz/foo',
+                ],
+                'other-classmap.php',
+                dirname(__DIR__),
+            ),
+            new Src\Bundler\Entity\Psr4Namespaces(
+                [
+                    'Boo\\' => ['boo'],
+                ],
+                'other-namespaces.php',
+                dirname(__DIR__),
+            ),
+            'other.json',
+            dirname(__DIR__),
+        );
+
+        $expected = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    __DIR__.'/foo',
+                    __DIR__.'/foo/baz',
+                    dirname(__DIR__).'/baz',
+                    dirname(__DIR__).'/baz/foo',
+                ],
+                'classmap.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Psr4Namespaces(
+                [
+                    'Foo\\' => [__DIR__.'/src'],
+                    'Baz\\' => [__DIR__.'/other'],
+                    'Boo\\' => [dirname(__DIR__).'/boo'],
+                ],
+                'namespaces.php',
+                __DIR__,
+            ),
+            'merged.php',
+            __DIR__,
+        );
+
+        self::assertEquals($expected, $this->subject->merge($other));
+    }
+
+    #[Framework\Attributes\Test]
+    public function mergeMergesAutoloadsAndAppliesGivenFilename(): void
+    {
+        $other = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    'baz',
+                    'baz/foo',
+                ],
+                'other-classmap.php',
+                dirname(__DIR__),
+            ),
+            new Src\Bundler\Entity\Psr4Namespaces(
+                [
+                    'Boo\\' => ['boo'],
+                ],
+                'other-namespaces.php',
+                dirname(__DIR__),
+            ),
+            'other.json',
+            dirname(__DIR__),
+        );
+
+        $expected = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    __DIR__.'/foo',
+                    __DIR__.'/foo/baz',
+                    dirname(__DIR__).'/baz',
+                    dirname(__DIR__).'/baz/foo',
+                ],
+                'merged-autoloads.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Psr4Namespaces(
+                [
+                    'Foo\\' => [__DIR__.'/src'],
+                    'Baz\\' => [__DIR__.'/other'],
+                    'Boo\\' => [dirname(__DIR__).'/boo'],
+                ],
+                'merged-autoloads.php',
+                __DIR__,
+            ),
+            'merged-autoloads.php',
+            __DIR__,
+        );
+
+        self::assertEquals($expected, $this->subject->merge($other, 'merged-autoloads.php'));
     }
 }
