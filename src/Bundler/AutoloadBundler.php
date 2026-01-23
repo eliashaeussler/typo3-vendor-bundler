@@ -38,6 +38,7 @@ use Symfony\Component\Filesystem;
 use Throwable;
 
 use function array_map;
+use function array_values;
 use function basename;
 use function is_dir;
 use function is_file;
@@ -216,7 +217,7 @@ final readonly class AutoloadBundler implements Bundler
             $composer->getPackage(),
             $repository->getCanonicalPackages(),
         );
-        ['psr-4' => $namespaces] = $autoloadGenerator->parseAutoloads(
+        ['files' => $files, 'psr-4' => $namespaces] = $autoloadGenerator->parseAutoloads(
             $packageMap,
             $composer->getPackage(),
             true,
@@ -267,6 +268,7 @@ final readonly class AutoloadBundler implements Bundler
         return new Entity\Autoload(
             new Entity\ClassMap($classMapEntries, $filename, $rootPath),
             new Entity\Psr4Namespaces($namespaces, $filename, $rootPath),
+            new Entity\Files(array_values($files), $filename, $rootPath),
             $filename,
             $rootPath,
         );

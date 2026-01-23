@@ -31,16 +31,23 @@ use Symfony\Component\Filesystem;
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
  */
-final readonly class Autoload implements Bundle
+final readonly class Autoload implements MergeableBundle
 {
+    public ClassMap $classMap;
+    public Psr4Namespaces $psr4Namespaces;
+    public Files $files;
     private string $filename;
 
     public function __construct(
-        public ClassMap $classMap,
-        public Psr4Namespaces $psr4Namespaces,
+        ?ClassMap $classMap,
+        ?Psr4Namespaces $psr4Namespaces,
+        ?Files $files,
         string $filename,
         public string $rootPath,
     ) {
+        $this->classMap = $classMap ?? new ClassMap([], $filename, $rootPath);
+        $this->psr4Namespaces = $psr4Namespaces ?? new Psr4Namespaces([], $filename, $rootPath);
+        $this->files = $files ?? new Files([], $filename, $rootPath);
         $this->filename = Filesystem\Path::makeAbsolute($filename, $this->rootPath);
     }
 
@@ -48,6 +55,7 @@ final readonly class Autoload implements Bundle
      * @return array{
      *     classmap?: list<string>,
      *     psr-4?: array<string, array<string>>,
+     *     files?: list<string>,
      * }
      */
     public function toArray(bool $useRelativePaths = false): array
@@ -55,12 +63,16 @@ final readonly class Autoload implements Bundle
         $autoload = [];
         $classMap = $this->classMap->toArray($useRelativePaths);
         $psr4Namespaces = $this->psr4Namespaces->toArray($useRelativePaths);
+        $files = $this->files->toArray($useRelativePaths);
 
         if ([] !== $classMap) {
             $autoload['classmap'] = $classMap;
         }
         if ([] !== $psr4Namespaces) {
             $autoload['psr-4'] = $psr4Namespaces;
+        }
+        if ([] !== $files) {
+            $autoload['files'] = $files;
         }
 
         return $autoload;
@@ -75,11 +87,12 @@ final readonly class Autoload implements Bundle
         return $this->filename;
     }
 
-    public function merge(self $other, ?string $filename = null): self
+    public function merge(MergeableBundle $other, ?string $filename = null): static
     {
         return new self(
             $this->classMap->merge($other->classMap, $filename),
             $this->psr4Namespaces->merge($other->psr4Namespaces, $filename),
+            $this->files->merge($other->files, $filename),
             $filename ?? $this->filename,
             $this->rootPath,
         );

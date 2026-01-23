@@ -16,13 +16,10 @@ with dependency injection.
 
 Uses Composer's native dependency management tools to **extract configured `autoload`
 configurations** from both root `composer.json` file and `composer.json` file within
-path to vendor libraries, e.g. `Resources/Private/Libs/composer.json`. In addition,
-**class maps** from both Composer manifests are extracted by reading the appropriate
-`vendor/composer/autoload_classmap.php` files.
-
-Once class maps and PSR-4 root namespaces are loaded, they are merged and dumped to
-the root `composer.json` file. This makes all autoloaded class available to TYPO3's
-autoloader in classic mode.
+path to vendor libraries, e.g. `Resources/Private/Libs/composer.json`. Once class
+maps, PSR-4 namespaces and autoload files are loaded, they are merged and dumped to
+the root `composer.json` file. This makes all autoloaded classes and files available
+to TYPO3's autoloader in classic mode.
 
 ## Configuration options
 
@@ -59,7 +56,7 @@ When executing the autoload bundler, it will first use
 [automatic dependency extraction](../extract.md) to extract the `eliashaeussler/cache-warmup`
 and `eliashaeussler/sse` packages as vendor libraries. In the next step, the dumped
 `Resources/Private/Libs/composer.json` file, which defines extracted vendor libraries,
-will be used to install dependencies. Afterwards, the resulting classmap will be merged
+will be used to install dependencies. Afterwards, the resulting autoloads will be merged
 into the `autoload` section of the root `composer.json` file:
 
 ```json
@@ -75,15 +72,11 @@ into the `autoload` section of the root `composer.json` file:
     },
     "autoload": {
         "psr-4": {
-            "EliasHaeussler\\TestExtension\\": "Classes/"
-        },
-        "classmap": [
-            "Resources/Private/Libs/vendor/composer/InstalledVersions.php",
-            "Resources/Private/Libs/vendor/eliashaeussler/cache-warmup/src/CacheWarmer.php",
-            "Resources/Private/Libs/vendor/eliashaeussler/cache-warmup/src/Command/CacheWarmupCommand.php",
-            "Resources/Private/Libs/vendor/eliashaeussler/sse/src/Event/Event.php",
+            "EliasHaeussler\\TestExtension\\": ["Classes"],
+            "EliasHaeussler\\CacheWarmup\\": ["Resources/Private/Libs/vendor/eliashaeussler/cache-warmup/src"],
+            "EliasHaeussler\\SSE\\": ["Resources/Private/Libs/vendor/eliashaeussler/sse/src"],
             // ...
-        ]
+        }
     }
 }
 ```

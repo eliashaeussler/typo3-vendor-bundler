@@ -26,6 +26,8 @@ namespace EliasHaeussler\Typo3VendorBundler\Tests\Bundler\Entity;
 use EliasHaeussler\Typo3VendorBundler as Src;
 use PHPUnit\Framework;
 
+use function dirname;
+
 /**
  * AutoloadTest.
  *
@@ -55,10 +57,19 @@ final class AutoloadTest extends Framework\TestCase
             'namespaces.php',
             __DIR__,
         );
+        $files = new Src\Bundler\Entity\Files(
+            [
+                'foo.php',
+                'foo/baz.php',
+            ],
+            'files.php',
+            __DIR__,
+        );
 
         $this->subject = new Src\Bundler\Entity\Autoload(
             $classMap,
             $psr4Namespaces,
+            $files,
             'merged.php',
             __DIR__,
         );
@@ -76,6 +87,10 @@ final class AutoloadTest extends Framework\TestCase
                 'Foo\\' => [__DIR__.'/src'],
                 'Baz\\' => [__DIR__.'/other'],
             ],
+            'files' => [
+                __DIR__.'/foo.php',
+                __DIR__.'/foo/baz.php',
+            ],
         ];
 
         self::assertSame($expected, $this->subject->toArray());
@@ -92,6 +107,10 @@ final class AutoloadTest extends Framework\TestCase
             'psr-4' => [
                 'Foo\\' => ['src'],
                 'Baz\\' => ['other'],
+            ],
+            'files' => [
+                'foo.php',
+                'foo/baz.php',
             ],
         ];
 
@@ -123,6 +142,7 @@ final class AutoloadTest extends Framework\TestCase
                 dirname(__DIR__),
             ),
             $this->subject->psr4Namespaces,
+            $this->subject->files,
             'other.json',
             dirname(__DIR__),
         );
@@ -146,6 +166,14 @@ final class AutoloadTest extends Framework\TestCase
                 'namespaces.php',
                 __DIR__,
             ),
+            new Src\Bundler\Entity\Files(
+                [
+                    'foo.php',
+                    'foo/baz.php',
+                ],
+                'files.php',
+                __DIR__,
+            ),
             'merged.php',
             __DIR__,
         );
@@ -157,14 +185,7 @@ final class AutoloadTest extends Framework\TestCase
     public function mergeMergesPsr4Namespaces(): void
     {
         $other = new Src\Bundler\Entity\Autoload(
-            new Src\Bundler\Entity\ClassMap(
-                [
-                    'baz',
-                    'baz/foo',
-                ],
-                'other-classmap.php',
-                dirname(__DIR__),
-            ),
+            $this->subject->classMap,
             new Src\Bundler\Entity\Psr4Namespaces(
                 [
                     'Boo\\' => ['boo'],
@@ -172,6 +193,7 @@ final class AutoloadTest extends Framework\TestCase
                 'other-namespaces.php',
                 dirname(__DIR__),
             ),
+            $this->subject->files,
             'other.json',
             dirname(__DIR__),
         );
@@ -181,8 +203,6 @@ final class AutoloadTest extends Framework\TestCase
                 [
                     __DIR__.'/foo',
                     __DIR__.'/foo/baz',
-                    dirname(__DIR__).'/baz',
-                    dirname(__DIR__).'/baz/foo',
                 ],
                 'classmap.php',
                 __DIR__,
@@ -194,6 +214,64 @@ final class AutoloadTest extends Framework\TestCase
                     'Boo\\' => [dirname(__DIR__).'/boo'],
                 ],
                 'namespaces.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Files(
+                [
+                    'foo.php',
+                    'foo/baz.php',
+                ],
+                'files.php',
+                __DIR__,
+            ),
+            'merged.php',
+            __DIR__,
+        );
+
+        self::assertEquals($expected, $this->subject->merge($other));
+    }
+
+    #[Framework\Attributes\Test]
+    public function mergeMergesFiles(): void
+    {
+        $other = new Src\Bundler\Entity\Autoload(
+            $this->subject->classMap,
+            $this->subject->psr4Namespaces,
+            new Src\Bundler\Entity\Files(
+                [
+                    'boo.php',
+                ],
+                'other-files.php',
+                dirname(__DIR__),
+            ),
+            'other.json',
+            dirname(__DIR__),
+        );
+
+        $expected = new Src\Bundler\Entity\Autoload(
+            new Src\Bundler\Entity\ClassMap(
+                [
+                    __DIR__.'/foo',
+                    __DIR__.'/foo/baz',
+                ],
+                'classmap.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Psr4Namespaces(
+                [
+                    'Foo\\' => [__DIR__.'/src'],
+                    'Baz\\' => [__DIR__.'/other'],
+                ],
+                'namespaces.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Files(
+                [
+                    __DIR__.'/foo.php',
+                    __DIR__.'/foo/baz.php',
+                    dirname(__DIR__).'/boo.php',
+                ],
+                'files.php',
                 __DIR__,
             ),
             'merged.php',
@@ -222,6 +300,13 @@ final class AutoloadTest extends Framework\TestCase
                 'other-namespaces.php',
                 dirname(__DIR__),
             ),
+            new Src\Bundler\Entity\Files(
+                [
+                    'boo.php',
+                ],
+                'other-files.php',
+                dirname(__DIR__),
+            ),
             'other.json',
             dirname(__DIR__),
         );
@@ -242,6 +327,15 @@ final class AutoloadTest extends Framework\TestCase
                     'Foo\\' => [__DIR__.'/src'],
                     'Baz\\' => [__DIR__.'/other'],
                     'Boo\\' => [dirname(__DIR__).'/boo'],
+                ],
+                'merged-autoloads.php',
+                __DIR__,
+            ),
+            new Src\Bundler\Entity\Files(
+                [
+                    __DIR__.'/foo.php',
+                    __DIR__.'/foo/baz.php',
+                    dirname(__DIR__).'/boo.php',
                 ],
                 'merged-autoloads.php',
                 __DIR__,
