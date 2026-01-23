@@ -29,12 +29,10 @@ use Composer\Installer;
 use Composer\IO;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
+use EliasHaeussler\Typo3VendorBundler\Helper;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
-
-use function chdir;
-use function getcwd;
 
 /**
  * CanInstallDependencies.
@@ -55,27 +53,17 @@ trait CanInstallDependencies
         return $this->taskRunner->run(
             '📦 Installing vendor libraries',
             function (TaskRunner\RunnerContext $context) use ($includeDevDependencies) {
-                $composer = $this->buildComposerInstance($this->librariesPath);
                 $output = $context->output;
-                $workingDirectory = getcwd();
-
-                // Fail if current working directory cannot be determined
-                if (false === $workingDirectory) {
-                    throw new Exception\CannotInstallComposerDependencies($this->librariesPath);
-                }
-
-                // Temporarily change working directory to libraries path to avoid path issues with registered class maps
-                chdir($this->librariesPath);
-
+                $composer = $this->buildComposerInstance($this->librariesPath);
                 $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
 
                 try {
-                    $installResult = Installer::create($io, $composer)
-                        ->setDevMode($includeDevDependencies)
-                        ->run();
-                } finally {
-                    // Change back to initial working directory
-                    chdir($workingDirectory);
+                    $installResult = Helper\FilesystemHelper::executeInDirectory(
+                        $this->librariesPath,
+                        static fn () => Installer::create($io, $composer)->setDevMode($includeDevDependencies)->run(),
+                    );
+                } catch (Exception\CannotDetectWorkingDirectory|Exception\DirectoryDoesNotExist $exception) {
+                    throw new Exception\CannotInstallComposerDependencies($this->librariesPath, $exception);
                 }
 
                 if (Console\Command\Command::SUCCESS !== $installResult) {

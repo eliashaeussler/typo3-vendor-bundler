@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the Composer package "eliashaeussler/typo3-vendor-bundler".
  *
@@ -19,4 +21,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-class Baz2 {}
+namespace EliasHaeussler\Typo3VendorBundler\Exception;
+
+/**
+ * CannotDetectWorkingDirectory.
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-3.0-or-later
+ */
+final class CannotDetectWorkingDirectory extends Exception
+{
+    public function __construct()
+    {
+        parent::__construct('Cannot detect the current working directory.', 1769186771);
+    }
+}
