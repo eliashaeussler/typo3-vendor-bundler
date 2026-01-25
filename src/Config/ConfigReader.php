@@ -122,7 +122,7 @@ final readonly class ConfigReader
 
         $config = $returnValue();
 
-        if (!($config instanceof Typo3VendorBundlerConfig)) {
+        if (!$config instanceof Typo3VendorBundlerConfig) {
             throw new Exception\ConfigFileIsInvalid($file);
         }
 
