@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Resource;
 
-use Composer\Composer;
 use Composer\Factory;
 use Composer\IO;
 use Composer\Package;
@@ -35,7 +34,6 @@ use DateTimeImmutable;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use Generator;
 use PackageUrl\PackageUrl;
-use Symfony\Component\Filesystem;
 
 use function array_filter;
 use function array_map;
@@ -56,20 +54,20 @@ final readonly class BomGenerator
     private Contrib\License\Factories\LicenseFactory $licenseFactory;
     private Composer $rootComposer;
 
+    /**
+     * @throws Exception\DeclarationFileIsInvalid
+     */
     public function __construct(
         private string $rootPath,
     ) {
         $this->licenseFactory = new Contrib\License\Factories\LicenseFactory();
-        $this->rootComposer = Factory::create(
-            new IO\NullIO(),
-            Filesystem\Path::join($this->rootPath, 'composer.json'),
-        );
+        $this->rootComposer = Composer::create($this->rootPath);
     }
 
     /**
      * @throws Exception\ComposerDependenciesAreNotInstalled
      */
-    public function generate(Composer $composer, bool $includeDevDependencies = true): Core\Models\Bom
+    public function generate(\Composer\Composer $composer, bool $includeDevDependencies = true): Core\Models\Bom
     {
         $locker = $composer->getLocker();
 
@@ -80,7 +78,7 @@ final readonly class BomGenerator
 
         $repository = $locker->getLockedRepository($includeDevDependencies);
         $packages = $repository->getPackages();
-        $rootPackage = $this->rootComposer->getPackage();
+        $rootPackage = $this->rootComposer->composer->getPackage();
         $rootComponent = $this->createComponentFromPackage($rootPackage);
         $components = [];
 
@@ -217,7 +215,7 @@ final readonly class BomGenerator
     {
         $composerTool = new Core\Models\Tool();
         $composerTool->setName('composer');
-        $composerTool->setVersion(Composer::getVersion());
+        $composerTool->setVersion(\Composer\Composer::getVersion());
 
         yield $composerTool;
 
@@ -248,11 +246,7 @@ final readonly class BomGenerator
 
     private function findToolPackage(string $packageName): ?Package\PackageInterface
     {
-        $io = new IO\NullIO();
-
-        $localComposerJson = Filesystem\Path::join($this->rootPath, 'composer.json');
-        $localComposer = Factory::create($io, $localComposerJson);
-        $localPackage = $localComposer->getRepositoryManager()->findPackage(
+        $localPackage = $this->rootComposer->composer->getRepositoryManager()->findPackage(
             $packageName,
             new Semver\Constraint\MatchAllConstraint(),
         );
@@ -261,7 +255,7 @@ final readonly class BomGenerator
             return $localPackage;
         }
 
-        return Factory::createGlobal($io)?->getRepositoryManager()->findPackage(
+        return Factory::createGlobal(new IO\NullIO())?->getRepositoryManager()->findPackage(
             $packageName,
             new Semver\Constraint\MatchAllConstraint(),
         );

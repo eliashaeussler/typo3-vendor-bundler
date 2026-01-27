@@ -1,0 +1,8 @@
+{
+	"require": {
+		"symfony/yaml": "*"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "*"
+	}
+}

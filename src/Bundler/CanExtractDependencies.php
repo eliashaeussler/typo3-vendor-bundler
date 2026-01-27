@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
-use Composer\Composer;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Resource;
@@ -47,15 +46,13 @@ trait CanExtractDependencies
      * @throws Exception\DependencyExtractionFailed
      * @throws Throwable
      */
-    private function extractVendorLibrariesFromRootPackage(
-        Composer $rootComposer,
-        bool $failOnExtractionProblems = true,
-    ): void {
+    private function extractVendorLibrariesFromRootPackage(bool $failOnExtractionProblems = true): void
+    {
         /** @var Resource\DependencySet $dependencySet */
         $dependencySet = $this->taskRunner->run(
             '🔎 Extracting vendor libraries from root package',
-            function (TaskRunner\RunnerContext $context) use ($failOnExtractionProblems, $rootComposer) {
-                $dependencySet = $this->dependencyExtractor->extract($rootComposer);
+            function (TaskRunner\RunnerContext $context) use ($failOnExtractionProblems) {
+                $dependencySet = $this->dependencyExtractor->extract($this->rootComposer->composer);
                 $problems = $dependencySet->problems();
 
                 if ([] !== $problems) {
@@ -78,9 +75,9 @@ trait CanExtractDependencies
 
         $this->taskRunner->run(
             '✍️ Creating <comment>composer.json</comment> file for extracted vendor libraries',
-            function () use ($dependencySet, $rootComposer) {
+            function () use ($dependencySet) {
                 $composerJson = Filesystem\Path::join($this->librariesPath, 'composer.json');
-                $dependencySet->dumpToFile($composerJson, $rootComposer);
+                $dependencySet->dumpToFile($composerJson, $this->rootComposer->composer);
             },
             Console\Output\OutputInterface::VERBOSITY_VERBOSE,
         );

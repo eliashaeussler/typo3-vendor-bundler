@@ -23,13 +23,9 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Resource;
 
-use Composer\Composer;
-use Composer\Factory;
-use Composer\IO;
 use Composer\Package;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use Symfony\Component\Filesystem;
-use Throwable;
 
 use function is_array;
 use function ksort;
@@ -104,7 +100,7 @@ final readonly class DependencySet
     /**
      * @throws Exception\DeclarationFileIsInvalid
      */
-    public function dumpToFile(string $filename, ?Composer $origin = null): void
+    public function dumpToFile(string $filename, ?\Composer\Composer $origin = null): void
     {
         $filesystem = new Filesystem\Filesystem();
 
@@ -113,12 +109,7 @@ final readonly class DependencySet
             $filesystem->dumpFile($filename, '{}');
         }
 
-        try {
-            $composer = Factory::create(new IO\NullIO(), $filename);
-        } catch (Throwable $exception) {
-            throw new Exception\DeclarationFileIsInvalid($filename, previous: $exception);
-        }
-
+        $composer = Composer::create($filename)->composer;
         $name = $origin?->getPackage()->getName() ?? '';
 
         if (!str_contains($name, '/')) {
