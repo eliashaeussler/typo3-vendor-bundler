@@ -35,16 +35,10 @@ use function sprintf;
  */
 final class DeclarationFileIsInvalid extends Exception
 {
-    public function __construct(string $file, ?string $invalidPath = null, ?Throwable $previous = null)
+    public function __construct(string $file, ?Throwable $previous = null)
     {
-        $additional = '';
-
-        if (null !== $invalidPath) {
-            $additional .= sprintf(' Invalid configuration path: %s', $invalidPath);
-        }
-
         parent::__construct(
-            sprintf('The declaration file "%s" does not contain a valid configuration structure.%s', $file, $additional),
+            sprintf('The declaration file "%s" does not contain a valid configuration structure.', $file),
             1750143303,
             $previous,
         );

@@ -59,7 +59,7 @@ final readonly class Composer
         try {
             $composer = Factory::create(new IO\NullIO(), $composerJson);
         } catch (Throwable $exception) {
-            throw new Exception\DeclarationFileIsInvalid($composerJson, previous: $exception);
+            throw new Exception\DeclarationFileIsInvalid($composerJson, $exception);
         }
 
         return new self($composer);
