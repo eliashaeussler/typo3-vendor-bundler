@@ -66,7 +66,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
         );
         $this->addOption(
             'sbom-version',
-            'b',
+            's',
             Console\Input\InputOption::VALUE_REQUIRED,
             sprintf(
                 'Version to use when dumping the generated SBOM (defaults to "%s")',

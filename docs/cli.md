@@ -107,7 +107,7 @@ composer bundle-dependencies \
     [<libs-dir>] \
     [-c|--config CONFIG] \
     [-f|--sbom-file SBOM-FILE] \
-    [-b|--sbom-version SBOM-VERSION] \
+    [-s|--sbom-version SBOM-VERSION] \
     [--[no-]dev] \
     [-o|--[no-]overwrite] \
     [-x|--[no-]extract] \
@@ -139,7 +139,7 @@ or `sbom.xml`.
 > [!NOTE]
 > If omitted, the `dependencies.sbom.file` option from the config file will be used instead.
 
-### `-b|--sbom-version`
+### `-s|--sbom-version`
 
 The CycloneDX BOM version to use. Must be an a supported version number, which
 is available in the provided [`Version` enum](https://github.com/CycloneDX/cyclonedx-php-library/blob/master/src/Core/Spec/Version.php).
