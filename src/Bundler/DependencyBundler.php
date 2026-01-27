@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
-use Composer\Composer;
 use CycloneDX\Core;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
@@ -43,14 +42,17 @@ use function is_dir;
 final readonly class DependencyBundler implements Bundler
 {
     use CanExtractDependencies;
-    use CanInstallDependencies;
 
     private Resource\BomGenerator $bomGenerator;
     private Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
     private Resource\DependencyExtractor $dependencyExtractor;
+    private Resource\Composer $rootComposer;
     private string $librariesPath;
 
+    /**
+     * @throws Exception\DeclarationFileIsInvalid
+     */
     public function __construct(
         private string $rootPath,
         string $librariesPath,
@@ -60,6 +62,7 @@ final readonly class DependencyBundler implements Bundler
         $this->filesystem = new Filesystem\Filesystem();
         $this->taskRunner = new TaskRunner\TaskRunner($this->output);
         $this->dependencyExtractor = new Resource\DependencyExtractor();
+        $this->rootComposer = Resource\Composer::create($this->rootPath);
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
     }
 
@@ -86,7 +89,7 @@ final readonly class DependencyBundler implements Bundler
 
         // Extract vendor libraries from root package if necessary
         if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
-            $this->extractVendorLibrariesFromRootPackage($this->buildComposerInstance($this->rootPath), $failOnExtractionProblems);
+            $this->extractVendorLibrariesFromRootPackage($failOnExtractionProblems);
         } elseif (!is_dir($this->librariesPath)) {
             throw new Exception\DirectoryDoesNotExist($this->librariesPath);
         }
@@ -102,7 +105,15 @@ final readonly class DependencyBundler implements Bundler
         }
 
         // Make sure Composer dependencies are installed
-        $composer = $this->installVendorLibraries($includeDevDependencies);
+        $composer = $this->taskRunner->run(
+            '📦 Installing vendor libraries',
+            function (TaskRunner\RunnerContext $context) use ($includeDevDependencies) {
+                $composer = Resource\Composer::create($this->librariesPath);
+                $composer->install($includeDevDependencies, $context->output);
+
+                return $composer->composer;
+            },
+        );
 
         // Generate SBOM
         $bom = $this->taskRunner->run(

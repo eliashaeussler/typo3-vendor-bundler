@@ -24,8 +24,6 @@ declare(strict_types=1);
 namespace EliasHaeussler\Typo3VendorBundler\Command;
 
 use Composer\Composer;
-use Composer\Factory;
-use Composer\IO;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
@@ -119,7 +117,7 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
         $problems = [];
 
         try {
-            $composer = Factory::create(new IO\NullIO(), Filesystem\Path::join($rootPath, 'composer.json'));
+            $composer = Resource\Composer::create($rootPath)->composer;
         } catch (Throwable) {
             $this->io->error('Could not initialize a Composer instance for the root package.');
 

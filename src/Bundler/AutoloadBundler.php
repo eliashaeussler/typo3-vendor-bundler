@@ -24,9 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
 use Composer\Composer;
-use Composer\Factory;
 use Composer\InstalledVersions;
-use Composer\IO;
 use Composer\Repository;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Config;
@@ -40,6 +38,7 @@ use Throwable;
 use function array_map;
 use function array_values;
 use function basename;
+use function dirname;
 use function is_dir;
 use function is_file;
 use function is_int;
@@ -56,12 +55,11 @@ use function sprintf;
 final readonly class AutoloadBundler implements Bundler
 {
     use CanExtractDependencies;
-    use CanInstallDependencies;
 
     private Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
     private Resource\DependencyExtractor $dependencyExtractor;
-    private Composer $rootComposer;
+    private Resource\Composer $rootComposer;
     private string $librariesPath;
 
     /**
@@ -75,7 +73,7 @@ final readonly class AutoloadBundler implements Bundler
         $this->filesystem = new Filesystem\Filesystem();
         $this->taskRunner = new TaskRunner\TaskRunner($this->output);
         $this->dependencyExtractor = new Resource\DependencyExtractor();
-        $this->rootComposer = $this->buildComposerInstance($this->rootPath);
+        $this->rootComposer = Resource\Composer::create($this->rootPath);
         $this->librariesPath = Filesystem\Path::makeAbsolute($librariesPath, $this->rootPath);
     }
 
@@ -97,7 +95,7 @@ final readonly class AutoloadBundler implements Bundler
 
         // Extract vendor libraries from root package if necessary
         if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
-            $this->extractVendorLibrariesFromRootPackage($this->rootComposer, $failOnExtractionProblems);
+            $this->extractVendorLibrariesFromRootPackage($failOnExtractionProblems);
         } elseif (!is_dir($this->librariesPath)) {
             throw new Exception\DirectoryDoesNotExist($this->librariesPath);
         }
@@ -135,8 +133,7 @@ final readonly class AutoloadBundler implements Bundler
                     );
                 }
 
-                $composer = Factory::create(new IO\NullIO(), $autoload->filename());
-                $configSource = $composer->getConfig()->getConfigSource();
+                $configSource = Resource\Composer::create($autoload->filename())->composer->getConfig()->getConfigSource();
                 /* @phpstan-ignore argument.type */
                 $configSource->addProperty('autoload', (object) $autoload->toArray(true));
             },
@@ -150,13 +147,21 @@ final readonly class AutoloadBundler implements Bundler
      */
     private function parseAutoloads(string $targetFile, array $excludeFromClassMap = []): Entity\Autoload
     {
-        $libsComposer = $this->installVendorLibraries();
+        $libsComposer = $this->taskRunner->run(
+            '📦 Installing vendor libraries',
+            function (TaskRunner\RunnerContext $context) {
+                $composer = Resource\Composer::create($this->librariesPath);
+                $composer->install(false, $context->output);
+
+                return $composer->composer;
+            },
+        );
 
         return $this->taskRunner->run(
             '🪄 Parsing autoloads from <comment>composer.json</comment> files',
             function (TaskRunner\RunnerContext $context) use ($libsComposer, $targetFile, $excludeFromClassMap) {
-                $rootAutoloads = $this->parseAutoloadsFromPackage($this->rootComposer, $this->rootPath, false);
-                $libsAutoloads = $this->parseAutoloadsFromPackage($libsComposer, $this->librariesPath);
+                $rootAutoloads = $this->parseAutoloadsFromPackage($this->rootComposer->composer, false);
+                $libsAutoloads = $this->parseAutoloadsFromPackage($libsComposer);
                 $autoload = $rootAutoloads->merge($libsAutoloads, $targetFile);
 
                 // Drop excluded files from class map
@@ -187,8 +192,9 @@ final readonly class AutoloadBundler implements Bundler
      * @throws Exception\CannotDetectWorkingDirectory
      * @throws Exception\DirectoryDoesNotExist
      */
-    private function parseAutoloadsFromPackage(Composer $composer, string $rootPath, bool $deep = true): Entity\Autoload
+    private function parseAutoloadsFromPackage(Composer $composer, bool $deep = true): Entity\Autoload
     {
+        $rootPath = dirname($composer->getConfig()->getConfigSource()->getName());
         $autoloadGenerator = clone $composer->getAutoloadGenerator();
         /* @phpstan-ignore function.alreadyNarrowedType */
         $dryRun = method_exists($autoloadGenerator, 'setDryRun');
