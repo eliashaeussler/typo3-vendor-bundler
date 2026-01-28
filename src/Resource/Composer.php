@@ -72,7 +72,7 @@ final readonly class Composer
         bool $includeDevDependencies = true,
         Console\Output\OutputInterface $output = new Console\Output\NullOutput(),
     ): void {
-        $rootPath = dirname($this->composer->getConfig()->getConfigSource()->getName());
+        $rootPath = $this->rootPath();
         $io = new IO\BufferIO('', $output->getVerbosity(), $output->getFormatter());
 
         try {
@@ -89,5 +89,15 @@ final readonly class Composer
 
             throw new Exception\CannotInstallComposerDependencies($rootPath);
         }
+    }
+
+    public function declarationFile(): string
+    {
+        return $this->composer->getConfig()->getConfigSource()->getName();
+    }
+
+    public function rootPath(): string
+    {
+        return dirname($this->declarationFile());
     }
 }

@@ -28,7 +28,6 @@ use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
-use Throwable;
 
 use function sprintf;
 
@@ -44,7 +43,6 @@ trait CanExtractDependencies
 {
     /**
      * @throws Exception\DependencyExtractionFailed
-     * @throws Throwable
      */
     private function extractVendorLibrariesFromRootPackage(bool $failOnExtractionProblems = true): void
     {

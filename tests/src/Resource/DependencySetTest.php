@@ -27,11 +27,10 @@ use Composer\Factory;
 use Composer\IO;
 use Composer\Package\Package;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
-use Symfony\Component\Filesystem;
 
 use function reset;
-use function sys_get_temp_dir;
 
 /**
  * DependencySetTest.
@@ -40,14 +39,14 @@ use function sys_get_temp_dir;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Resource\DependencySet::class)]
-final class DependencySetTest extends Framework\TestCase
+final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
 {
-    private Filesystem\Filesystem $filesystem;
     private Src\Resource\DependencySet $subject;
 
     public function setUp(): void
     {
-        $this->filesystem = new Filesystem\Filesystem();
+        parent::setUp();
+
         $this->subject = new Src\Resource\DependencySet(
             [
                 'foo/baz' => new Package('foo/baz', '1.0.0.0', '1.0.0'),
@@ -106,25 +105,21 @@ final class DependencySetTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function dumpToFileThrowsExceptionIfGivenFileExistsAndIsNotValid(): void
     {
-        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+        $filename = $this->createTemporaryDirectory().'/composer.json';
+
+        $this->filesystem->touch($filename);
 
         $this->expectExceptionObject(
             new Src\Exception\DeclarationFileIsInvalid($filename),
         );
 
-        try {
-            $this->subject->dumpToFile($filename);
-        } finally {
-            $this->filesystem->remove($filename);
-        }
+        $this->subject->dumpToFile($filename);
     }
 
     #[Framework\Attributes\Test]
     public function dumpToFileCreatesAndInitializesFileIfItDoesNotExistYet(): void
     {
-        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
-
-        $this->filesystem->remove($filename);
+        $filename = $this->createTemporaryDirectory().'/composer.json';
 
         self::assertFileDoesNotExist($filename);
 
@@ -132,14 +127,12 @@ final class DependencySetTest extends Framework\TestCase
 
         self::assertFileExists($filename);
         self::assertStringNotEqualsFile($filename, '');
-
-        $this->filesystem->remove($filename);
     }
 
     #[Framework\Attributes\Test]
     public function dumpToFileWritesDependenciesToGivenFile(): void
     {
-        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+        $filename = $this->createTemporaryDirectory().'/composer.json';
 
         $this->filesystem->dumpFile($filename, '{}');
 
@@ -169,15 +162,14 @@ final class DependencySetTest extends Framework\TestCase
 
         self::assertFalse($composer->getPackage()->getConfig()['allow-plugins'] ?? null);
         self::assertFalse($composer->getPackage()->getConfig()['lock'] ?? null);
-
-        $this->filesystem->remove($filename);
     }
 
     #[Framework\Attributes\Test]
     public function dumpToFileWritesDependenciesToGivenFileAndIncludesContextFromOrigin(): void
     {
-        $origin = Factory::create(new IO\NullIO(), dirname(__DIR__).'/Fixtures/Extensions/valid-composer-json/composer.json');
-        $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+        $fixturePath = self::getFixturePath('valid-composer-json');
+        $origin = Src\Resource\Composer::create($fixturePath)->composer;
+        $filename = $this->createTemporaryDirectory().'/composer.json';
 
         $this->filesystem->dumpFile($filename, '{}');
 
@@ -198,7 +190,5 @@ final class DependencySetTest extends Framework\TestCase
         self::assertSame('foo/root-libs', $composer->getPackage()->getName());
         self::assertCount(1, $repositories);
         self::assertSame($expectedRepository, reset($repositories));
-
-        $this->filesystem->remove($filename);
     }
 }

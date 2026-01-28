@@ -23,16 +23,12 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Tests\Bundler;
 
-use Composer\Factory;
-use Composer\IO;
-use Composer\Package;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
-use Symfony\Component\Filesystem;
 
 use function count;
-use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 
@@ -43,41 +39,44 @@ use function file_put_contents;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Bundler\AutoloadBundler::class)]
-final class AutoloadBundlerTest extends Framework\TestCase
+final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
 {
-    private Filesystem\Filesystem $filesystem;
     private Console\Output\BufferedOutput $output;
+    private string $rootPath;
     private Src\Bundler\AutoloadBundler $subject;
 
     public function setUp(): void
     {
-        $this->filesystem = new Filesystem\Filesystem();
+        parent::setUp();
+
         $this->output = new Console\Output\BufferedOutput(Console\Output\OutputInterface::VERBOSITY_VERBOSE);
-        $this->subject = $this->createSubject('valid');
+        $this->rootPath = $this->createTemporaryFixture();
+        $this->subject = $this->createSubject($this->rootPath);
     }
 
     #[Framework\Attributes\Test]
     public function constructorThrowsExceptionIfComposerFileIsInvalid(): void
     {
-        $rootPath = $this->getFixturePath('invalid-composer-file');
+        $rootPath = $this->createTemporaryFixture('invalid-composer-file');
 
         $this->expectExceptionObject(
             new Src\Exception\DeclarationFileIsInvalid($rootPath.'/composer.json'),
         );
 
-        $this->createSubject('invalid-composer-file');
+        $this->createSubject($rootPath);
     }
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
     public function bundleExtractsVendorLibrariesFromRootPackageIfComposerJsonForVendorLibrariesIsMissing(): void
     {
-        $librariesPath = $this->getFixturePath('valid-no-libs').'/libs';
-        $subject = $this->createSubject('valid-no-libs');
+        $rootPath = $this->createTemporaryFixture('valid-no-libs');
+        $librariesPath = $rootPath.'/libs';
+        $subject = $this->createSubject($rootPath);
 
         $this->filesystem->remove($librariesPath);
 
-        $subject->bundle(new Src\Config\AutoloadTarget('composer_modified.json', true));
+        $subject->bundle();
 
         $output = $this->output->fetch();
 
@@ -95,15 +94,13 @@ final class AutoloadBundlerTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDisplaysDependencyExtractionProblems(): void
     {
-        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
-        $subject = $this->createSubject('invalid-libs');
+        $rootPath = $this->createTemporaryFixture('invalid-libs');
+        $librariesPath = $rootPath.'/libs';
+        $subject = $this->createSubject($rootPath);
 
         $this->filesystem->remove($librariesPath);
 
-        $subject->bundle(
-            target: new Src\Config\AutoloadTarget('composer_modified.json', true),
-            failOnExtractionProblems: false,
-        );
+        $subject->bundle(failOnExtractionProblems: false);
 
         $output = $this->output->fetch();
 
@@ -114,8 +111,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfProblemsOccurDuringDependencyExtraction(): void
     {
-        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
-        $subject = $this->createSubject('invalid-libs');
+        $rootPath = $this->createTemporaryFixture('invalid-libs');
+        $librariesPath = $rootPath.'/libs';
+        $subject = $this->createSubject($rootPath);
 
         $this->filesystem->remove($librariesPath);
 
@@ -137,11 +135,11 @@ final class AutoloadBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfPathToVendorLibrariesDoesNotExist(): void
     {
-        $librariesPath = $this->getFixturePath('valid').'/foo';
-        $subject = $this->createSubject('valid', 'foo');
+        $rootPath = $this->createTemporaryFixture();
+        $subject = $this->createSubject($rootPath, 'foo');
 
         $this->expectExceptionObject(
-            new Src\Exception\DirectoryDoesNotExist($librariesPath),
+            new Src\Exception\DirectoryDoesNotExist($rootPath.'/foo'),
         );
 
         $subject->bundle(extractDependencies: false);
@@ -151,18 +149,10 @@ final class AutoloadBundlerTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function bundleExcludesFilesFromLibsClassMapInComposerJsonFile(): void
     {
-        $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
+        $composerJson = $this->rootPath.'/composer.json';
 
         try {
-            $this->subject->bundle(
-                new Src\Config\AutoloadTarget('composer_modified.json', true),
-                false,
-                true,
-                false,
-                [
-                    'baz.php',
-                ],
-            );
+            $this->subject->bundle(false, true, false, ['baz.php']);
         } finally {
             $output = $this->output->fetch();
 
@@ -170,9 +160,9 @@ final class AutoloadBundlerTest extends Framework\TestCase
             self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
             self::assertStringContainsString('⛔ Removed baz.php from class map', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
-            self::assertFileExists($targetFile);
+            self::assertFileExists($composerJson);
 
-            $actual = $this->parseComposerJson($targetFile);
+            $actual = $this->parseComposerJson($composerJson);
 
             // Assert that libs/baz.php is not included in final class map
             self::assertSame(['baz.php'], $actual->getAutoload()['classmap'] ?? null);
@@ -180,20 +170,13 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleShowsWarningIfFileToExcludeFromClassMapIsNotIncludedInClassMap(): void
     {
         $this->output->setVerbosity(Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE);
 
         try {
-            $this->subject->bundle(
-                new Src\Config\AutoloadTarget('composer_modified.json', true),
-                false,
-                true,
-                false,
-                [
-                    'foo.php',
-                ],
-            );
+            $this->subject->bundle(false, true, false, ['foo.php']);
         } finally {
             $output = $this->output->fetch();
 
@@ -202,30 +185,11 @@ final class AutoloadBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function bundleThrowsExceptionIfTargetComposerJsonFileAlreadyExists(): void
-    {
-        $targetFile = $this->getFixturePath('valid').'/composer.json';
-
-        $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($targetFile),
-        );
-
-        try {
-            $this->subject->bundle(new Src\Config\AutoloadTarget());
-        } finally {
-            $output = $this->output->fetch();
-
-            self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
-            self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
-        }
-    }
-
-    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleBacksUpSourceFiles(): void
     {
-        $fixturePath = $this->getFixturePath('valid');
-        $composerJson = $fixturePath.'/composer.json';
-        $composerJsonBackup = $fixturePath.'/composer.json.bak';
+        $composerJson = $this->rootPath.'/composer.json';
+        $composerJsonBackup = $this->rootPath.'/composer.json.bak';
 
         $this->filesystem->remove($composerJsonBackup);
 
@@ -235,12 +199,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
         $composerJsonSource = file_get_contents($composerJson);
 
         try {
-            $this->subject->bundle(
-                new Src\Config\AutoloadTarget(overwrite: true),
-                false,
-                true,
-                true,
-            );
+            $this->subject->bundle(false, true, true);
         } finally {
             // Restore original source files
             file_put_contents($composerJson, $composerJsonSource);
@@ -262,12 +221,10 @@ final class AutoloadBundlerTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsMergedAutoloadConfiguration(): void
     {
-        $targetFile = $this->getFixturePath('valid').'/composer_modified.json';
+        $composerJson = $this->rootPath.'/composer.json';
 
         try {
-            $this->subject->bundle(
-                new Src\Config\AutoloadTarget('composer_modified.json', true),
-            );
+            $this->subject->bundle();
         } finally {
             $output = $this->output->fetch();
 
@@ -275,7 +232,7 @@ final class AutoloadBundlerTest extends Framework\TestCase
             self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
 
-            $actual = $this->parseComposerJson($targetFile);
+            $actual = $this->parseComposerJson($composerJson);
 
             self::assertIsArray($actual->getAutoload()['classmap'] ?? null);
             self::assertCount(2, $actual->getAutoload()['classmap']);
@@ -286,24 +243,8 @@ final class AutoloadBundlerTest extends Framework\TestCase
         }
     }
 
-    private function parseComposerJson(string $filename): Package\RootPackageInterface
+    private function createSubject(string $rootPath, string $librariesPath = 'libs'): Src\Bundler\AutoloadBundler
     {
-        self::assertFileExists($filename);
-
-        return Factory::create(new IO\NullIO(), $filename)->getPackage();
-    }
-
-    private function createSubject(string $extension, string $librariesPath = 'libs'): Src\Bundler\AutoloadBundler
-    {
-        return new Src\Bundler\AutoloadBundler(
-            $this->getFixturePath($extension),
-            $librariesPath,
-            $this->output,
-        );
-    }
-
-    private function getFixturePath(string $extension): string
-    {
-        return dirname(__DIR__).'/Fixtures/Extensions/'.$extension;
+        return new Src\Bundler\AutoloadBundler($rootPath, $librariesPath, $this->output);
     }
 }

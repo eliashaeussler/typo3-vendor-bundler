@@ -5,9 +5,6 @@ The config file must follow a given schema:
 ```yaml
 autoload:
   enabled: true
-  target:
-    file: 'composer.json'
-    overwrite: false
   backupSources: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
@@ -49,14 +46,11 @@ rootPath: ../
 > [!TIP]
 > Read more about [autoload bundling](bundlers/autoload.md).
 
-| Property                       | Type    | Default value   | Description                                                                                    |
-|--------------------------------|---------|-----------------|------------------------------------------------------------------------------------------------|
-| `autoload.enabled`             | Boolean | `true`          | Define whether autoload bundling is enabled when executing [`composer bundle`](cli.md#bundle). |
-| `autoload.target`              | Object  | –               | Set of configuration options related to the bundle target.                                     |
-| `autoload.target.file`         | String  | `composer.json` | File where to bundle autoload configuration.                                                   |
-| `autoload.target.overwrite`    | Boolean | `false`         | Define whether to overwrite the target file, if it already exists.                             |
-| `autoload.backupSources`       | Boolean | `false`         | Define whether to backup source files.                                                         |
-| `autoload.excludeFromClassMap` | Array   | –               | List of files to exclude from vendor libraries class map.                                      |
+| Property                       | Type    | Default value | Description                                                                                    |
+|--------------------------------|---------|---------------|------------------------------------------------------------------------------------------------|
+| `autoload.enabled`             | Boolean | `true`        | Define whether autoload bundling is enabled when executing [`composer bundle`](cli.md#bundle). |
+| `autoload.backupSources`       | Boolean | `false`       | Define whether to backup source files.                                                         |
+| `autoload.excludeFromClassMap` | Array   | –             | List of files to exclude from vendor libraries class map.                                      |
 
 ## Dependencies
 

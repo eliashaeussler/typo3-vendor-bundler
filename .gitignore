@@ -1,13 +1,3 @@
-/.build/
-/tests/src/Fixtures/Extensions/*/libs/vendor
-/tests/src/Fixtures/Extensions/*/libs/composer.lock
-/tests/src/Fixtures/Extensions/*/libs/sbom.xml
-/tests/src/Fixtures/Extensions/*/libs/sbom_generated.json
-/tests/src/Fixtures/Extensions/*/composer.json.bak
-/tests/src/Fixtures/Extensions/*/composer_modified.json
-/tests/src/Fixtures/Extensions/invalid-libs/libs
-/tests/src/Fixtures/Extensions/invalid-libs/vendor
-/tests/src/Fixtures/Extensions/valid-temporary
-/tests/src/Fixtures/Extensions/valid-no-libs/libs
-/tests/src/Fixtures/Extensions/valid-no-libs/vendor
-/vendor/
+/.build
+/tests/src/Fixtures/Extensions/temporary
+/vendor

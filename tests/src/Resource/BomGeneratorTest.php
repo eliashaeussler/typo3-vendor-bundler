@@ -23,16 +23,9 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Tests\Resource;
 
-use Composer\Composer;
-use Composer\Factory;
-use Composer\Installer;
-use Composer\IO;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
-use Symfony\Component\Filesystem;
-
-use function chdir;
-use function dirname;
 
 /**
  * BomGeneratorTest.
@@ -41,19 +34,19 @@ use function dirname;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Resource\BomGenerator::class)]
-final class BomGeneratorTest extends Framework\TestCase
+final class BomGeneratorTest extends Tests\ExtensionFixtureBasedTestCase
 {
     private string $rootPath;
     private Src\Resource\BomGenerator $subject;
-    private Composer $composer;
-    private Filesystem\Filesystem $filesystem;
+    private Src\Resource\Composer $composer;
 
     public function setUp(): void
     {
-        $this->rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        parent::setUp();
+
+        $this->rootPath = $this->createTemporaryFixture();
         $this->subject = new Src\Resource\BomGenerator($this->rootPath);
-        $this->composer = Factory::create(new IO\NullIO(), $this->rootPath.'/libs/composer.json');
-        $this->filesystem = new Filesystem\Filesystem();
+        $this->composer = Src\Resource\Composer::create($this->rootPath.'/libs/composer.json');
     }
 
     #[Framework\Attributes\Test]
@@ -65,15 +58,16 @@ final class BomGeneratorTest extends Framework\TestCase
             new Src\Exception\ComposerDependenciesAreNotInstalled(),
         );
 
-        $this->subject->generate($this->composer);
+        $this->subject->generate($this->composer->composer);
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function generateReturnsBomWithRootComponent(): void
     {
-        $this->installDependencies();
+        $this->composer->install();
 
-        $actual = $this->subject->generate($this->composer);
+        $actual = $this->subject->generate($this->composer->composer);
 
         $rootComponent = $actual->getMetadata()->getComponent();
 
@@ -83,11 +77,12 @@ final class BomGeneratorTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function generateReturnsBomWithTools(): void
     {
-        $this->installDependencies();
+        $this->composer->install();
 
-        $actual = $this->subject->generate($this->composer);
+        $actual = $this->subject->generate($this->composer->composer);
 
         $tools = $actual->getMetadata()->getTools();
 
@@ -100,11 +95,12 @@ final class BomGeneratorTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function generateReturnsBomWithDevDependencies(): void
     {
-        $this->installDependencies();
+        $this->composer->install();
 
-        $actual = $this->subject->generate($this->composer);
+        $actual = $this->subject->generate($this->composer->composer);
 
         $components = $actual->getComponents();
 
@@ -114,33 +110,17 @@ final class BomGeneratorTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function generateReturnsBomWithoutDevDependencies(): void
     {
-        $this->installDependencies(false);
+        $this->composer->install(false);
 
-        $actual = $this->subject->generate($this->composer, false);
+        $actual = $this->subject->generate($this->composer->composer, false);
 
         $components = $actual->getComponents();
 
         self::assertGreaterThanOrEqual(1, $components->count());
         self::assertNotSame([], $components->findItem('yaml', 'symfony'));
         self::assertSame([], $components->findItem('event-dispatcher-contracts', 'symfony'));
-    }
-
-    private function installDependencies(bool $includeDevDependencies = true): void
-    {
-        $workingDirectory = (string) getcwd();
-
-        chdir(dirname($this->composer->getConfig()->getConfigSource()->getName()));
-
-        try {
-            $installResult = Installer::create(new IO\NullIO(), $this->composer)
-                ->setDevMode($includeDevDependencies)
-                ->run();
-        } finally {
-            chdir($workingDirectory);
-        }
-
-        self::assertSame(0, $installResult);
     }
 }

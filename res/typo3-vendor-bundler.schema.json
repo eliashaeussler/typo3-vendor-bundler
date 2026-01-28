@@ -35,9 +35,6 @@
 					"description": "When enabled, the autoload bundler will be included when executing `composer bundle`.",
 					"default": true
 				},
-				"target": {
-					"$ref": "#/definitions/autoloadTarget"
-				},
 				"backupSources": {
 					"type": "boolean",
 					"title": "Define whether to backup source files",
@@ -52,25 +49,6 @@
 						"type": "string",
 						"minLength": 1
 					}
-				}
-			},
-			"additionalProperties": false
-		},
-		"autoloadTarget": {
-			"type": "object",
-			"title": "Set of options used to define the target for bundled autoload configuration",
-			"properties": {
-				"file": {
-					"type": "string",
-					"title": "File where to bundle autoload configuration",
-					"description": "This is usually the root `composer.json` file of an extension",
-					"default": "composer.json"
-				},
-				"overwrite": {
-					"type": "boolean",
-					"title": "Define whether to overwrite the target file, if it already exists",
-					"description": "When enabled, the configured target file will be overwritten with the bundled autoload information, if the file already exists",
-					"default": false
 				}
 			},
 			"additionalProperties": false

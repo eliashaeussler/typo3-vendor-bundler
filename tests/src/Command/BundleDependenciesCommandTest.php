@@ -25,11 +25,10 @@ namespace EliasHaeussler\Typo3VendorBundler\Tests\Command;
 
 use Composer\Console\Application;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
-use Symfony\Component\Filesystem;
 
-use function dirname;
 use function file_get_contents;
 
 /**
@@ -39,19 +38,19 @@ use function file_get_contents;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Command\BundleDependenciesCommand::class)]
-final class BundleDependenciesCommandTest extends Framework\TestCase
+final class BundleDependenciesCommandTest extends Tests\ExtensionFixtureBasedTestCase
 {
     private Console\Tester\CommandTester $commandTester;
-    private Filesystem\Filesystem $filesystem;
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $application = new Application();
         $command = new Src\Command\BundleDependenciesCommand();
         $command->setApplication($application);
 
         $this->commandTester = new Console\Tester\CommandTester($command);
-        $this->filesystem = new Filesystem\Filesystem();
     }
 
     #[Framework\Attributes\Test]
@@ -85,7 +84,7 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeFailsIfSbomVersionIsInvalid(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = self::getFixturePath();
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
@@ -103,40 +102,31 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesConfigurationOptionsIfNoCommandOptionsAreGiven(): void
     {
-        $workingDirectory = getcwd();
-        $temporaryDirectory = dirname(__DIR__, 3).'/.build/tests';
+        $temporaryDirectory = $this->createTemporaryDirectory();
 
-        self::assertIsString($workingDirectory);
-
-        // Prepare temporary directory
-        $this->filesystem->remove($temporaryDirectory);
         $this->filesystem->dumpFile($temporaryDirectory.'/composer.json', '{}');
         $this->filesystem->dumpFile($temporaryDirectory.'/Resources/Private/Libs/sbom.json', '{}');
 
-        // Switch to temporary directory to avoid interference with other tests
-        chdir($temporaryDirectory);
-
-        // Exception is intended, it shows that default config options are used
         $this->expectExceptionObject(
             new Src\Exception\FileAlreadyExists($temporaryDirectory.'/Resources/Private/Libs/sbom.json'),
         );
 
-        $this->commandTester->execute([]);
-
-        // Go back to initial directory
-        chdir($workingDirectory);
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $temporaryDirectory,
+            fn () => $this->commandTester->execute([]),
+        );
     }
 
     #[Framework\Attributes\Test]
     public function executeThrowsExceptionIfSbomFileAlreadyExistsAndShouldNotBeOverwrittenAsPerInputOption(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = $this->createTemporaryFixture();
 
         // Make sure file exists
-        $this->filesystem->touch($rootPath.'/libs/sbom_generated.json');
+        $this->filesystem->touch($rootPath.'/libs/sbom.json');
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom_generated.json'),
+            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom.json'),
         );
 
         $this->commandTester->execute([
@@ -148,13 +138,13 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeThrowsExceptionIfSbomFileAlreadyExistsAndShouldNotBeOverwrittenAsPerConfiguration(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = $this->createTemporaryFixture();
 
         // Make sure file exists
-        $this->filesystem->touch($rootPath.'/libs/sbom_generated.json');
+        $this->filesystem->touch($rootPath.'/libs/sbom.json');
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom_generated.json'),
+            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom.json'),
         );
 
         $this->commandTester->execute([
@@ -165,15 +155,15 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeThrowsExceptionIfSbomFileAlreadyExistsAndShouldNotBeOverwrittenAsPerUserInput(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = $this->createTemporaryFixture();
 
         // Make sure file exists
-        $this->filesystem->touch($rootPath.'/libs/sbom_generated.json');
+        $this->filesystem->touch($rootPath.'/libs/sbom.json');
 
         $this->commandTester->setInputs(['no']);
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom_generated.json'),
+            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom.json'),
         );
 
         $this->commandTester->execute([
@@ -182,12 +172,13 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeOverwritesSbomFileIfAlreadyExists(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = $this->createTemporaryFixture();
 
         // Clear SBOM file
-        $this->filesystem->dumpFile($rootPath.'/libs/sbom_generated.json', '');
+        $this->filesystem->dumpFile($rootPath.'/libs/sbom.json', '');
 
         $this->commandTester->setInputs(['yes']);
 
@@ -195,7 +186,7 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
         ]);
 
-        self::assertStringNotEqualsFile($rootPath.'/libs/sbom_generated.json', '');
+        self::assertStringNotEqualsFile($rootPath.'/libs/sbom.json', '');
         self::assertStringContainsString(
             'Successfully bundled dependency information',
             $this->commandTester->getDisplay(),
@@ -203,12 +194,13 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeOverwritesSbomFileWithoutAskingIfOverwriteOptionIsSet(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = $this->createTemporaryFixture();
 
         // Clear SBOM file
-        $this->filesystem->dumpFile($rootPath.'/libs/sbom_generated.json', '');
+        $this->filesystem->dumpFile($rootPath.'/libs/sbom.json', '');
 
         // Set inputs to test if user interaction is *not* triggered
         $this->commandTester->setInputs(['no']);
@@ -218,7 +210,7 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
             '--overwrite' => true,
         ]);
 
-        self::assertStringNotEqualsFile($rootPath.'/libs/sbom_generated.json', '');
+        self::assertStringNotEqualsFile($rootPath.'/libs/sbom.json', '');
         self::assertStringContainsString(
             'Successfully bundled dependency information',
             $this->commandTester->getDisplay(),
@@ -228,7 +220,7 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeUsesLibsDirFromCommandArgument(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = $this->createTemporaryFixture();
 
         $this->expectExceptionObject(
             new Src\Exception\DirectoryDoesNotExist($rootPath.'/foo'),
@@ -242,13 +234,11 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesSbomFileOptionFromCommandOption(): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
+        $rootPath = $this->createTemporaryFixture();
 
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
         $this->filesystem->remove($rootPath.'/libs/sbom.json');
 
         $this->commandTester->execute([
@@ -264,54 +254,50 @@ final class BundleDependenciesCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesSbomVersionOptionFromCommandOption(): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
+        $rootPath = $this->createTemporaryFixture();
 
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
-        $this->filesystem->remove($rootPath.'/libs/sbom_generated.json');
+        $this->filesystem->remove($rootPath.'/libs/sbom.json');
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
             '--sbom-version' => '1.5',
         ]);
 
-        self::assertFileExists($rootPath.'/libs/sbom_generated.json');
+        self::assertFileExists($rootPath.'/libs/sbom.json');
         self::assertStringContainsString(
-            'Successfully bundled dependency information in "libs/sbom_generated.json".',
+            'Successfully bundled dependency information in "libs/sbom.json".',
             $this->commandTester->getDisplay(),
         );
         self::assertStringContainsString(
             '"specVersion":"1.5"',
-            (string) file_get_contents($rootPath.'/libs/sbom_generated.json'),
+            (string) file_get_contents($rootPath.'/libs/sbom.json'),
         );
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesDevOptionFromCommandOption(): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
+        $rootPath = $this->createTemporaryFixture();
 
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
-        $this->filesystem->remove($rootPath.'/libs/sbom_generated.json');
+        $this->filesystem->remove($rootPath.'/libs/sbom.json');
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
             '--dev' => false,
         ]);
 
-        self::assertFileExists($rootPath.'/libs/sbom_generated.json');
+        self::assertFileExists($rootPath.'/libs/sbom.json');
         self::assertStringContainsString(
-            'Successfully bundled dependency information in "libs/sbom_generated.json".',
+            'Successfully bundled dependency information in "libs/sbom.json".',
             $this->commandTester->getDisplay(),
         );
         self::assertStringNotContainsString(
             'phpunit/phpunit',
-            (string) file_get_contents($rootPath.'/libs/sbom_generated.json'),
+            (string) file_get_contents($rootPath.'/libs/sbom.json'),
         );
     }
 }

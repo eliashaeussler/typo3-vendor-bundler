@@ -25,12 +25,9 @@ namespace EliasHaeussler\Typo3VendorBundler\Tests\Command;
 
 use Composer\Console\Application;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
-use Symfony\Component\Filesystem;
-
-use function chdir;
-use function dirname;
 
 /**
  * BundleAutoloadCommandTest.
@@ -39,19 +36,19 @@ use function dirname;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Command\BundleAutoloadCommand::class)]
-final class BundleAutoloadCommandTest extends Framework\TestCase
+final class BundleAutoloadCommandTest extends Tests\ExtensionFixtureBasedTestCase
 {
     private Console\Tester\CommandTester $commandTester;
-    private Filesystem\Filesystem $filesystem;
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $application = new Application();
         $command = new Src\Command\BundleAutoloadCommand();
         $command->setApplication($application);
 
         $this->commandTester = new Console\Tester\CommandTester($command);
-        $this->filesystem = new Filesystem\Filesystem();
     }
 
     #[Framework\Attributes\Test]
@@ -86,131 +83,22 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesConfigurationOptionsIfNoCommandOptionsAreGiven(): void
     {
-        $workingDirectory = getcwd();
-        $temporaryDirectory = dirname(__DIR__, 3).'/.build/tests';
+        $temporaryDirectory = $this->createTemporaryDirectory();
 
-        self::assertIsString($workingDirectory);
-
-        // Prepare temporary directory
-        $this->filesystem->remove($temporaryDirectory);
         $this->filesystem->dumpFile($temporaryDirectory.'/composer.json', '{}');
 
-        // Switch to temporary directory to avoid interference with other tests
-        chdir($temporaryDirectory);
-
-        // Exception is intended, it shows that default config options are used
-        $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($temporaryDirectory.'/composer.json'),
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $temporaryDirectory,
+            fn () => $this->commandTester->execute([]),
         );
 
-        $this->commandTester->execute([]);
-
-        // Go back to initial directory
-        chdir($workingDirectory);
-    }
-
-    #[Framework\Attributes\Test]
-    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwrittenAsPerInputOption(): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-
-        // Make sure file exists
-        $this->filesystem->touch($rootPath.'/composer_modified.json');
-
-        $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/composer_modified.json'),
-        );
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--overwrite' => false,
-        ]);
-    }
-
-    #[Framework\Attributes\Test]
-    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwrittenAsPerConfiguration(): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-
-        // Make sure file exists
-        $this->filesystem->touch($rootPath.'/composer_modified.json');
-
-        $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/composer_modified.json'),
-        );
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-        ]);
-    }
-
-    #[Framework\Attributes\Test]
-    public function executeThrowsExceptionIfTargetFileAlreadyExistsAndShouldNotBeOverwrittenAsPerUserInput(): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-
-        // Make sure file exists
-        $this->filesystem->touch($rootPath.'/composer_modified.json');
-
-        $this->commandTester->setInputs(['no']);
-
-        $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($rootPath.'/composer_modified.json'),
-        );
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-        ]);
-    }
-
-    #[Framework\Attributes\Test]
-    public function executeOverwritesTargetFileIfAlreadyExists(): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-
-        // Clear target file
-        $this->filesystem->dumpFile($rootPath.'/composer_modified.json', '{}');
-
-        $this->commandTester->setInputs(['yes']);
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-        ]);
-
-        self::assertJsonStringNotEqualsJsonFile($rootPath.'/composer_modified.json', '{}');
-        self::assertStringContainsString(
-            'Successfully bundled autoload configurations',
-            $this->commandTester->getDisplay(),
-        );
-    }
-
-    #[Framework\Attributes\Test]
-    public function executeOverwritesTargetWithoutAskingIfOverwriteOptionIsSet(): void
-    {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-
-        // Clear target file
-        $this->filesystem->dumpFile($rootPath.'/composer_modified.json', '{}');
-
-        // Set inputs to test if user interaction is *not* triggered
-        $this->commandTester->setInputs(['no']);
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--overwrite' => true,
-        ]);
-
-        self::assertJsonStringNotEqualsJsonFile($rootPath.'/composer_modified.json', '{}');
-        self::assertStringContainsString(
-            'Successfully bundled autoload configurations',
-            $this->commandTester->getDisplay(),
-        );
+        self::assertJsonStringNotEqualsJsonFile($temporaryDirectory.'/composer.json', '{}');
     }
 
     #[Framework\Attributes\Test]
     public function executeUsesLibsDirFromCommandArgument(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = self::getFixturePath();
 
         $this->expectExceptionObject(
             new Src\Exception\DirectoryDoesNotExist($rootPath.'/foo'),
@@ -224,45 +112,15 @@ final class BundleAutoloadCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
-    public function executeUsesTargetFileOptionFromCommandOption(): void
-    {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
-
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
-        $this->filesystem->remove($rootPath.'/foo.php');
-
-        $this->commandTester->execute([
-            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--target-file' => 'foo.php',
-        ]);
-
-        self::assertFileExists($rootPath.'/foo.php');
-        self::assertStringContainsString(
-            'Successfully bundled autoload configurations in "foo.php".',
-            $this->commandTester->getDisplay(),
-        );
-    }
-
-    #[Framework\Attributes\Test]
     public function executeUsesBackupSourcesOptionFromCommandOption(): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
-
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
-        $this->filesystem->remove($rootPath.'/composer.json.bak');
+        $rootPath = $this->createTemporaryDirectory();
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--target-file' => 'composer.json',
             '--backup-sources' => false,
-            '--overwrite' => true,
         ]);
 
         self::assertFileDoesNotExist($rootPath.'/composer.json.bak');
-        self::assertFileDoesNotExist($rootPath.'/ext_emconf.bak');
     }
 }

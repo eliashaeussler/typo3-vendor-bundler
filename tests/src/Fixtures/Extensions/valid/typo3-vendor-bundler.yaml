@@ -1,11 +1,1 @@
-autoload:
-  target:
-    file: 'composer_modified.json'
-    overwrite: false
-  excludeFromClassMap:
-    - 'vendor/composer/InstalledVersions.php'
-dependencies:
-  sbom:
-    file: 'sbom_generated.json'
-    overwrite: false
 pathToVendorLibraries: 'libs'

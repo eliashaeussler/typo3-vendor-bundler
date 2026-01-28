@@ -44,32 +44,30 @@ composer require --dev eliashaeussler/typo3-vendor-bundler
 
 ## ⚡ Quickstart
 
-Add a `typo3-vendor-bundler.yaml` config file with a minimal recommended configuration:
-
-```yaml
-autoload:
-  target:
-    overwrite: true
-```
-
 Execute the main bundler:
 
 ```bash
 composer bundle
 ```
 
-You can also execute a single bundler. Read more about available
-[console commands](docs/cli.md).
+You can also execute a single bundler. Read more about [available bundlers](docs/bundlers/index.md).
 
 > [!TIP]
 > You can use the [`composer validate-bundler-config`](docs/cli.md#validate-bundler-config) command
 > to validate your config file.
 
+### Custom configuration
+
+The default configuration should be sufficient in most cases. If necessary, a
+[config file](docs/config-file.md) such as `typo3-vendor-bundler.yaml` can be created to customize
+individual configuration settings.
+
 ## 📝 Documentation
 
 * Features
-  * [Autoload bundler](docs/bundlers/autoload.md)
-  * [Dependencies bundler](docs/bundlers/dependencies.md)
+  * [Bundlers](docs/bundlers/index.md)
+    * [Autoload bundler](docs/bundlers/autoload.md)
+    * [Dependency bundler](docs/bundlers/dependencies.md)
   * [Automatic dependency extraction](docs/extract.md)
 * Usage
   * [Console commands](docs/cli.md)

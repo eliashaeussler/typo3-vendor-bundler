@@ -99,7 +99,7 @@ final readonly class DependencyBundler implements Bundler
             $filename = Filesystem\Path::makeAbsolute($filename, $this->librariesPath);
         }
 
-        // Throw exception if target file already exists
+        // Throw exception if SBOM file already exists
         if (!$overwrite && $this->filesystem->exists($filename)) {
             throw new Exception\FileAlreadyExists($filename);
         }
