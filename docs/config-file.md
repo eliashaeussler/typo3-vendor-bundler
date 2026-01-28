@@ -34,13 +34,13 @@ use EliasHaeussler\Typo3VendorBundler;
 
 return new Typo3VendorBundler\Config\Typo3VendorBundlerConfig(
     autoload: new Typo3VendorBundler\Config\AutoloadConfig(
-        backupSources: true,
+        backup: true,
     ),
     dependencies: new Typo3VendorBundler\Config\DependenciesConfig(
         sbom: new Typo3VendorBundler\Config\Sbom(
             includeDev: false,
         ),
-        backupSources: true,
+        backup: true,
     ),
     dependencyExtraction: new Typo3VendorBundler\Config\DependencyExtractionConfig(
         enabled: true,

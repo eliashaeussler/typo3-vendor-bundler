@@ -35,10 +35,10 @@
 					"description": "When enabled, the autoload bundler will be included when executing `composer bundle`.",
 					"default": true
 				},
-				"backupSources": {
+				"backup": {
 					"type": "boolean",
 					"title": "Define whether to backup source files",
-					"description": "When enabled, original contents of source files, which are to be modified, will be backed up in a separate file",
+					"description": "When enabled, original contents of the root composer.json file will be backed up in a separate file",
 					"default": false
 				},
 				"excludeFromClassMap": {
@@ -66,10 +66,10 @@
 				"sbom": {
 					"$ref": "#/definitions/sbom"
 				},
-				"backupSources": {
+				"backup": {
 					"type": "boolean",
 					"title": "Define whether to backup source files",
-					"description": "When enabled, original contents of source files, which are to be modified, will be backed up in a separate file",
+					"description": "When enabled, original contents of the root composer.json file will be backed up in a separate file",
 					"default": false
 				}
 			},

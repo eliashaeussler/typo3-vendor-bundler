@@ -80,7 +80,7 @@ final readonly class DependencyBundler implements Bundler
         bool $failOnExtractionProblems = true,
         bool $includeDevDependencies = true,
         bool $overwrite = false,
-        bool $backupSources = false,
+        bool $backup = false,
     ): Entity\Dependencies {
         $format = Resource\BomFormat::fromFile($filename);
 
@@ -129,7 +129,7 @@ final readonly class DependencyBundler implements Bundler
 
         if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('sbom-file', $sbomFile)) {
             // Create composer.json backup
-            if (true === $backupSources) {
+            if (true === $backup) {
                 $this->taskRunner->run(
                     '🦖 Backing up source files',
                     function () {

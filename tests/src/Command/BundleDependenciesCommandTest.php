@@ -303,13 +303,13 @@ final class BundleDependenciesCommandTest extends Tests\ExtensionFixtureBasedTes
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function executeUsesBackupSourcesOptionFromCommandOption(): void
+    public function executeUsesBackupOptionFromCommandOption(): void
     {
         $rootPath = $this->createTemporaryFixture();
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-            '--backup-sources' => false,
+            '--backup' => false,
             '--overwrite' => true,
         ]);
 

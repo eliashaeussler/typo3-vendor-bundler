@@ -84,7 +84,7 @@ final readonly class AutoloadBundler implements Bundler
     public function bundle(
         bool $extractDependencies = true,
         bool $failOnExtractionProblems = true,
-        bool $backupSources = false,
+        bool $backup = false,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
         // Extract vendor libraries from root package if necessary
@@ -98,7 +98,7 @@ final readonly class AutoloadBundler implements Bundler
         $autoload = $this->parseAutoloads($excludeFromClassMap);
 
         // Create composer.json backup
-        if (true === $backupSources) {
+        if (true === $backup) {
             $this->taskRunner->run(
                 '🦖 Backing up source files',
                 function () {

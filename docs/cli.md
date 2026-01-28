@@ -29,7 +29,7 @@ the extension.
 composer bundle-autoload \
     [<libs-dir>] \
     [-c|--config CONFIG] \
-    [-b|--[no-]backup-sources] \
+    [-b|--[no-]backup] \
     [-x|--[no-]extract] \
     [--[no-]fail]
 ```
@@ -51,15 +51,14 @@ vendor libraries for use in classic mode.
 Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.
 
-### `-b|--[no-]backup-sources`
+### `-b|--[no-]backup`
 
-Define whether to backup source files (normally the root `composer.json` file of the extension).
-When enabled, original contents of source files, which are to be modified, will be backed
-up in a separate file. If no contents would be modified, no backup files will be
-generated.
+Define whether to backup the root `composer.json` file of the extension. When enabled,
+original contents of source files, which are to be modified, will be backed up in a
+separate file. If no contents would be modified, no backup files will be generated.
 
 > [!NOTE]
-> If omitted, the `autoload.backupSources` option from the config file will be used instead.
+> If omitted, the `autoload.backup` option from the config file will be used instead.
 
 ### `-x|--[no-]extract`
 
@@ -90,7 +89,7 @@ composer bundle-dependencies \
     [-f|--sbom-file SBOM-FILE] \
     [-s|--sbom-version SBOM-VERSION] \
     [--[no-]dev] \
-    [-b|--[no-]backup-sources] \
+    [-b|--[no-]backup] \
     [-o|--[no-]overwrite] \
     [-x|--[no-]extract] \
     [--[no-]fail]
@@ -137,14 +136,14 @@ Define whether to include development dependencies in the generated SBOM.
 > [!NOTE]
 > If omitted, the `dependencies.sbom.includeDev` option from the config file will be used instead.
 
-### `-b|--[no-]backup-sources`
+### `-b|--[no-]backup`
 
-Define whether to backup source files (normally the root `composer.json` file of the extension).
-When enabled, original contents of source files, which are to be modified, will be backed
-up in a separate file. If no contents would be modified, no backup files will be generated.
+Define whether to backup the root `composer.json` file of the extension. When enabled,
+original contents of source files, which are to be modified, will be backed up in a
+separate file. If no contents would be modified, no backup files will be generated.
 
 > [!NOTE]
-> If omitted, the `dependencies.backupSources` option from the config file will be used instead.
+> If omitted, the `dependencies.backup` option from the config file will be used instead.
 
 ### `-o|--[no-]overwrite`
 
