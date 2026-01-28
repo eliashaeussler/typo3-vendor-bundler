@@ -5,7 +5,7 @@ The config file must follow a given schema:
 ```yaml
 autoload:
   enabled: true
-  backupSources: false
+  backup: false
   excludeFromClassMap:
     - 'vendor/composer/InstalledVersions.php'
 
@@ -16,7 +16,7 @@ dependencies:
     version: '1.7'
     includeDev: false
     overwrite: true
-  backupSources: false
+  backup: false
 
 dependencyExtraction:
   enabled: true
@@ -50,7 +50,7 @@ rootPath: ../
 | Property                       | Type    | Default value | Description                                                                                    |
 |--------------------------------|---------|---------------|------------------------------------------------------------------------------------------------|
 | `autoload.enabled`             | Boolean | `true`        | Define whether autoload bundling is enabled when executing [`composer bundle`](cli.md#bundle). |
-| `autoload.backupSources`       | Boolean | `false`       | Define whether to backup source files.                                                         |
+| `autoload.backup`              | Boolean | `false`       | Define whether to backup the root `composer.json` file.                                        |
 | `autoload.excludeFromClassMap` | Array   | –             | List of files to exclude from vendor libraries class map.                                      |
 
 ## Dependencies
@@ -66,7 +66,7 @@ rootPath: ../
 | `dependencies.sbom.version`    | String  | `1.7`         | CycloneDX BOM version to use.                                                                                                       |
 | `dependencies.sbom.includeDev` | Boolean | `true`        | Define whether to include development dependencies in the serialized SBOM.                                                          |
 | `dependencies.sbom.overwrite`  | Boolean | `false`       | Define whether to overwrite the SBOM file, if it already exists.                                                                    |
-| `dependencies.backupSources`   | Boolean | `false`       | Define whether to backup source files.                                                                                              |
+| `dependencies.backup`          | Boolean | `false`       | Define whether to backup the root `composer.json` file.                                                                             |
 
 ## Dependency extraction
 

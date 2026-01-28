@@ -198,7 +198,7 @@ final class DependencyBundlerTest extends Tests\ExtensionFixtureBasedTestCase
         $composerJsonSource = file_get_contents($composerJson);
 
         try {
-            $this->subject->bundle(extractDependencies: false, overwrite: true, backupSources: true);
+            $this->subject->bundle(extractDependencies: false, overwrite: true, backup: true);
         } finally {
             // Restore original source files
             file_put_contents($composerJson, $composerJsonSource);

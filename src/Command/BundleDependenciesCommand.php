@@ -80,7 +80,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
             'Include development dependencies in the generated SBOM file',
         );
         $this->addOption(
-            'backup-sources',
+            'backup',
             'b',
             Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
             'Backup source files before they get overwritten',
@@ -128,7 +128,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
         $sbomFile = $input->getOption('sbom-file') ?? $config->dependencies()->sbom()->file();
         $includeDev = $input->getOption('dev') ?? $config->dependencies()->sbom()->includeDev() ?? true;
         $overwrite = $input->getOption('overwrite') ?? $config->dependencies()->sbom()->overwrite() ?? false;
-        $backupSources = $input->getOption('backup-sources') ?? $config->dependencies()->backupSources() ?? false;
+        $backup = $input->getOption('backup') ?? $config->dependencies()->backup() ?? false;
 
         // Read SBOM version
         if (($sbomVersion = $input->getOption('sbom-version')) !== null) {
@@ -154,7 +154,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
         $dependencyBundler = new Bundler\DependencyBundler($rootPath, $libsDir, $this->io);
 
         try {
-            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $extract, $fail, $includeDev, $overwrite, $backupSources);
+            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $extract, $fail, $includeDev, $overwrite, $backup);
         } catch (Exception\FileAlreadyExists $exception) {
             if (false === $input->getOption('overwrite')
                 || !$this->io->confirm('SBOM file already exists. Overwrite file?', false)
@@ -162,7 +162,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
                 throw $exception;
             }
 
-            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $extract, $fail, $includeDev, true, $backupSources);
+            $dependencies = $dependencyBundler->bundle($sbomFile, $sbomVersion, $extract, $fail, $includeDev, true, $backup);
         }
 
         $this->io->success(

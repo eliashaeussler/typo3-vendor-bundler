@@ -34,7 +34,7 @@ final readonly class DependenciesConfig
     public function __construct(
         private bool $enabled = true,
         private Sbom $sbom = new Sbom(),
-        private ?bool $backupSources = null,
+        private ?bool $backup = null,
     ) {}
 
     public function enabled(): bool
@@ -47,8 +47,8 @@ final readonly class DependenciesConfig
         return $this->sbom;
     }
 
-    public function backupSources(): ?bool
+    public function backup(): ?bool
     {
-        return $this->backupSources;
+        return $this->backup;
     }
 }

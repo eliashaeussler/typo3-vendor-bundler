@@ -59,7 +59,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         );
 
         $this->addOption(
-            'backup-sources',
+            'backup',
             'b',
             Console\Input\InputOption::VALUE_NONE | Console\Input\InputOption::VALUE_NEGATABLE,
             'Backup source files before they get overwritten',
@@ -97,7 +97,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         $libsDir = $input->getArgument('libs-dir') ?? $config->pathToVendorLibraries();
         $extract = $input->getOption('extract') ?? $config->dependencyExtraction()->enabled() ?? true;
         $fail = $input->getOption('fail') ?? $config->dependencyExtraction()->failOnProblems() ?? true;
-        $backupSources = $input->getOption('backup-sources') ?? $config->autoload()->backupSources() ?? false;
+        $backup = $input->getOption('backup') ?? $config->autoload()->backup() ?? false;
         $excludeFromClassMap = $config->autoload()->excludeFromClassMap();
 
         // Exit if libs directory is invalid
@@ -108,7 +108,7 @@ final class BundleAutoloadCommand extends AbstractConfigurationAwareCommand
         }
 
         $autoloadBundler = new Bundler\AutoloadBundler($rootPath, $libsDir, $this->io);
-        $autoload = $autoloadBundler->bundle($extract, $fail, $backupSources, $excludeFromClassMap);
+        $autoload = $autoloadBundler->bundle($extract, $fail, $backup, $excludeFromClassMap);
 
         $this->io->success(
             sprintf('Successfully bundled autoload configurations in "%s".', $autoload->filename(true)),
