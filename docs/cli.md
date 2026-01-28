@@ -29,9 +29,7 @@ the extension.
 composer bundle-autoload \
     [<libs-dir>] \
     [-c|--config CONFIG] \
-    [-t|--target-file TARGET-FILE] \
     [-b|--[no-]backup-sources] \
-    [-o|--[no-]overwrite] \
     [-x|--[no-]extract] \
     [--[no-]fail]
 ```
@@ -53,15 +51,6 @@ vendor libraries for use in classic mode.
 Path to [config file](config-file.md), defaults to auto-detection in current
 working directory.
 
-### `t|--target-file`
-
-File where to bundle final autoload configuration. This is usually the root
-`composer.json` file of the extension. You can also use a different file, especially for
-debugging and testing purposes.
-
-> [!NOTE]
-> If omitted, the `autoload.target.file` option from the config file will be used instead.
-
 ### `-b|--[no-]backup-sources`
 
 Define whether to backup source files (normally the root `composer.json` file of the extension).
@@ -71,14 +60,6 @@ generated.
 
 > [!NOTE]
 > If omitted, the `autoload.backupSources` option from the config file will be used instead.
-
-### `-o|--[no-]overwrite`
-
-Force overwriting the given target file if it already exists.
-
-> [!NOTE]
-> If omitted, the `autoload.target.overwrite` option from the config file will be used instead.
-> If `false` is configured, you will be asked whether the target file should be overwritten.
 
 ### `-x|--[no-]extract`
 
@@ -161,7 +142,7 @@ Force overwriting the given SBOM file if it already exists.
 
 > [!NOTE]
 > If omitted, the `dependencies.sbom.overwrite` option from the config file will be used instead.
-> If `false` is configured, you will be asked whether the target file should be overwritten.
+> If `false` is configured, you will be asked whether the SBOM file should be overwritten.
 
 ### `-x|--[no-]extract`
 

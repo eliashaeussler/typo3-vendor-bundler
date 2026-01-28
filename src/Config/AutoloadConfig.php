@@ -36,7 +36,6 @@ final readonly class AutoloadConfig
      */
     public function __construct(
         private bool $enabled = true,
-        private AutoloadTarget $target = new AutoloadTarget(),
         private ?bool $backupSources = null,
         private array $excludeFromClassMap = [],
     ) {}
@@ -44,11 +43,6 @@ final readonly class AutoloadConfig
     public function enabled(): bool
     {
         return $this->enabled;
-    }
-
-    public function target(): AutoloadTarget
-    {
-        return $this->target;
     }
 
     public function backupSources(): ?bool

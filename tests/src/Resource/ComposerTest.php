@@ -25,10 +25,10 @@ namespace EliasHaeussler\Typo3VendorBundler\Tests\Resource;
 
 use Composer\Semver;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use Generator;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
-use Symfony\Component\Filesystem;
 
 /**
  * ComposerTest.
@@ -37,42 +37,35 @@ use Symfony\Component\Filesystem;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Resource\Composer::class)]
-final class ComposerTest extends Framework\TestCase
+final class ComposerTest extends Tests\ExtensionFixtureBasedTestCase
 {
-    private Filesystem\Filesystem $filesystem;
-
-    protected function setUp(): void
-    {
-        $this->filesystem = new Filesystem\Filesystem();
-    }
-
     #[Framework\Attributes\Test]
     public function createAcceptsBaseDirectoryContainingComposerJsonFile(): void
     {
-        $composerJson = dirname(__DIR__).'/Fixtures/Extensions/valid';
+        $rootPath = self::getFixturePath();
+        $composerJson = $rootPath.'/composer.json';
 
-        $actual = Src\Resource\Composer::create($composerJson);
-
-        self::assertSame(
-            $composerJson.'/composer.json',
-            $actual->composer->getConfig()->getConfigSource()->getName(),
-        );
-    }
-
-    #[Framework\Attributes\Test]
-    public function createReturnsComposerWrapperForGivenComposerJsonFile(): void
-    {
-        $composerJson = dirname(__DIR__).'/Fixtures/Extensions/valid/composer.json';
-
-        $actual = Src\Resource\Composer::create($composerJson);
+        $actual = Src\Resource\Composer::create($rootPath);
 
         self::assertSame($composerJson, $actual->composer->getConfig()->getConfigSource()->getName());
     }
 
     #[Framework\Attributes\Test]
+    public function createReturnsComposerWrapperForGivenComposerJsonFile(): void
+    {
+        $rootPath = self::getFixturePath();
+        $composerJson = $rootPath.'/composer.json';
+
+        $actual = Src\Resource\Composer::create($composerJson);
+
+        self::assertSame($composerJson, $actual->declarationFile());
+    }
+
+    #[Framework\Attributes\Test]
     public function createThrowsExceptionOnInvalidComposerJsonFile(): void
     {
-        $composerJsonFile = dirname(__DIR__).'/Fixtures/Extensions/invalid-composer-file/composer.json';
+        $rootPath = self::getFixturePath('invalid-composer-file');
+        $composerJsonFile = $rootPath.'/composer.json';
 
         $this->expectExceptionObject(
             new Src\Exception\DeclarationFileIsInvalid($composerJsonFile),
@@ -84,11 +77,7 @@ final class ComposerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function installThrowsExceptionIfRootPathDoesNotExist(): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
-
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
+        $rootPath = $this->createTemporaryFixture();
 
         $subject = Src\Resource\Composer::create($rootPath);
 
@@ -107,11 +96,7 @@ final class ComposerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function installThrowsExceptionAndWritesInstallOutputIfInstallationFails(): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/invalid-dependencies';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
-
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
+        $rootPath = $this->createTemporaryFixture('invalid-dependencies');
 
         $subject = Src\Resource\Composer::create($rootPath);
         $output = new Console\Output\BufferedOutput();
@@ -141,11 +126,7 @@ final class ComposerTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function installRespectsDevMode(bool $includeDevDependencies, bool $expected): void
     {
-        $sourcePath = dirname(__DIR__).'/Fixtures/Extensions/valid-dev';
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-temporary';
-
-        $this->filesystem->remove($rootPath);
-        $this->filesystem->mirror($sourcePath, $rootPath);
+        $rootPath = $this->createTemporaryFixture('valid-dev');
 
         $subject = Src\Resource\Composer::create($rootPath);
         $subject->install($includeDevDependencies);
@@ -160,5 +141,24 @@ final class ComposerTest extends Framework\TestCase
             $expected,
             null !== $localRepo->findPackage('phpunit/phpunit', new Semver\Constraint\MatchAllConstraint()),
         );
+    }
+
+    #[Framework\Attributes\Test]
+    public function declarationFileReturnsPathToComposerJson(): void
+    {
+        $rootPath = self::getFixturePath();
+        $composerJson = $rootPath.'/composer.json';
+        $subject = Src\Resource\Composer::create($rootPath);
+
+        self::assertSame($composerJson, $subject->declarationFile());
+    }
+
+    #[Framework\Attributes\Test]
+    public function rootPathReturnsDirectoryNameOfComposerJson(): void
+    {
+        $rootPath = self::getFixturePath();
+        $subject = Src\Resource\Composer::create($rootPath);
+
+        self::assertSame($rootPath, $subject->rootPath());
     }
 }

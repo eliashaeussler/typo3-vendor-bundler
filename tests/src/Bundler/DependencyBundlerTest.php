@@ -23,16 +23,11 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Tests\Bundler;
 
-use Composer\Factory;
-use Composer\IO;
-use Composer\Package;
 use CycloneDX\Core;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
-use Symfony\Component\Filesystem;
-
-use function dirname;
 
 /**
  * DependencyBundlerTest.
@@ -41,17 +36,17 @@ use function dirname;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Bundler\DependencyBundler::class)]
-final class DependencyBundlerTest extends Framework\TestCase
+final class DependencyBundlerTest extends Tests\ExtensionFixtureBasedTestCase
 {
-    private Filesystem\Filesystem $filesystem;
     private Console\Output\BufferedOutput $output;
     private Src\Bundler\DependencyBundler $subject;
 
     public function setUp(): void
     {
-        $this->filesystem = new Filesystem\Filesystem();
+        parent::setUp();
+
         $this->output = new Console\Output\BufferedOutput(Console\Output\OutputInterface::VERBOSITY_VERBOSE);
-        $this->subject = $this->createSubject('valid');
+        $this->subject = $this->createSubject($this->createTemporaryFixture());
     }
 
     #[Framework\Attributes\Test]
@@ -68,8 +63,9 @@ final class DependencyBundlerTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function bundleExtractsVendorLibrariesFromRootPackageIfComposerJsonForVendorLibrariesIsMissing(): void
     {
-        $librariesPath = $this->getFixturePath('valid-no-libs').'/libs';
-        $subject = $this->createSubject('valid-no-libs');
+        $rootPath = $this->createTemporaryFixture('valid-no-libs');
+        $librariesPath = $rootPath.'/libs';
+        $subject = $this->createSubject($rootPath);
 
         $this->filesystem->remove($librariesPath);
 
@@ -91,13 +87,13 @@ final class DependencyBundlerTest extends Framework\TestCase
     #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDisplaysDependencyExtractionProblems(): void
     {
-        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
-        $subject = $this->createSubject('invalid-libs');
+        $rootPath = $this->createTemporaryFixture('invalid-libs');
+        $librariesPath = $rootPath.'/libs';
+        $subject = $this->createSubject($rootPath);
 
         $this->filesystem->remove($librariesPath);
 
         $subject->bundle(
-            filename: 'sbom_modified.json',
             failOnExtractionProblems: false,
         );
 
@@ -110,8 +106,9 @@ final class DependencyBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfProblemsOccurDuringDependencyExtraction(): void
     {
-        $librariesPath = $this->getFixturePath('invalid-libs').'/libs';
-        $subject = $this->createSubject('invalid-libs');
+        $rootPath = $this->createTemporaryFixture('invalid-libs');
+        $librariesPath = $rootPath.'/libs';
+        $subject = $this->createSubject($rootPath);
 
         $this->filesystem->remove($librariesPath);
 
@@ -133,11 +130,11 @@ final class DependencyBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfPathToVendorLibrariesDoesNotExist(): void
     {
-        $librariesPath = $this->getFixturePath('valid').'/foo';
-        $subject = $this->createSubject('valid', 'foo');
+        $rootPath = $this->createTemporaryFixture();
+        $subject = $this->createSubject($rootPath, 'foo');
 
         $this->expectExceptionObject(
-            new Src\Exception\DirectoryDoesNotExist($librariesPath),
+            new Src\Exception\DirectoryDoesNotExist($rootPath.'/foo'),
         );
 
         $subject->bundle(extractDependencies: false);
@@ -156,8 +153,8 @@ final class DependencyBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfComposerFileIsInvalid(): void
     {
-        $rootPath = $this->getFixturePath('invalid-dependencies');
-        $subject = $this->createSubject('invalid-dependencies');
+        $rootPath = $this->createTemporaryFixture('invalid-dependencies');
+        $subject = $this->createSubject($rootPath);
 
         $this->expectExceptionObject(
             new Src\Exception\CannotInstallComposerDependencies($rootPath.'/libs'),
@@ -175,22 +172,26 @@ final class DependencyBundlerTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function bundleThrowsExceptionIfSbomFileAlreadyExists(): void
     {
-        $sbomFile = $this->getFixturePath('valid').'/libs/sbom.json';
+        $rootPath = $this->createTemporaryFixture();
+        $subject = $this->createSubject($rootPath);
 
         $this->expectExceptionObject(
-            new Src\Exception\FileAlreadyExists($sbomFile),
+            new Src\Exception\FileAlreadyExists($rootPath.'/libs/sbom.json'),
         );
 
-        $this->subject->bundle();
+        $subject->bundle();
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsSerializedSbomAsJsonFile(): void
     {
-        $sbomFile = $this->getFixturePath('valid').'/libs/sbom_generated.json';
+        $rootPath = $this->createTemporaryFixture();
+        $sbomFile = $rootPath.'/libs/sbom.json';
+        $subject = $this->createSubject($rootPath);
 
         try {
-            $this->subject->bundle('sbom_generated.json', overwrite: true);
+            $subject->bundle(overwrite: true);
         } finally {
             $output = $this->output->fetch();
 
@@ -201,12 +202,15 @@ final class DependencyBundlerTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsSerializedSbomAsXmlFile(): void
     {
-        $sbomFile = $this->getFixturePath('valid').'/libs/sbom.xml';
+        $rootPath = $this->createTemporaryFixture();
+        $sbomFile = $rootPath.'/libs/sbom.xml';
+        $subject = $this->createSubject($rootPath);
 
         try {
-            $this->subject->bundle('sbom.xml', overwrite: true);
+            $subject->bundle('sbom.xml');
         } finally {
             $output = $this->output->fetch();
 
@@ -216,24 +220,8 @@ final class DependencyBundlerTest extends Framework\TestCase
         }
     }
 
-    private function parseComposerJson(string $filename): Package\RootPackageInterface
+    private function createSubject(string $rootPath, string $librariesPath = 'libs'): Src\Bundler\DependencyBundler
     {
-        self::assertFileExists($filename);
-
-        return Factory::create(new IO\NullIO(), $filename)->getPackage();
-    }
-
-    private function createSubject(string $extension, string $librariesPath = 'libs'): Src\Bundler\DependencyBundler
-    {
-        return new Src\Bundler\DependencyBundler(
-            $this->getFixturePath($extension),
-            $librariesPath,
-            $this->output,
-        );
-    }
-
-    private function getFixturePath(string $extension): string
-    {
-        return dirname(__DIR__).'/Fixtures/Extensions/'.$extension;
+        return new Src\Bundler\DependencyBundler($rootPath, $librariesPath, $this->output);
     }
 }

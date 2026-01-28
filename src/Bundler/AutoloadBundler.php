@@ -27,18 +27,15 @@ use Composer\Composer;
 use Composer\InstalledVersions;
 use Composer\Repository;
 use EliasHaeussler\TaskRunner;
-use EliasHaeussler\Typo3VendorBundler\Config;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Helper;
 use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
-use Throwable;
 
 use function array_map;
 use function array_values;
 use function basename;
-use function dirname;
 use function is_dir;
 use function is_file;
 use function is_int;
@@ -80,19 +77,15 @@ final readonly class AutoloadBundler implements Bundler
     /**
      * @param list<non-empty-string> $excludeFromClassMap
      *
+     * @throws Exception\DependencyExtractionFailed
      * @throws Exception\DirectoryDoesNotExist
-     * @throws Exception\FileAlreadyExists
-     * @throws Throwable
      */
     public function bundle(
-        Config\AutoloadTarget $target = new Config\AutoloadTarget(),
         bool $extractDependencies = true,
         bool $failOnExtractionProblems = true,
         bool $backupSources = false,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
-        $targetFile = Filesystem\Path::makeAbsolute($target->file(), $this->rootPath);
-
         // Extract vendor libraries from root package if necessary
         if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
             $this->extractVendorLibrariesFromRootPackage($failOnExtractionProblems);
@@ -101,23 +94,16 @@ final readonly class AutoloadBundler implements Bundler
         }
 
         // Build autoload bundle from root package and vendor libraries
-        $autoload = $this->parseAutoloads($targetFile, $excludeFromClassMap);
-
-        // Throw exception if target file already exists
-        if (true !== $target->overwrite() && $this->filesystem->exists($targetFile)) {
-            throw new Exception\FileAlreadyExists($targetFile);
-        }
+        $autoload = $this->parseAutoloads($excludeFromClassMap);
 
         // Create composer.json backup
         if (true === $backupSources) {
             $this->taskRunner->run(
                 '🦖 Backing up source files',
-                function () use ($targetFile) {
-                    $composerJson = Filesystem\Path::join($this->rootPath, 'composer.json');
+                function () {
+                    $composerJson = $this->rootComposer->declarationFile();
 
-                    if ($targetFile === $composerJson) {
-                        $this->filesystem->copy($composerJson, $composerJson.'.bak');
-                    }
+                    $this->filesystem->copy($composerJson, $composerJson.'.bak', true);
                 },
             );
         }
@@ -145,7 +131,7 @@ final readonly class AutoloadBundler implements Bundler
     /**
      * @param list<non-empty-string> $excludeFromClassMap
      */
-    private function parseAutoloads(string $targetFile, array $excludeFromClassMap = []): Entity\Autoload
+    private function parseAutoloads(array $excludeFromClassMap = []): Entity\Autoload
     {
         $libsComposer = $this->taskRunner->run(
             '📦 Installing vendor libraries',
@@ -153,16 +139,16 @@ final readonly class AutoloadBundler implements Bundler
                 $composer = Resource\Composer::create($this->librariesPath);
                 $composer->install(false, $context->output);
 
-                return $composer->composer;
+                return $composer;
             },
         );
 
         return $this->taskRunner->run(
             '🪄 Parsing autoloads from <comment>composer.json</comment> files',
-            function (TaskRunner\RunnerContext $context) use ($libsComposer, $targetFile, $excludeFromClassMap) {
-                $rootAutoloads = $this->parseAutoloadsFromPackage($this->rootComposer->composer, false);
+            function (TaskRunner\RunnerContext $context) use ($libsComposer, $excludeFromClassMap) {
+                $rootAutoloads = $this->parseAutoloadsFromPackage($this->rootComposer, false);
                 $libsAutoloads = $this->parseAutoloadsFromPackage($libsComposer);
-                $autoload = $rootAutoloads->merge($libsAutoloads, $targetFile);
+                $autoload = $rootAutoloads->merge($libsAutoloads, $this->rootComposer->declarationFile());
 
                 // Drop excluded files from class map
                 foreach ($excludeFromClassMap as $path) {
@@ -192,10 +178,11 @@ final readonly class AutoloadBundler implements Bundler
      * @throws Exception\CannotDetectWorkingDirectory
      * @throws Exception\DirectoryDoesNotExist
      */
-    private function parseAutoloadsFromPackage(Composer $composer, bool $deep = true): Entity\Autoload
+    private function parseAutoloadsFromPackage(Resource\Composer $composer, bool $deep = true): Entity\Autoload
     {
-        $rootPath = dirname($composer->getConfig()->getConfigSource()->getName());
-        $autoloadGenerator = clone $composer->getAutoloadGenerator();
+        $rootPath = $composer->rootPath();
+        $composerInstance = $composer->composer;
+        $autoloadGenerator = clone $composerInstance->getAutoloadGenerator();
         /* @phpstan-ignore function.alreadyNarrowedType */
         $dryRun = method_exists($autoloadGenerator, 'setDryRun');
 
@@ -207,28 +194,28 @@ final readonly class AutoloadBundler implements Bundler
         $autoloadGenerator->setDevMode(false);
         $autoloadGenerator->setRunScripts(false);
         $autoloadGenerator->setClassMapAuthoritative(false);
-        $filename = $composer->getConfig()->getConfigSource()->getName();
-        $repository = $composer->getRepositoryManager()->getLocalRepository();
-        $targetDir = Filesystem\Path::join($composer->getConfig()->get('vendor-dir'), 'composer-bundled');
+        $filename = $composer->declarationFile();
+        $repository = $composerInstance->getRepositoryManager()->getLocalRepository();
+        $targetDir = Filesystem\Path::join($composerInstance->getConfig()->get('vendor-dir'), 'composer-bundled');
 
         // Limit local repository to root package if dependencies should be omitted
         if (!$deep) {
             $repository = new Repository\InstalledArrayRepository([
                 // Cloning is important here since the package may already be added to another repository
                 // and Composer prohibits adding a package to multiple repositories
-                clone $composer->getPackage(),
+                clone $composerInstance->getPackage(),
             ]);
         }
 
         // Resolve PSR-4 namespaces
         $packageMap = $autoloadGenerator->buildPackageMap(
-            $composer->getInstallationManager(),
-            $composer->getPackage(),
+            $composerInstance->getInstallationManager(),
+            $composerInstance->getPackage(),
             $repository->getCanonicalPackages(),
         );
         ['files' => $files, 'psr-4' => $namespaces] = $autoloadGenerator->parseAutoloads(
             $packageMap,
-            $composer->getPackage(),
+            $composerInstance->getPackage(),
             true,
         );
 
@@ -236,14 +223,14 @@ final readonly class AutoloadBundler implements Bundler
         $classMap = Helper\FilesystemHelper::executeInDirectory(
             $rootPath,
             static fn () => $autoloadGenerator->dump(
-                $composer->getConfig(),
+                $composerInstance->getConfig(),
                 $repository,
-                $composer->getPackage(),
-                $composer->getInstallationManager(),
+                $composerInstance->getPackage(),
+                $composerInstance->getInstallationManager(),
                 basename($targetDir),
                 false,
                 null,
-                $composer->getLocker(),
+                $composerInstance->getLocker(),
             ),
         );
 

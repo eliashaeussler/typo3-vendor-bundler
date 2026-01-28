@@ -39,7 +39,7 @@ use function sprintf;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Command\BundleCommand::class)]
-final class BundleCommandTest extends Framework\TestCase
+final class BundleCommandTest extends Tests\ExtensionFixtureBasedTestCase
 {
     private Tests\Fixtures\Classes\DummyCommand $firstCommand;
     private Tests\Fixtures\Classes\DummyCommand $secondCommand;
@@ -47,6 +47,8 @@ final class BundleCommandTest extends Framework\TestCase
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $this->firstCommand = new Tests\Fixtures\Classes\DummyCommand('first command');
         $this->secondCommand = new Tests\Fixtures\Classes\DummyCommand('second command');
         $this->commandTester = $this->createTester([$this->firstCommand, $this->secondCommand]);
@@ -69,7 +71,7 @@ final class BundleCommandTest extends Framework\TestCase
         $commandTester = $this->createTester([new Src\Command\BundleAutoloadCommand()]);
 
         $actual = $commandTester->execute([
-            '--config' => dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-autoload-disabled.yaml',
+            '--config' => dirname(__DIR__).'/Fixtures/Extensions/valid-disabled/typo3-vendor-bundler.yaml',
         ]);
 
         self::assertSame(Console\Command\Command::FAILURE, $actual);
@@ -77,20 +79,26 @@ final class BundleCommandTest extends Framework\TestCase
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeSkipsBundlersIfDisabledByConfig(): void
     {
-        $commandTester = $this->createTester([
-            new Src\Command\BundleAutoloadCommand(),
-            new Src\Command\BundleDependenciesCommand(),
-        ]);
+        $rootPath = $this->createTemporaryFixture('valid-disabled');
 
-        $actual = $commandTester->execute([
-            '--config' => dirname(__DIR__).'/Fixtures/ConfigFiles/valid-config-autoload-disabled.yaml',
-        ]);
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            function () {
+                $commandTester = $this->createTester([
+                    new Src\Command\BundleAutoloadCommand(),
+                    new Src\Command\BundleDependenciesCommand(),
+                ]);
 
-        self::assertSame(Console\Command\Command::SUCCESS, $actual);
-        self::assertStringNotContainsString('Bundle autoloader for vendor libraries in composer.json', $commandTester->getDisplay());
-        self::assertStringContainsString('Bundle dependency information of vendor libraries', $commandTester->getDisplay());
+                $actual = $commandTester->execute([]);
+
+                self::assertSame(Console\Command\Command::SUCCESS, $actual);
+                self::assertStringNotContainsString('Bundle autoloader for vendor libraries in composer.json', $commandTester->getDisplay());
+                self::assertStringContainsString('Bundle dependency information of vendor libraries', $commandTester->getDisplay());
+            },
+        );
     }
 
     #[Framework\Attributes\Test]

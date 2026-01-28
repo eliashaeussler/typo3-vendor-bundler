@@ -25,10 +25,10 @@ namespace EliasHaeussler\Typo3VendorBundler\Tests\Command;
 
 use Composer\Console\Application;
 use EliasHaeussler\Typo3VendorBundler as Src;
+use EliasHaeussler\Typo3VendorBundler\Tests;
 use Generator;
 use PHPUnit\Framework;
 use Symfony\Component\Console;
-use Symfony\Component\Filesystem;
 
 use function dirname;
 
@@ -39,19 +39,19 @@ use function dirname;
  * @license GPL-3.0-or-later
  */
 #[Framework\Attributes\CoversClass(Src\Command\ExtractDependenciesCommand::class)]
-final class ExtractDependenciesCommandTest extends Framework\TestCase
+final class ExtractDependenciesCommandTest extends Tests\ExtensionFixtureBasedTestCase
 {
     private Console\Tester\CommandTester $commandTester;
-    private Filesystem\Filesystem $filesystem;
 
     public function setUp(): void
     {
+        parent::setUp();
+
         $application = new Application();
         $command = new Src\Command\ExtractDependenciesCommand();
         $command->setApplication($application);
 
         $this->commandTester = new Console\Tester\CommandTester($command);
-        $this->filesystem = new Filesystem\Filesystem();
     }
 
     #[Framework\Attributes\Test]
@@ -86,14 +86,19 @@ final class ExtractDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeFailsIfRootComposerInstanceCannotBeCreated(): void
     {
-        $this->commandTester->execute([
-            '--config' => dirname(__DIR__).'/Fixtures/Extensions/invalid-composer-file/typo3-vendor-bundler.yaml',
-        ]);
+        $rootPath = $this->createTemporaryFixture('invalid-composer-file');
 
-        self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
-        self::assertStringContainsString(
-            'Could not initialize a Composer instance for the root package.',
-            $this->commandTester->getDisplay(),
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            function () {
+                $this->commandTester->execute([]);
+
+                self::assertSame(Console\Command\Command::FAILURE, $this->commandTester->getStatusCode());
+                self::assertStringContainsString(
+                    'Could not initialize a Composer instance for the root package.',
+                    $this->commandTester->getDisplay(),
+                );
+            },
         );
     }
 
@@ -137,42 +142,52 @@ final class ExtractDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\DataProvider('executeDisplaysExtractedDependenciesDataProvider')]
     public function executeDisplaysExtractedDependencies(array $input, int $verbosity, bool $expected): void
     {
-        $input['--config'] = dirname(__DIR__).'/Fixtures/Extensions/valid-no-libs/typo3-vendor-bundler.yaml';
+        $rootPath = $this->createTemporaryFixture('valid-no-libs');
 
-        $this->commandTester->execute($input, ['verbosity' => $verbosity]);
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            function () use ($input, $verbosity, $expected) {
+                $this->commandTester->execute($input, ['verbosity' => $verbosity]);
 
-        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+                self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
 
-        $output = $this->commandTester->getDisplay();
+                $output = $this->commandTester->getDisplay();
 
-        self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
-        self::assertStringNotContainsString('Excluded psr/http-message', $output);
+                self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
+                self::assertStringNotContainsString('Excluded psr/http-message', $output);
 
-        if ($expected) {
-            self::assertStringContainsString('Extracted eliashaeussler/sse', $output);
-        } else {
-            self::assertStringNotContainsString('Extracted eliashaeussler/sse', $output);
-        }
+                if ($expected) {
+                    self::assertStringContainsString('Extracted eliashaeussler/sse', $output);
+                } else {
+                    self::assertStringNotContainsString('Extracted eliashaeussler/sse', $output);
+                }
+            },
+        );
     }
 
     #[Framework\Attributes\Test]
     public function executeDisplaysExcludedDependenciesOnVeryVerboseOutput(): void
     {
-        $this->commandTester->execute(
-            [
-                '--config' => dirname(__DIR__).'/Fixtures/Extensions/valid-no-libs/typo3-vendor-bundler.yaml',
-            ],
-            [
-                'verbosity' => Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE,
-            ],
+        $rootPath = $this->createTemporaryFixture('valid-no-libs');
+
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            function () {
+                $this->commandTester->execute(
+                    [],
+                    [
+                        'verbosity' => Console\Output\OutputInterface::VERBOSITY_VERY_VERBOSE,
+                    ],
+                );
+
+                self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+
+                $output = $this->commandTester->getDisplay();
+
+                self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
+                self::assertStringContainsString('Excluded psr/http-message', $output);
+            },
         );
-
-        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
-
-        $output = $this->commandTester->getDisplay();
-
-        self::assertStringContainsString('🔎 Extracting dependencies from root package... Done', $output);
-        self::assertStringContainsString('Excluded psr/http-message', $output);
     }
 
     #[Framework\Attributes\Test]
@@ -233,41 +248,49 @@ final class ExtractDependenciesCommandTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function executeDisplaysComposerJsonFileContentsIfPrintOptionIsGiven(): void
     {
-        $this->commandTester->execute(
-            [
-                '--config' => dirname(__DIR__).'/Fixtures/Extensions/valid-no-libs/typo3-vendor-bundler.yaml',
-                '--print-file-contents' => true,
-            ],
+        $rootPath = $this->createTemporaryFixture('valid-no-libs');
+
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            function () {
+                $this->commandTester->execute(
+                    [
+                        '--print-file-contents' => true,
+                    ],
+                );
+
+                self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+
+                $output = $this->commandTester->getDisplay();
+
+                self::assertStringContainsString('✍️ Building composer.json file contents... Done', $output);
+                self::assertStringContainsString('"eliashaeussler/sse": "', $output);
+            },
         );
-
-        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
-
-        $output = $this->commandTester->getDisplay();
-
-        self::assertStringContainsString('✍️ Building composer.json file contents... Done', $output);
-        self::assertStringContainsString('"eliashaeussler/sse": "', $output);
     }
 
     #[Framework\Attributes\Test]
     public function executeWritesComposerJsonToFileIfDumpOptionIsGiven(): void
     {
-        $rootPath = dirname(__DIR__).'/Fixtures/Extensions/valid-no-libs';
+        $rootPath = $this->createTemporaryFixture('valid-no-libs');
 
-        $this->filesystem->remove($rootPath.'/libs');
+        Src\Helper\FilesystemHelper::executeInDirectory(
+            $rootPath,
+            function () use ($rootPath) {
+                $this->commandTester->execute(
+                    [
+                        '--dump-to-file' => true,
+                    ],
+                );
 
-        $this->commandTester->execute(
-            [
-                '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
-                '--dump-to-file' => true,
-            ],
+                self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
+
+                $output = $this->commandTester->getDisplay();
+
+                self::assertStringContainsString('✍️ Creating composer.json file for extracted vendor libraries... Done', $output);
+                self::assertStringContainsString('Successfully extracted and dumped dependencies', $output);
+                self::assertFileExists($rootPath.'/libs/composer.json');
+            },
         );
-
-        self::assertSame(Console\Command\Command::SUCCESS, $this->commandTester->getStatusCode());
-
-        $output = $this->commandTester->getDisplay();
-
-        self::assertStringContainsString('✍️ Creating composer.json file for extracted vendor libraries... Done', $output);
-        self::assertStringContainsString('Successfully extracted and dumped dependencies', $output);
-        self::assertFileExists($rootPath.'/libs/composer.json');
     }
 }

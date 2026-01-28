@@ -1,0 +1,3 @@
+pathToVendorLibraries: libs
+autoload:
+  enabled: false
