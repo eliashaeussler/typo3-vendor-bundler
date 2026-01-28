@@ -16,6 +16,7 @@ dependencies:
     version: '1.7'
     includeDev: false
     overwrite: true
+  backupSources: false
 
 dependencyExtraction:
   enabled: true
@@ -65,6 +66,7 @@ rootPath: ../
 | `dependencies.sbom.version`    | String  | `1.7`         | CycloneDX BOM version to use.                                                                                                       |
 | `dependencies.sbom.includeDev` | Boolean | `true`        | Define whether to include development dependencies in the serialized SBOM.                                                          |
 | `dependencies.sbom.overwrite`  | Boolean | `false`       | Define whether to overwrite the SBOM file, if it already exists.                                                                    |
+| `dependencies.backupSources`   | Boolean | `false`       | Define whether to backup source files.                                                                                              |
 
 ## Dependency extraction
 

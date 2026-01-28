@@ -65,6 +65,12 @@
 				},
 				"sbom": {
 					"$ref": "#/definitions/sbom"
+				},
+				"backupSources": {
+					"type": "boolean",
+					"title": "Define whether to backup source files",
+					"description": "When enabled, original contents of source files, which are to be modified, will be backed up in a separate file",
+					"default": false
 				}
 			},
 			"additionalProperties": false

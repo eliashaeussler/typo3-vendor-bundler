@@ -90,6 +90,7 @@ composer bundle-dependencies \
     [-f|--sbom-file SBOM-FILE] \
     [-s|--sbom-version SBOM-VERSION] \
     [--[no-]dev] \
+    [-b|--[no-]backup-sources] \
     [-o|--[no-]overwrite] \
     [-x|--[no-]extract] \
     [--[no-]fail]
@@ -135,6 +136,15 @@ Define whether to include development dependencies in the generated SBOM.
 
 > [!NOTE]
 > If omitted, the `dependencies.sbom.includeDev` option from the config file will be used instead.
+
+### `-b|--[no-]backup-sources`
+
+Define whether to backup source files (normally the root `composer.json` file of the extension).
+When enabled, original contents of source files, which are to be modified, will be backed
+up in a separate file. If no contents would be modified, no backup files will be generated.
+
+> [!NOTE]
+> If omitted, the `dependencies.backupSources` option from the config file will be used instead.
 
 ### `-o|--[no-]overwrite`
 

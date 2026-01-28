@@ -80,6 +80,7 @@ final readonly class DependencyBundler implements Bundler
         bool $failOnExtractionProblems = true,
         bool $includeDevDependencies = true,
         bool $overwrite = false,
+        bool $backupSources = false,
     ): Entity\Dependencies {
         $format = Resource\BomFormat::fromFile($filename);
 
@@ -126,8 +127,20 @@ final readonly class DependencyBundler implements Bundler
         // Serialize generated SBOM
         $this->serializeBom($version, $bom, $format, $filename);
 
-        // Write metadata to composer.json
         if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('sbom-file', $sbomFile)) {
+            // Create composer.json backup
+            if (true === $backupSources) {
+                $this->taskRunner->run(
+                    '🦖 Backing up source files',
+                    function () {
+                        $composerJson = $this->rootComposer->composer->getConfig()->getConfigSource()->getName();
+
+                        $this->filesystem->copy($composerJson, $composerJson.'.bak');
+                    },
+                );
+            }
+
+            // Write metadata to composer.json
             $this->taskRunner->run(
                 '✍️ Writing dependency metadata to <comment>composer.json</comment> file',
                 function () use ($sbomFile) {

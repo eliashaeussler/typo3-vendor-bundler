@@ -40,6 +40,7 @@ return new Typo3VendorBundler\Config\Typo3VendorBundlerConfig(
         sbom: new Typo3VendorBundler\Config\Sbom(
             includeDev: false,
         ),
+        backupSources: true,
     ),
     dependencyExtraction: new Typo3VendorBundler\Config\DependencyExtractionConfig(
         enabled: true,

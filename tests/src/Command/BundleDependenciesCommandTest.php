@@ -300,4 +300,19 @@ final class BundleDependenciesCommandTest extends Tests\ExtensionFixtureBasedTes
             (string) file_get_contents($rootPath.'/libs/sbom.json'),
         );
     }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function executeUsesBackupSourcesOptionFromCommandOption(): void
+    {
+        $rootPath = $this->createTemporaryFixture();
+
+        $this->commandTester->execute([
+            '--config' => $rootPath.'/typo3-vendor-bundler.yaml',
+            '--backup-sources' => false,
+            '--overwrite' => true,
+        ]);
+
+        self::assertFileDoesNotExist($rootPath.'/composer.json.bak');
+    }
 }
