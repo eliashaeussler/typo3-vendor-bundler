@@ -20,6 +20,22 @@ file in CycloneDX format. The SBOM file is dumped in JSON or XML format and is b
 default located next to the original `composer.json` file within the path to vendor
 libraries, e.g. `Resources/Private/Libs/sbom.json`.
 
+The configured path to vendor libraries and the relative path to the generated SBOM
+file will be written as `extra` properties to the root `composer.json` file like follows:
+
+```json
+{
+    "extra": {
+        "typo3/cms": {
+            "vendor-libraries": {
+                "root-path": "Resources/Private/Libs",
+                "sbom-file": "Resources/Private/Libs/sbom.json"
+            }
+        }
+    }
+}
+```
+
 ## Configuration options
 
 The bundler's behavior can be controlled in various ways:

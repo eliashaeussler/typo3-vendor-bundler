@@ -243,6 +243,34 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
         }
     }
 
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleWritesMetadataToRootComposerJson(): void
+    {
+        $composerJson = $this->rootPath.'/composer.json';
+
+        try {
+            $this->subject->bundle();
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
+            self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
+            self::assertStringContainsString('✍️ Writing dependency metadata to composer.json file... Done', $output);
+
+            $expected = [
+                'extension-key' => 'test',
+                'vendor-libraries' => [
+                    'root-path' => 'libs',
+                ],
+            ];
+
+            $actual = $this->parseComposerJson($composerJson);
+
+            self::assertSame($expected, $actual->getExtra()['typo3/cms'] ?? null);
+        }
+    }
+
     private function createSubject(string $rootPath, string $librariesPath = 'libs'): Src\Bundler\AutoloadBundler
     {
         return new Src\Bundler\AutoloadBundler($rootPath, $librariesPath, $this->output);
