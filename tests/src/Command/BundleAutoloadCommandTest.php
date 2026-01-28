@@ -112,9 +112,10 @@ final class BundleAutoloadCommandTest extends Tests\ExtensionFixtureBasedTestCas
     }
 
     #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function executeUsesBackupSourcesOptionFromCommandOption(): void
     {
-        $rootPath = $this->createTemporaryDirectory();
+        $rootPath = $this->createTemporaryFixture();
 
         $this->commandTester->execute([
             '--config' => $rootPath.'/typo3-vendor-bundler.yaml',

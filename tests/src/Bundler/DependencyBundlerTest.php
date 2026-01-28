@@ -184,6 +184,39 @@ final class DependencyBundlerTest extends Tests\ExtensionFixtureBasedTestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleBacksUpSourceFiles(): void
+    {
+        $rootPath = $this->createTemporaryFixture();
+        $composerJson = $rootPath.'/composer.json';
+        $composerJsonBackup = $rootPath.'/composer.json.bak';
+
+        $this->filesystem->remove($composerJsonBackup);
+
+        self::assertFileExists($composerJson);
+        self::assertFileDoesNotExist($composerJsonBackup);
+
+        $composerJsonSource = file_get_contents($composerJson);
+
+        try {
+            $this->subject->bundle(extractDependencies: false, overwrite: true, backupSources: true);
+        } finally {
+            // Restore original source files
+            file_put_contents($composerJson, $composerJsonSource);
+
+            self::assertFileExists($composerJsonBackup);
+            self::assertIsString($composerJsonSource);
+            self::assertStringEqualsFile($composerJsonBackup, $composerJsonSource);
+
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
+            self::assertStringContainsString('🧩 Generating Software Bill of Materials... Done', $output);
+            self::assertStringContainsString('🦖 Backing up source files... Done', $output);
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
     public function bundleDumpsSerializedSbomAsJsonFile(): void
     {
         $rootPath = $this->createTemporaryFixture();
