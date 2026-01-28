@@ -32,7 +32,9 @@ use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
 
+use function array_pop;
 use function dirname;
+use function explode;
 use function is_dir;
 
 /**
@@ -89,6 +91,52 @@ final readonly class Composer
 
             throw new Exception\CannotInstallComposerDependencies($rootPath);
         }
+    }
+
+    public function readExtra(string $path): mixed
+    {
+        $extra = $this->composer->getPackage()->getExtra();
+        $currentSegment = &$extra;
+        $pathSegments = explode('.', $path);
+        $lastSegment = array_pop($pathSegments);
+
+        foreach ($pathSegments as $pathSegment) {
+            $currentSegment[$pathSegment] ??= null;
+
+            // Early return on non-array segments
+            if (!is_array($currentSegment[$pathSegment])) {
+                return null;
+            }
+
+            $currentSegment = &$currentSegment[$pathSegment];
+        }
+
+        return $currentSegment[$lastSegment] ?? null;
+    }
+
+    public function writeExtra(string $path, string $value): void
+    {
+        $extra = $this->composer->getPackage()->getExtra();
+        $currentSegment = &$extra;
+        $pathSegments = explode('.', $path);
+        $lastSegment = array_pop($pathSegments);
+
+        foreach ($pathSegments as $pathSegment) {
+            $currentSegment[$pathSegment] ??= [];
+
+            // Make sure segments are arrays
+            if (!is_array($currentSegment[$pathSegment])) {
+                $currentSegment[$pathSegment] = [];
+            }
+
+            $currentSegment = &$currentSegment[$pathSegment];
+        }
+
+        $currentSegment[$lastSegment] = $value;
+
+        /* @phpstan-ignore argument.type */
+        $this->composer->getConfig()->getConfigSource()->addProperty('extra', $extra);
+        $this->composer->getPackage()->setExtra($extra);
     }
 
     public function declarationFile(): string

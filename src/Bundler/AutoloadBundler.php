@@ -52,6 +52,7 @@ use function sprintf;
 final readonly class AutoloadBundler implements Bundler
 {
     use CanExtractDependencies;
+    use CanModifyExtraSection;
 
     private Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
@@ -124,6 +125,14 @@ final readonly class AutoloadBundler implements Bundler
                 $configSource->addProperty('autoload', (object) $autoload->toArray(true));
             },
         );
+
+        // Write metadata to composer.json
+        if (!$this->extraSectionIsPrepared()) {
+            $this->taskRunner->run(
+                '✍️ Writing dependency metadata to <comment>composer.json</comment> file',
+                fn () => $this->prepareExtraSection(),
+            );
+        }
 
         return $autoload;
     }

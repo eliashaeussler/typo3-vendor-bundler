@@ -21,6 +21,21 @@ maps, PSR-4 namespaces and autoload files are loaded, they are merged and dumped
 the root `composer.json` file. This makes all autoloaded classes and files available
 to TYPO3's autoloader in classic mode.
 
+The configured path to vendor libraries will be written as `extra` property to the
+configured root `composer.json` file like follows:
+
+```json
+{
+    "extra": {
+        "typo3/cms": {
+            "vendor-libraries": {
+                "root-path": "Resources/Private/Libs"
+            }
+        }
+    }
+}
+```
+
 ## Configuration options
 
 The bundler's behavior can be controlled in various ways:
@@ -47,6 +62,11 @@ Given the following root `composer.json` file:
     "autoload": {
         "psr-4": {
             "EliasHaeussler\\TestExtension\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "test_extension"
         }
     }
 }
@@ -76,6 +96,14 @@ into the `autoload` section of the root `composer.json` file:
             "EliasHaeussler\\CacheWarmup\\": ["Resources/Private/Libs/vendor/eliashaeussler/cache-warmup/src"],
             "EliasHaeussler\\SSE\\": ["Resources/Private/Libs/vendor/eliashaeussler/sse/src"],
             // ...
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "test_extension",
+            "vendor-libraries": {
+                "root-path": "Resources/Private/Libs"
+            }
         }
     }
 }

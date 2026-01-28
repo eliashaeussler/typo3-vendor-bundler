@@ -143,6 +143,104 @@ final class ComposerTest extends Tests\ExtensionFixtureBasedTestCase
         );
     }
 
+    /**
+     * @return Generator<string, array{string, mixed}>
+     */
+    public static function readExtraReturnsPropertyFromExtraSectionDataProvider(): Generator
+    {
+        yield 'non-existing root property' => ['foo', null];
+        yield 'existing root property' => [
+            'typo3/cms',
+            [
+                'extension-key' => 'test',
+            ],
+        ];
+        yield 'non-existing nested property' => ['foo.baz', null];
+        yield 'non-existing nested property on existing root property' => ['typo3/cms.baz', null];
+        yield 'existing nested property' => ['typo3/cms.extension-key', 'test'];
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\DataProvider('readExtraReturnsPropertyFromExtraSectionDataProvider')]
+    public function readExtraReturnsPropertyFromExtraSection(string $path, mixed $expected): void
+    {
+        $subject = Src\Resource\Composer::create(self::getFixturePath());
+
+        self::assertSame($expected, $subject->readExtra($path));
+    }
+
+    /**
+     * @return Generator<string, array{string, string, array<string, mixed>}>
+     */
+    public static function writeExtraAddsGivenExtraPropertyToComposerJsonDataProvider(): Generator
+    {
+        yield 'existing root property' => [
+            'typo3/cms',
+            'foo',
+            [
+                'typo3/cms' => 'foo',
+            ],
+        ];
+        yield 'existing nested property' => [
+            'typo3/cms.extension-key',
+            'foo',
+            [
+                'typo3/cms' => [
+                    'extension-key' => 'foo',
+                ],
+            ],
+        ];
+        yield 'non-existing nested property on existing root property' => [
+            'typo3/cms.foo.baz',
+            'boo',
+            [
+                'typo3/cms' => [
+                    'extension-key' => 'test',
+                    'foo' => [
+                        'baz' => 'boo',
+                    ],
+                ],
+            ],
+        ];
+        yield 'non-existing root property' => [
+            'foo',
+            'baz',
+            [
+                'typo3/cms' => [
+                    'extension-key' => 'test',
+                ],
+                'foo' => 'baz',
+            ],
+        ];
+        yield 'non-existing nested property' => [
+            'foo.baz',
+            'boo',
+            [
+                'typo3/cms' => [
+                    'extension-key' => 'test',
+                ],
+                'foo' => [
+                    'baz' => 'boo',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $expected
+     */
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\DataProvider('writeExtraAddsGivenExtraPropertyToComposerJsonDataProvider')]
+    public function writeExtraAddsGivenExtraPropertyToComposerJson(string $path, string $value, array $expected): void
+    {
+        $rootPath = $this->createTemporaryFixture();
+        $subject = Src\Resource\Composer::create($rootPath);
+
+        $subject->writeExtra($path, $value);
+
+        self::assertSame($expected, $subject->composer->getPackage()->getExtra());
+    }
+
     #[Framework\Attributes\Test]
     public function declarationFileReturnsPathToComposerJson(): void
     {

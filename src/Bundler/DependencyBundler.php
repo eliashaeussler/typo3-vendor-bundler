@@ -42,6 +42,7 @@ use function is_dir;
 final readonly class DependencyBundler implements Bundler
 {
     use CanExtractDependencies;
+    use CanModifyExtraSection;
 
     private Resource\BomGenerator $bomGenerator;
     private Filesystem\Filesystem $filesystem;
@@ -116,6 +117,7 @@ final readonly class DependencyBundler implements Bundler
         );
 
         // Generate SBOM
+        $sbomFile = Filesystem\Path::makeRelative($filename, $this->rootPath);
         $bom = $this->taskRunner->run(
             '🧩 Generating Software Bill of Materials',
             fn () => $this->bomGenerator->generate($composer, $includeDevDependencies),
@@ -123,6 +125,17 @@ final readonly class DependencyBundler implements Bundler
 
         // Serialize generated SBOM
         $this->serializeBom($version, $bom, $format, $filename);
+
+        // Write metadata to composer.json
+        if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('sbom-file', $sbomFile)) {
+            $this->taskRunner->run(
+                '✍️ Writing dependency metadata to <comment>composer.json</comment> file',
+                function () use ($sbomFile) {
+                    $this->prepareExtraSection();
+                    $this->modifyExtraSection('sbom-file', $sbomFile);
+                },
+            );
+        }
 
         return new Entity\Dependencies($filename, $this->rootPath);
     }
