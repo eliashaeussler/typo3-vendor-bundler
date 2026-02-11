@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4932817a27abc8159f5e082ad7daa98c",
+    "content-hash": "b1b53bb669c075d8901639ead1d139ed",
     "packages": [
         {
             "name": "composer/spdx-licenses",
