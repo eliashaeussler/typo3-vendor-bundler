@@ -28,6 +28,8 @@ namespace EliasHaeussler\Typo3VendorBundler\Resource;
  *
  * @author Elias Häußler <elias@haeussler.dev>
  * @license GPL-3.0-or-later
+ *
+ * @see https://github.com/CycloneDX/cyclonedx-property-taxonomy/blob/main/cdx/composer.md
  */
 enum BomProperty: string
 {
