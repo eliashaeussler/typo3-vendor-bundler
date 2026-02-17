@@ -15,7 +15,7 @@
 		"php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
 		"composer-plugin-api": "^2.0",
 		"composer": "~2.2.18 || ^2.4",
-		"cuyz/valinor": "^2.0",
+		"cuyz/valinor": "^2.2.2",
 		"cyclonedx/cyclonedx-library": "^4.0",
 		"eliashaeussler/task-runner": "^1.0.1",
 		"package-url/packageurl-php": "^1.0",
@@ -37,9 +37,6 @@
 		"phpstan/phpstan-symfony": "^2.0",
 		"phpunit/phpunit": "^11.5 || ^12.2 || ^13.0",
 		"shipmonk/composer-dependency-analyser": "^1.8"
-	},
-	"conflict": {
-		"cuyz/valinor": "2.2.1"
 	},
 	"autoload": {
 		"psr-4": {
