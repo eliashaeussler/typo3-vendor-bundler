@@ -35,7 +35,7 @@
 		"phpstan/extension-installer": "^1.4",
 		"phpstan/phpstan-phpunit": "^2.0",
 		"phpstan/phpstan-symfony": "^2.0",
-		"phpunit/phpunit": "^11.5 || ^12.2 || ^13.0",
+		"phpunit/phpunit": "^11.5 || ^12.5 || ^13.0",
 		"shipmonk/composer-dependency-analyser": "^1.8"
 	},
 	"autoload": {
