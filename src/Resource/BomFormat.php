@@ -76,11 +76,9 @@ enum BomFormat: string
 
     public function createValidator(Core\Spec\Version $version): Core\Validation\Validator
     {
-        $spec = Core\Spec\SpecFactory::makeForVersion($version);
-
         return match ($this) {
-            self::Json => new Core\Validation\Validators\JsonStrictValidator($spec),
-            self::Xml => new Core\Validation\Validators\XmlValidator($spec),
+            self::Json => new Core\Validation\Validators\JsonStrictValidator($version),
+            self::Xml => new Core\Validation\Validators\XmlValidator($version),
         };
     }
 }

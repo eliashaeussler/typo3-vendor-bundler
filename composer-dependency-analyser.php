@@ -26,7 +26,7 @@ use ShipMonk\ComposerDependencyAnalyser;
 return (new ComposerDependencyAnalyser\Config\Configuration())
     ->addPathToExclude('tests/src/Fixtures')
     ->ignoreErrorsOnPackages(
-        ['composer/composer', 'composer/semver'],
+        ['composer/composer', 'composer/semver', 'composer/spdx-licenses'],
         [ComposerDependencyAnalyser\Config\ErrorType::DEV_DEPENDENCY_IN_PROD],
     )
 ;

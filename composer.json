@@ -27,6 +27,7 @@
 		"armin/editorconfig-cli": "^2.1",
 		"composer/composer": "~2.2.18 || ^2.4",
 		"composer/semver": "^3.0",
+		"composer/spdx-licenses": "^1.5.7",
 		"eliashaeussler/php-cs-fixer-config": "^3.0",
 		"eliashaeussler/phpstan-config": "^4.0",
 		"eliashaeussler/rector-config": "^4.0",
