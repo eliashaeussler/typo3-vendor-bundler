@@ -16,7 +16,7 @@
 		"composer-plugin-api": "^2.0",
 		"composer": "~2.2.18 || ^2.4",
 		"cuyz/valinor": "^2.0",
-		"cyclonedx/cyclonedx-library": "^3.9",
+		"cyclonedx/cyclonedx-library": "^4.0",
 		"eliashaeussler/task-runner": "^1.0.1",
 		"package-url/packageurl-php": "^1.0",
 		"symfony/console": "^5.4 || ^6.4 || ^7.0 || ^8.0",
