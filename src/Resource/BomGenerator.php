@@ -28,6 +28,7 @@ use Composer\IO;
 use Composer\Package;
 use Composer\Repository;
 use Composer\Semver;
+use Composer\Spdx;
 use CycloneDX\Contrib;
 use CycloneDX\Core;
 use DateTimeImmutable;
@@ -60,7 +61,10 @@ final readonly class BomGenerator
     public function __construct(
         private string $rootPath,
     ) {
-        $this->licenseFactory = new Contrib\License\Factories\LicenseFactory();
+        $this->licenseFactory = new Contrib\License\Factories\LicenseFactory(
+            new Core\Spdx\LicenseIdentifiers(),
+            new Spdx\SpdxLicenses(),
+        );
         $this->rootComposer = Composer::create($this->rootPath);
     }
 
@@ -199,13 +203,13 @@ final readonly class BomGenerator
         }
     }
 
-    private function createPurlFromComponent(Core\Models\Component $component): PackageUrl
+    private function createPurlFromComponent(Core\Models\Component $component): string
     {
         $purl = new PackageUrl('composer', $component->getName());
         $purl->setNamespace($component->getGroup());
         $purl->setVersion($component->getVersion());
 
-        return $purl;
+        return $purl->toString();
     }
 
     /**
