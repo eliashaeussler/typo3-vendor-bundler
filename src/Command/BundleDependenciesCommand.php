@@ -70,7 +70,7 @@ final class BundleDependenciesCommand extends AbstractConfigurationAwareCommand
             Console\Input\InputOption::VALUE_REQUIRED,
             sprintf(
                 'Version to use when dumping the generated SBOM (defaults to "%s")',
-                Core\Spec\Version::v1dot7->value,
+                Core\Spec\Version::v1dot6->value,
             ),
         );
         $this->addOption(

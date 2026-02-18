@@ -35,7 +35,7 @@ final readonly class Sbom
 {
     public function __construct(
         private string $file = 'sbom.json',
-        private Core\Spec\Version $version = Core\Spec\Version::v1dot7,
+        private Core\Spec\Version $version = Core\Spec\Version::v1dot6,
         private ?bool $includeDev = null,
         private ?bool $overwrite = null,
     ) {}
