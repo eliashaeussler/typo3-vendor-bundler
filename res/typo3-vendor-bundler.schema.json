@@ -89,7 +89,7 @@
 					"type": "string",
 					"title": "CycloneDX BOM version to use",
 					"description": "All BOM versions supported by CycloneDX can be used.",
-					"default": "1.7"
+					"default": "1.6"
 				},
 				"includeDev": {
 					"type": "boolean",

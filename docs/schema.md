@@ -63,7 +63,7 @@ rootPath: ../
 | `dependencies.enabled`         | Boolean | `true`        | Define whether dependency bundling is enabled when executing [`composer bundle`](cli.md#bundle).                                    |
 | `dependencies.sbom`            | Object  | –             | Set of configuration options used to define SBOM file generation.                                                                   |
 | `dependencies.sbom.file`       | String  | `sbom.json`   | File where to write the serialized SBOM. Can be a JSON or XML file. Relative paths are resolved based on the vendor libraries path. |
-| `dependencies.sbom.version`    | String  | `1.7`         | CycloneDX BOM version to use.                                                                                                       |
+| `dependencies.sbom.version`    | String  | `1.6`         | CycloneDX BOM version to use.                                                                                                       |
 | `dependencies.sbom.includeDev` | Boolean | `true`        | Define whether to include development dependencies in the serialized SBOM.                                                          |
 | `dependencies.sbom.overwrite`  | Boolean | `false`       | Define whether to overwrite the SBOM file, if it already exists.                                                                    |
 | `dependencies.backup`          | Boolean | `false`       | Define whether to backup the root `composer.json` file.                                                                             |
