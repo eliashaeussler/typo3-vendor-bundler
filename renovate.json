@@ -7,6 +7,22 @@
 	"constraints": {
 		"php": "8.2.*"
 	},
+	"customManagers": [
+		{
+			"customType": "regex",
+			"managerFilePatterns": [
+				"/^docs/schema\\.md$/",
+				"/^res/typo3-vendor-bundler\\.schema\\.json$/"
+			] ,
+			"matchStrings": [
+				"`(?<currentValue>[^`]+)`\\s*<!-- cdx-spec -->",
+				"\"version\": {\\s*\"default\": \"(?<currentValue>[^\"]+)\""
+			],
+			"datasourceTemplate": "github-tags",
+			"depNameTemplate": "CycloneDX/specification",
+			"versioningTemplate": "loose"
+		}
+	],
 	"packageRules": [
 		{
 			"enabled": false,
@@ -19,6 +35,24 @@
 			],
 			"matchFileNames": [
 				".github/workflows/cgl.yaml"
+			]
+		},
+		{
+			"extends": [
+				":automergeDisabled"
+			],
+			"matchDepNames": [
+				"CycloneDX/specification"
+			],
+			"matchManagers": [
+				"custom.regex"
+			],
+			"commitMessagePrefix": "[FEATURE]",
+			"commitMessageAction": "Support",
+			"commitMessageTopic": "CycloneDX specification",
+			"commitMessageExtra": "{{newMajor}}.{{newMinor}}",
+			"labels": [
+				"enhancement"
 			]
 		}
 	]
