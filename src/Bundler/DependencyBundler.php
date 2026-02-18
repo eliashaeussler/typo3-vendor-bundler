@@ -75,7 +75,7 @@ final readonly class DependencyBundler implements Bundler
      */
     public function bundle(
         string $filename = 'sbom.json',
-        Core\Spec\Version $version = Core\Spec\Version::v1dot7,
+        Core\Spec\Version $version = Core\Spec\Version::v1dot6,
         bool $extractDependencies = true,
         bool $failOnExtractionProblems = true,
         bool $includeDevDependencies = true,
