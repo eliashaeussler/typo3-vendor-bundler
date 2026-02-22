@@ -74,19 +74,19 @@ jobs:
 
       # Run tests
       - name: Build coverage directory
-        run: mkdir -p .build/coverage
+        run: mkdir -p build/tests/coverage
       - name: Run tests with coverage
         run: composer test:coverage
 
       # Upload artifact
       - name: Fix coverage path
-        working-directory: .build/coverage
+        working-directory: build/tests/coverage
         run: sed -i 's#/home/runner/work/typo3-vendor-bundler/typo3-vendor-bundler#${{ github.workspace }}#g' clover.xml
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v6
         with:
           name: coverage
-          path: .build/coverage/clover.xml
+          path: build/tests/coverage/clover.xml
           retention-days: 7
 
   coverage-report:

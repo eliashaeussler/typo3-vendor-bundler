@@ -62,7 +62,7 @@
 		"analyze": [
 			"@analyze:dependencies"
 		],
-		"analyze:dependencies": "composer-dependency-analyser",
+		"analyze:dependencies": "composer-dependency-analyser --config build/cgl/composer-dependency-analyser.php",
 		"fix": [
 			"@fix:composer",
 			"@fix:editorconfig",
@@ -70,7 +70,7 @@
 		],
 		"fix:composer": "@composer normalize",
 		"fix:editorconfig": "@lint:editorconfig --fix",
-		"fix:php": "php-cs-fixer fix",
+		"fix:php": "php-cs-fixer fix --config build/cgl/.php-cs-fixer.php",
 		"lint": [
 			"@lint:composer",
 			"@lint:editorconfig",
@@ -82,12 +82,12 @@
 		"migration": [
 			"@migration:rector"
 		],
-		"migration:rector": "rector process -c rector.php",
+		"migration:rector": "rector process -c build/cgl/rector.php",
 		"sca": [
 			"@sca:php"
 		],
-		"sca:php": "phpstan analyse -c phpstan.php",
+		"sca:php": "phpstan analyse -c build/cgl/phpstan.php",
 		"test": "@test:coverage --no-coverage",
-		"test:coverage": "phpunit -c phpunit.xml"
+		"test:coverage": "phpunit -c build/tests/phpunit.xml"
 	}
 }
