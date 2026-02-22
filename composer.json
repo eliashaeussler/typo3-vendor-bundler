@@ -45,7 +45,7 @@
 	},
 	"autoload-dev": {
 		"psr-4": {
-			"EliasHaeussler\\Typo3VendorBundler\\Tests\\": "tests/src/"
+			"EliasHaeussler\\Typo3VendorBundler\\Tests\\": "tests/"
 		}
 	},
 	"config": {
