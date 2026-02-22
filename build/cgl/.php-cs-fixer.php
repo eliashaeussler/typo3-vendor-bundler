@@ -21,28 +21,19 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\RectorConfig\Config\Config;
-use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\ValueObject\PhpVersion;
+use EliasHaeussler\PhpCsFixerConfig;
+use Symfony\Component\Finder;
 
-return static function (RectorConfig $rectorConfig): void {
-    Config::create($rectorConfig, PhpVersion::PHP_82)
-        ->in(
-            __DIR__.'/src',
-            __DIR__.'/tests',
-        )
-        ->not(
-            __DIR__.'/tests/src/Fixtures',
-        )
-        ->withPHPUnit()
-        ->withSymfony()
-        ->skip(NullToStrictStringFuncCallArgRector::class, [
-            __DIR__.'/src/Command/BundleAutoloadCommand.php',
-            __DIR__.'/src/Command/BundleDependenciesCommand.php',
-            __DIR__.'/src/Command/ExtractDependenciesCommand.php',
-        ])
-        ->apply()
-        ->cacheDirectory('.build/cache/rector')
-    ;
-};
+$header = PhpCsFixerConfig\Rules\Header::create(
+    'eliashaeussler/typo3-vendor-bundler',
+    PhpCsFixerConfig\Package\Type::ComposerPackage,
+    PhpCsFixerConfig\Package\Author::create('Elias Häußler', 'elias@haeussler.dev'),
+    PhpCsFixerConfig\Package\CopyrightRange::from(2025),
+    PhpCsFixerConfig\Package\License::GPL3OrLater,
+);
+
+return PhpCsFixerConfig\Config::create()
+    ->withRule($header)
+    ->withFinder(static fn (Finder\Finder $finder) => $finder->in(dirname(__DIR__, 2)))
+    ->setCacheFile('build/cgl/cache/php-cs-fixer/.php-cs-fixer.cache')
+;

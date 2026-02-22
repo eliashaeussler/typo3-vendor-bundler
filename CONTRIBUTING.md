@@ -62,11 +62,11 @@ composer test:coverage
 
 ### Test reports
 
-Code coverage reports are written to `.build/coverage`. You can open the
+Code coverage reports are written to `build/tests/coverage`. You can open the
 last HTML report like follows:
 
 ```bash
-open .build/coverage/html/index.html
+open build/tests/coverage/html/index.html
 ```
 
 ## Submit a pull request
