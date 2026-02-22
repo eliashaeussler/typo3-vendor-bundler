@@ -59,7 +59,7 @@ final class ConfigReaderTest extends Framework\TestCase
     #[Framework\Attributes\Test]
     public function readFromFileThrowsExceptionOnUnsupportedConfigFile(): void
     {
-        $file = dirname(__DIR__, 3).'/README.md';
+        $file = dirname(__DIR__, 2).'/README.md';
 
         $this->expectExceptionObject(
             new Src\Exception\ConfigFileIsNotSupported($file),

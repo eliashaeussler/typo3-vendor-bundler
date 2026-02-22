@@ -29,7 +29,7 @@ return PHPStanConfig\Config\Config::create(dirname(__DIR__, 2))
         'tests',
     )
     ->not(
-        'tests/src/Fixtures',
+        'tests/Fixtures',
     )
     ->withBleedingEdge()
     ->withSet(static function (PHPStanConfig\Set\SymfonySet $set) {

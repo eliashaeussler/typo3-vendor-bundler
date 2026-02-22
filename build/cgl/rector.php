@@ -35,7 +35,7 @@ return static function (RectorConfig $rectorConfig): void {
             $rootPath.'/tests',
         )
         ->not(
-            $rootPath.'/tests/src/Fixtures',
+            $rootPath.'/tests/Fixtures',
         )
         ->withPHPUnit()
         ->withSymfony()
