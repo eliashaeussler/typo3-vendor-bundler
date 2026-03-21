@@ -27,8 +27,12 @@ use Composer\Package;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use Symfony\Component\Filesystem;
 
+use function dirname;
 use function is_array;
+use function is_string;
 use function ksort;
+use function uniqid;
+use function version_compare;
 
 /**
  * DependencySet.
@@ -130,10 +134,33 @@ final readonly class DependencySet
         }
 
         foreach ($origin?->getConfig()->getRepositories() ?? [] as $repositoryIndex => $repository) {
-            // Add only non-packagist repositories
-            if ('packagist.org' !== $repositoryIndex && is_array($repository)) {
-                $configSource->addRepository('', $repository);
+            // Skip non-packagist repositories
+            if ('packagist.org' === $repositoryIndex || !is_array($repository)) {
+                continue;
             }
+
+            $url = $repository['url'] ?? null;
+            $name = $repository['name'] ?? null;
+
+            // Modify relative repository paths
+            if (is_string($url) && Filesystem\Path::isRelative($url)) {
+                $rootPath = dirname($origin?->getConfig()->getConfigSource()->getName() ?? '');
+                $targetPath = dirname($filename);
+                $repositoryPath = Filesystem\Path::join($rootPath, $url);
+
+                $repository['url'] = Filesystem\Path::makeRelative($repositoryPath, $targetPath);
+            }
+
+            // Build unique name (Composer < 2.9)
+            if (version_compare(\Composer\Composer::getVersion(), '2.9.0', '>=')) {
+                $name = '';
+            } elseif (is_string($name)) {
+                $name = uniqid($name.'-');
+            } else {
+                $name = uniqid();
+            }
+
+            $configSource->addRepository($name, $repository);
         }
     }
 }

@@ -30,7 +30,7 @@ use EliasHaeussler\Typo3VendorBundler as Src;
 use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 
-use function reset;
+use function array_values;
 
 /**
  * DependencySetTest.
@@ -179,16 +179,22 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
 
         $composer = Factory::create(new IO\NullIO(), $filename);
         $repositories = $composer->getPackage()->getRepositories();
-        $expectedRepository = [
-            'type' => 'path',
-            'url' => '../valid-no-libs',
+
+        $expected = [
+            [
+                'type' => 'path',
+                'url' => '../valid-no-libs',
+            ],
+            [
+                'type' => 'path',
+                'url' => '../valid-composer-json/packages/*',
+            ],
         ];
 
         // Remove default (internal) packagist.org repository
         unset($repositories['packagist.org']);
 
         self::assertSame('foo/root-libs', $composer->getPackage()->getName());
-        self::assertCount(1, $repositories);
-        self::assertSame($expectedRepository, reset($repositories));
+        self::assertSame($expected, array_values($repositories));
     }
 }
