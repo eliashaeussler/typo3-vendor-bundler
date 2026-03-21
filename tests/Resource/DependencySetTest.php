@@ -31,6 +31,7 @@ use EliasHaeussler\Typo3VendorBundler\Tests;
 use PHPUnit\Framework;
 
 use function array_values;
+use function json_decode;
 
 /**
  * DependencySetTest.
@@ -196,5 +197,51 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
 
         self::assertSame('foo/root-libs', $composer->getPackage()->getName());
         self::assertSame($expected, array_values($repositories));
+    }
+
+    #[Framework\Attributes\Test]
+    public function dumpToFileRespectsDryRunMode(): void
+    {
+        $fixturePath = self::getFixturePath('valid-composer-json');
+        $origin = Src\Resource\Composer::create($fixturePath)->composer;
+        $filename = $this->createTemporaryDirectory().'/composer.json';
+
+        $expected = [
+            'name' => 'foo/root-libs',
+            'config' => [
+                'allow-plugins' => false,
+                'lock' => false,
+            ],
+            'require' => [
+                'foo/baz' => '1.0.0',
+                'foo/boo' => '1.2.3',
+            ],
+            'provide' => [
+                'baz/foo' => '*',
+                'boo/foo' => '*',
+            ],
+            'repositories' => [
+                [
+                    'type' => 'path',
+                    'url' => '../valid-no-libs',
+                ],
+                [
+                    'type' => 'path',
+                    'url' => '../valid-composer-json/packages/*',
+                ],
+            ],
+        ];
+
+        $actual = $this->subject->dumpToFile($filename, $origin, true);
+        $actualDecoded = json_decode($actual, true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertIsArray($actualDecoded);
+        self::assertIsArray($actualDecoded['repositories'] ?? null);
+
+        // Compare only array values from repositories due to different implementations for various Composer versions
+        $actualDecoded['repositories'] = array_values($actualDecoded['repositories']);
+
+        self::assertSame($expected, $actualDecoded);
+        self::assertFileDoesNotExist($filename);
     }
 }

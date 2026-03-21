@@ -30,7 +30,6 @@ use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 use Throwable;
 
-use function file_get_contents;
 use function sprintf;
 
 /**
@@ -41,14 +40,11 @@ use function sprintf;
  */
 final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
 {
-    private readonly Filesystem\Filesystem $filesystem;
     private TaskRunner\TaskRunner $taskRunner;
 
     public function __construct()
     {
         parent::__construct('extract-dependencies');
-
-        $this->filesystem = new Filesystem\Filesystem();
     }
 
     protected function configure(): void
@@ -107,7 +103,7 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
         $dump = $input->getOption('dump-to-file');
 
         // Exit if libs directory is invalid
-        if ($dump && '' === trim($libsDir)) {
+        if (($dump || $print) && '' === trim($libsDir)) {
             $this->io->error('Please provide a valid path to vendor libraries.');
 
             return self::INVALID;
@@ -152,7 +148,7 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
 
         // Build and print composer.json from extracted dependencies
         if ($print) {
-            $this->printFileContents($dependencySet, $composer);
+            $this->printFileContents($dependencySet, $composer, $libsDir, $rootPath);
         }
 
         // Dump extracted dependencies to composer.json file
@@ -211,26 +207,19 @@ final class ExtractDependenciesCommand extends AbstractConfigurationAwareCommand
         );
     }
 
-    private function printFileContents(Resource\DependencySet $dependencySet, Composer $composer): void
-    {
+    private function printFileContents(
+        Resource\DependencySet $dependencySet,
+        Composer $composer,
+        string $libsDir,
+        string $rootPath,
+    ): void {
+        $librariesPath = Filesystem\Path::makeAbsolute($libsDir, $rootPath);
+        $filename = Filesystem\Path::join($librariesPath, 'composer.json');
+
         $this->taskRunner->run(
             '✍️ Building <comment>composer.json</comment> file contents',
-            function (TaskRunner\RunnerContext $context) use ($dependencySet, $composer) {
-                $filename = $this->filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
-                $this->filesystem->dumpFile($filename, '{}');
-
-                try {
-                    $dependencySet->dumpToFile($filename, $composer);
-                    $fileContents = file_get_contents($filename);
-
-                    if (false === $fileContents) {
-                        $context->successful = false;
-                    } else {
-                        $context->output->write($fileContents);
-                    }
-                } finally {
-                    unlink($filename);
-                }
+            function (TaskRunner\RunnerContext $context) use ($dependencySet, $composer, $filename) {
+                $context->output->write($dependencySet->dumpToFile($filename, $composer, true));
             },
         );
     }

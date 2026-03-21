@@ -28,9 +28,11 @@ use EliasHaeussler\Typo3VendorBundler\Exception;
 use Symfony\Component\Filesystem;
 
 use function dirname;
+use function file_get_contents;
 use function is_array;
 use function is_string;
 use function ksort;
+use function sys_get_temp_dir;
 use function uniqid;
 use function version_compare;
 
@@ -102,18 +104,26 @@ final readonly class DependencySet
     }
 
     /**
+     * @throws Exception\CannotDumpDeclarationFile
      * @throws Exception\DeclarationFileIsInvalid
      */
-    public function dumpToFile(string $filename, ?\Composer\Composer $origin = null): void
+    public function dumpToFile(string $filename, ?\Composer\Composer $origin = null, bool $dryRun = false): string
     {
         $filesystem = new Filesystem\Filesystem();
 
-        // Make sure composer.json file exists
-        if (!$filesystem->exists($filename)) {
-            $filesystem->dumpFile($filename, '{}');
+        if ($dryRun) {
+            $targetFile = $filesystem->tempnam(sys_get_temp_dir(), 'typo3-vendor-bundler-', '.json');
+            $filesystem->dumpFile($targetFile, '{}');
+        } else {
+            $targetFile = $filename;
         }
 
-        $composer = Composer::create($filename)->composer;
+        // Make sure composer.json file exists
+        if (!$filesystem->exists($targetFile)) {
+            $filesystem->dumpFile($targetFile, '{}');
+        }
+
+        $composer = Composer::create($targetFile)->composer;
         $name = $origin?->getPackage()->getName() ?? '';
 
         if (!str_contains($name, '/')) {
@@ -162,5 +172,17 @@ final readonly class DependencySet
 
             $configSource->addRepository($name, $repository);
         }
+
+        $fileContents = file_get_contents($targetFile);
+
+        if (false === $fileContents) {
+            throw new Exception\CannotDumpDeclarationFile($filename);
+        }
+
+        if ($dryRun) {
+            $filesystem->remove($targetFile);
+        }
+
+        return $fileContents;
     }
 }
