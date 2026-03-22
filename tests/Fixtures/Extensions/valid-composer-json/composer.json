@@ -8,6 +8,10 @@
 		{
 			"type": "path",
 			"url": "packages/*"
+		},
+		{
+			"type": "vcs",
+			"url": "git@github.com:foo/bar.git"
 		}
 	]
 }
