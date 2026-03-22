@@ -190,6 +190,10 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
                 'type' => 'path',
                 'url' => '../valid-composer-json/packages/*',
             ],
+            [
+                'type' => 'vcs',
+                'url' => 'git@github.com:foo/bar.git',
+            ],
         ];
 
         // Remove default (internal) packagist.org repository
@@ -228,6 +232,10 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
                 [
                     'type' => 'path',
                     'url' => '../valid-composer-json/packages/*',
+                ],
+                [
+                    'type' => 'vcs',
+                    'url' => 'git@github.com:foo/bar.git',
                 ],
             ],
         ];

@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\Typo3VendorBundler\Resource;
 
 use Composer\Package;
+use Composer\Util;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use Symfony\Component\Filesystem;
 
@@ -153,7 +154,7 @@ final readonly class DependencySet
             $name = $repository['name'] ?? null;
 
             // Modify relative repository paths
-            if (is_string($url) && Filesystem\Path::isRelative($url)) {
+            if (is_string($url) && Util\Filesystem::isLocalPath($url) && Filesystem\Path::isRelative($url)) {
                 $rootPath = dirname($origin?->getConfig()->getConfigSource()->getName() ?? '');
                 $targetPath = dirname($filename);
                 $repositoryPath = Filesystem\Path::join($rootPath, $url);
