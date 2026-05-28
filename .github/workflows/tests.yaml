@@ -24,7 +24,7 @@ jobs:
       matrix:
         php-version: ["8.2", "8.3", "8.4", "8.5"]
         # We test only 2.2 (LTS) and latest version, since all other versions are insecure
-        composer-version: ["2.2", "2.9"]
+        composer-version: ["2.2", "2.10"]
         dependencies: ["highest", "lowest"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
