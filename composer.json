@@ -14,7 +14,6 @@
 	"require": {
 		"php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
 		"composer-plugin-api": "^2.0",
-		"composer": "~2.2.18 || ^2.4",
 		"cuyz/valinor": "^2.2.2",
 		"cyclonedx/cyclonedx-library": "^4.0",
 		"eliashaeussler/task-runner": "^1.0.1",
