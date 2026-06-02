@@ -86,7 +86,7 @@
 					"default": "sbom.json"
 				},
 				"version": {
-					"default": "1.7",
+					"default": "1.6",
 					"type": "string",
 					"title": "CycloneDX BOM version to use",
 					"description": "All BOM versions supported by CycloneDX can be used."
