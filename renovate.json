@@ -41,6 +41,20 @@
 			"labels": [
 				"enhancement"
 			]
+		},
+		{
+			"extends": [
+				":disableRenovate"
+			],
+			"matchDepNames": [
+				"CycloneDX/specification"
+			],
+			"matchManagers": [
+				"custom.regex"
+			],
+			"matchUpdateTypes": [
+				"patch"
+			]
 		}
 	]
 }
