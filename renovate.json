@@ -38,22 +38,9 @@
 			"commitMessageAction": "Support",
 			"commitMessageTopic": "CycloneDX specification",
 			"commitMessageExtra": "{{newMajor}}.{{newMinor}}",
+			"extractVersion": "^(?<version>\\d+\\.\\d+)",
 			"labels": [
 				"enhancement"
-			]
-		},
-		{
-			"extends": [
-				":disableRenovate"
-			],
-			"matchDepNames": [
-				"CycloneDX/specification"
-			],
-			"matchManagers": [
-				"custom.regex"
-			],
-			"matchUpdateTypes": [
-				"patch"
 			]
 		}
 	]
