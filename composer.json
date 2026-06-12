@@ -63,34 +63,46 @@
 		"class": "EliasHaeussler\\Typo3VendorBundler\\Typo3VendorBundlerPlugin"
 	},
 	"scripts": {
-		"analyze": [
-			"@analyze:dependencies"
+		"check": [
+			"@check:deps",
+			"@check:refactor",
+			"@check:static",
+			"@check:style"
 		],
-		"analyze:dependencies": "composer-dependency-analyser --config build/cgl/composer-dependency-analyser.php",
+		"check:deps": "composer-dependency-analyser --config build/checks/composer-dependency-analyser.php",
+		"check:refactor": [
+			"@check:refactor:php"
+		],
+		"check:refactor:php": "@refactor:php --dry-run",
+		"check:static": "phpstan analyse -c build/checks/phpstan.php",
+		"check:style": [
+			"@check:style:composer",
+			"@check:style:editorconfig",
+			"@check:style:php"
+		],
+		"check:style:composer": "@fix:composer --dry-run",
+		"check:style:editorconfig": "ec",
+		"check:style:php": "@fix:php --dry-run",
+		"ci": [
+			"@composer validate --strict",
+			"@composer audit",
+			"@check:deps",
+			"@check:refactor",
+			"@check:static --error-format github",
+			"@check:style"
+		],
 		"fix": [
 			"@fix:composer",
 			"@fix:editorconfig",
 			"@fix:php"
 		],
 		"fix:composer": "@composer normalize",
-		"fix:editorconfig": "@lint:editorconfig --fix",
-		"fix:php": "php-cs-fixer fix --config build/cgl/.php-cs-fixer.php",
-		"lint": [
-			"@lint:composer",
-			"@lint:editorconfig",
-			"@lint:php"
+		"fix:editorconfig": "@check:style:editorconfig --fix",
+		"fix:php": "php-cs-fixer fix --config build/checks/.php-cs-fixer.php",
+		"refactor": [
+			"@refactor:php"
 		],
-		"lint:composer": "@fix:composer --dry-run",
-		"lint:editorconfig": "ec",
-		"lint:php": "@fix:php --dry-run",
-		"migration": [
-			"@migration:rector"
-		],
-		"migration:rector": "rector process -c build/cgl/rector.php",
-		"sca": [
-			"@sca:php"
-		],
-		"sca:php": "phpstan analyse -c build/cgl/phpstan.php",
+		"refactor:php": "rector process -c build/checks/rector.php",
 		"test": "@test:coverage --no-coverage",
 		"test:coverage": "phpunit -c build/tests/phpunit.xml"
 	}
