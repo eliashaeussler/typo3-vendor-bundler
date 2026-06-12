@@ -45,6 +45,5 @@ return static function (RectorConfig $rectorConfig): void {
             $rootPath.'/src/Command/ExtractDependenciesCommand.php',
         ])
         ->apply()
-        ->cacheDirectory('build/cgl/cache/rector')
     ;
 };
