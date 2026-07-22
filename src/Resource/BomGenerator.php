@@ -303,7 +303,6 @@ final readonly class BomGenerator
             return [null, $packageName];
         }
 
-        /* @phpstan-ignore return.type */
         return explode('/', $packageName, 2);
     }
 }
