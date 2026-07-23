@@ -127,7 +127,7 @@ final readonly class DependencyBundler implements Bundler
         // Serialize generated SBOM
         $this->serializeBom($version, $bom, $format, $filename);
 
-        if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('sbom-file', $sbomFile)) {
+        if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('vendor-libraries.sbom-file', $sbomFile)) {
             // Create composer.json backup
             if (true === $backup) {
                 $this->taskRunner->run(
@@ -145,7 +145,7 @@ final readonly class DependencyBundler implements Bundler
                 '✍️ Writing dependency metadata to <comment>composer.json</comment> file',
                 function () use ($sbomFile) {
                     $this->prepareExtraSection();
-                    $this->modifyExtraSection('sbom-file', $sbomFile);
+                    $this->modifyExtraSection('vendor-libraries.sbom-file', $sbomFile);
                 },
             );
         }

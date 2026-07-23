@@ -227,6 +227,7 @@ final class ComposerTest extends Tests\ExtensionFixtureBasedTestCase
     }
 
     /**
+     * @param non-empty-string     $path
      * @param array<string, mixed> $expected
      */
     #[Framework\Attributes\Test]

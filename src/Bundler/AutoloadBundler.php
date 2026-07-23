@@ -23,9 +23,9 @@ declare(strict_types=1);
 
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
-use Composer\Composer;
 use Composer\InstalledVersions;
 use Composer\Repository;
+use Composer\Semver;
 use EliasHaeussler\TaskRunner;
 use EliasHaeussler\Typo3VendorBundler\Exception;
 use EliasHaeussler\Typo3VendorBundler\Helper;
@@ -33,6 +33,7 @@ use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 
+use function array_key_exists;
 use function array_map;
 use function array_values;
 use function basename;
@@ -87,6 +88,8 @@ final readonly class AutoloadBundler implements Bundler
         bool $backup = false,
         array $excludeFromClassMap = [],
     ): Entity\Autoload {
+        $legacyAutoloading = $this->requiresLegacyAutoloadSupport();
+
         // Extract vendor libraries from root package if necessary
         if ($this->shouldExtractVendorLibrariesFromRootPackage($extractDependencies)) {
             $this->extractVendorLibrariesFromRootPackage($failOnExtractionProblems);
@@ -94,8 +97,23 @@ final readonly class AutoloadBundler implements Bundler
             throw new Exception\DirectoryDoesNotExist($this->librariesPath);
         }
 
+        // Install vendor libraries and build Composer instance
+        $libsComposer = $this->taskRunner->run(
+            '📦 Installing vendor libraries',
+            function (TaskRunner\RunnerContext $context) {
+                $composer = Resource\Composer::create($this->librariesPath);
+                $composer->install(false, $context->output);
+
+                return $composer;
+            },
+        );
+
         // Build autoload bundle from root package and vendor libraries
-        $autoload = $this->parseAutoloads($excludeFromClassMap);
+        if ($legacyAutoloading) {
+            $autoload = $this->parseAutoloads($libsComposer, $excludeFromClassMap);
+        } else {
+            $autoload = Entity\Autoload::stub($this->rootComposer->declarationFile(), $this->rootComposer->rootPath());
+        }
 
         // Create composer.json backup
         if (true === $backup) {
@@ -109,28 +127,48 @@ final readonly class AutoloadBundler implements Bundler
             );
         }
 
-        // Create modified composer.json file contents
-        $this->taskRunner->run(
-            '🎊 Dumping merged autoload configuration',
-            function () use ($autoload) {
-                if (!is_file($autoload->filename())) {
-                    $this->filesystem->copy(
-                        Filesystem\Path::join($this->rootPath, 'composer.json'),
-                        $autoload->filename(),
-                    );
-                }
+        // Create modified composer.json file contents (TYPO3 < 14.2 only)
+        if ($legacyAutoloading) {
+            $this->taskRunner->run(
+                '🎊 Dumping merged autoload configuration',
+                function () use ($autoload) {
+                    if (!is_file($autoload->filename())) {
+                        $this->filesystem->copy(
+                            Filesystem\Path::join($this->rootPath, 'composer.json'),
+                            $autoload->filename(),
+                        );
+                    }
 
-                $configSource = Resource\Composer::create($autoload->filename())->composer->getConfig()->getConfigSource();
-                /* @phpstan-ignore argument.type */
-                $configSource->addProperty('autoload', (object) $autoload->toArray(true));
-            },
+                    $configSource = Resource\Composer::create($autoload->filename())->composer->getConfig()->getConfigSource();
+                    /* @phpstan-ignore argument.type */
+                    $configSource->addProperty('autoload', (object) $autoload->toArray(true));
+                },
+            );
+        }
+
+        // Determine path to vendor/autoload.php (TYPO3 >= 14.2 only)
+        if ($legacyAutoloading) {
+            $autoloadPath = '';
+        } else {
+            $autoloadPath = Filesystem\Path::makeRelative(
+                $libsComposer->composer->getConfig()->get('vendor-dir'),
+                $this->rootPath,
+            );
+        }
+
+        $providedPackages = array_map(
+            static fn () => $autoloadPath,
+            $libsComposer->composer->getPackage()->getRequires(),
         );
 
         // Write metadata to composer.json
-        if (!$this->extraSectionIsPrepared()) {
+        if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('Package.providesPackages', $providedPackages)) {
             $this->taskRunner->run(
                 '✍️ Writing dependency metadata to <comment>composer.json</comment> file',
-                fn () => $this->prepareExtraSection(),
+                function () use ($providedPackages) {
+                    $this->prepareExtraSection();
+                    $this->modifyExtraSection('Package.providesPackages', $providedPackages);
+                },
             );
         }
 
@@ -140,18 +178,8 @@ final readonly class AutoloadBundler implements Bundler
     /**
      * @param list<non-empty-string> $excludeFromClassMap
      */
-    private function parseAutoloads(array $excludeFromClassMap = []): Entity\Autoload
+    private function parseAutoloads(Resource\Composer $libsComposer, array $excludeFromClassMap = []): Entity\Autoload
     {
-        $libsComposer = $this->taskRunner->run(
-            '📦 Installing vendor libraries',
-            function (TaskRunner\RunnerContext $context) {
-                $composer = Resource\Composer::create($this->librariesPath);
-                $composer->install(false, $context->output);
-
-                return $composer;
-            },
-        );
-
         return $this->taskRunner->run(
             '🪄 Parsing autoloads from <comment>composer.json</comment> files',
             function (TaskRunner\RunnerContext $context) use ($libsComposer, $excludeFromClassMap) {
@@ -277,5 +305,22 @@ final readonly class AutoloadBundler implements Bundler
             $filename,
             $rootPath,
         );
+    }
+
+    private function requiresLegacyAutoloadSupport(): bool
+    {
+        $requirements = $this->rootComposer->composer->getPackage()->getRequires();
+        $typo3Constraint = new Semver\Constraint\Constraint('<', '14.2.0');
+
+        foreach (['typo3/cms-core', 'typo3/cms', 'typo3/minimal'] as $packageName) {
+            if (array_key_exists($packageName, $requirements)) {
+                return $requirements[$packageName]->getConstraint()->matches($typo3Constraint);
+            }
+        }
+
+        // Safety net: If we cannot determine the installed TYPO3 version from declared dependencies,
+        // we better assume legacy TYPO3 versions are still supported instead of potentially breaking
+        // things by assuming we have TYPO3 v14.2 only.
+        return true;
     }
 }

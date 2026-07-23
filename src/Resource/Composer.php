@@ -114,7 +114,10 @@ final readonly class Composer
         return $currentSegment[$lastSegment] ?? null;
     }
 
-    public function writeExtra(string $path, string $value): void
+    /**
+     * @param non-empty-string $path
+     */
+    public function writeExtra(string $path, mixed $value): void
     {
         $extra = $this->composer->getPackage()->getExtra();
         $currentSegment = &$extra;

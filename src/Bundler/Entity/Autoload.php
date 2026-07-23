@@ -51,6 +51,11 @@ final readonly class Autoload implements MergeableBundle
         $this->filename = Filesystem\Path::makeAbsolute($filename, $this->rootPath);
     }
 
+    public static function stub(string $filename, string $rootPath): self
+    {
+        return new self(null, null, null, $filename, $rootPath);
+    }
+
     /**
      * @return array{
      *     classmap?: list<string>,
