@@ -83,11 +83,27 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
         self::assertStringContainsString('🔎 Extracting vendor libraries from root package... Done', $output);
         self::assertStringContainsString('✍️ Creating composer.json file for extracted vendor libraries... Done', $output);
 
-        $actual = $this->parseComposerJson($librariesPath.'/composer.json');
-        $requires = $actual->getRequires();
+        $actualLibsComposer = $this->parseComposerJson($librariesPath.'/composer.json');
+        $actualRootComposer = $this->parseComposerJson($rootPath.'/composer.json');
+        $requires = $actualLibsComposer->getRequires();
 
         self::assertCount(1, $requires);
         self::assertArrayHasKey('eliashaeussler/sse', $requires);
+        self::assertSame(
+            [
+                'typo3/cms' => [
+                    'vendor-libraries' => [
+                        'root-path' => 'libs',
+                    ],
+                    'Package' => [
+                        'providesPackages' => [
+                            'eliashaeussler/sse' => 'libs/vendor',
+                        ],
+                    ],
+                ],
+            ],
+            $actualRootComposer->getExtra(),
+        );
     }
 
     #[Framework\Attributes\Test]
@@ -219,7 +235,7 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
 
     #[Framework\Attributes\Test]
     #[Framework\Attributes\WithoutErrorHandler]
-    public function bundleDumpsMergedAutoloadConfiguration(): void
+    public function bundleDumpsMergedAutoloadConfigurationOnLegacyTypo3Versions(): void
     {
         $composerJson = $this->rootPath.'/composer.json';
 
@@ -231,6 +247,7 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
             self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
             self::assertStringContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
             self::assertStringContainsString('🎊 Dumping merged autoload configuration... Done', $output);
+            self::assertStringContainsString('✍️ Writing dependency metadata to composer.json file... Done', $output);
 
             $actual = $this->parseComposerJson($composerJson);
 
@@ -240,6 +257,61 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
             self::assertGreaterThan(1, count($actual->getAutoload()['psr-4']));
             self::assertIsArray($actual->getAutoload()['files'] ?? null);
             self::assertGreaterThan(2, count($actual->getAutoload()['files']));
+            self::assertSame(
+                [
+                    'typo3/cms' => [
+                        'extension-key' => 'test',
+                        'vendor-libraries' => [
+                            'root-path' => 'libs',
+                        ],
+                        'Package' => [
+                            'providesPackages' => [
+                                'symfony/yaml' => '',
+                            ],
+                        ],
+                    ],
+                ],
+                $actual->getExtra(),
+            );
+        }
+    }
+
+    #[Framework\Attributes\Test]
+    #[Framework\Attributes\WithoutErrorHandler]
+    public function bundleSkipsAutoloadDumpOnModernTypo3Versions(): void
+    {
+        $rootPath = $this->createTemporaryFixture('valid-modern');
+        $composerJson = $rootPath.'/composer.json';
+
+        try {
+            $this->createSubject($rootPath)->bundle();
+        } finally {
+            $output = $this->output->fetch();
+
+            self::assertStringContainsString('📦 Installing vendor libraries... Done', $output);
+            self::assertStringNotContainsString('🪄 Parsing autoloads from composer.json files... Done', $output);
+            self::assertStringNotContainsString('🎊 Dumping merged autoload configuration... Done', $output);
+            self::assertStringContainsString('✍️ Writing dependency metadata to composer.json file... Done', $output);
+
+            $actual = $this->parseComposerJson($composerJson);
+
+            self::assertSame([], $actual->getAutoload());
+            self::assertSame(
+                [
+                    'typo3/cms' => [
+                        'extension-key' => 'test',
+                        'vendor-libraries' => [
+                            'root-path' => 'libs',
+                        ],
+                        'Package' => [
+                            'providesPackages' => [
+                                'symfony/yaml' => 'libs/vendor',
+                            ],
+                        ],
+                    ],
+                ],
+                $actual->getExtra(),
+            );
         }
     }
 
@@ -262,6 +334,11 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
                 'extension-key' => 'test',
                 'vendor-libraries' => [
                     'root-path' => 'libs',
+                ],
+                'Package' => [
+                    'providesPackages' => [
+                        'symfony/yaml' => '',
+                    ],
                 ],
             ];
 

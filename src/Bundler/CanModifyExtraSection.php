@@ -35,14 +35,20 @@ use Symfony\Component\Filesystem;
  */
 trait CanModifyExtraSection
 {
-    private function modifyExtraSection(string $key, string $value): void
+    /**
+     * @param non-empty-string $key
+     */
+    private function modifyExtraSection(string $key, mixed $value): void
     {
-        $this->rootComposer->writeExtra('typo3/cms.vendor-libraries.'.$key, $value);
+        $this->rootComposer->writeExtra('typo3/cms.'.$key, $value);
     }
 
-    private function extraSectionNeedsUpdate(string $key, string $value): bool
+    /**
+     * @param non-empty-string $key
+     */
+    private function extraSectionNeedsUpdate(string $key, mixed $value): bool
     {
-        $configuredValue = $this->rootComposer->readExtra('typo3/cms.vendor-libraries.'.$key);
+        $configuredValue = $this->rootComposer->readExtra('typo3/cms.'.$key);
 
         return $configuredValue !== $value;
     }
@@ -50,7 +56,7 @@ trait CanModifyExtraSection
     private function prepareExtraSection(): void
     {
         $this->modifyExtraSection(
-            'root-path',
+            'vendor-libraries.root-path',
             Filesystem\Path::makeRelative($this->librariesPath, $this->rootPath),
         );
     }
@@ -58,7 +64,7 @@ trait CanModifyExtraSection
     private function extraSectionIsPrepared(): bool
     {
         return !$this->extraSectionNeedsUpdate(
-            'root-path',
+            'vendor-libraries.root-path',
             Filesystem\Path::makeRelative($this->librariesPath, $this->rootPath),
         );
     }
