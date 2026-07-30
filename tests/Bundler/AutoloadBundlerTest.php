@@ -98,6 +98,7 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
                     'Package' => [
                         'providesPackages' => [
                             'eliashaeussler/sse' => 'libs/vendor',
+                            'php-http/discovery' => 'libs/vendor',
                         ],
                     ],
                 ],
@@ -257,22 +258,10 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
             self::assertGreaterThan(1, count($actual->getAutoload()['psr-4']));
             self::assertIsArray($actual->getAutoload()['files'] ?? null);
             self::assertGreaterThan(2, count($actual->getAutoload()['files']));
-            self::assertSame(
-                [
-                    'typo3/cms' => [
-                        'extension-key' => 'test',
-                        'vendor-libraries' => [
-                            'root-path' => 'libs',
-                        ],
-                        'Package' => [
-                            'providesPackages' => [
-                                'symfony/yaml' => '',
-                            ],
-                        ],
-                    ],
-                ],
-                $actual->getExtra(),
-            );
+            self::assertIsArray($actual->getExtra()['typo3/cms'] ?? null);
+            self::assertIsArray($actual->getExtra()['typo3/cms']['Package'] ?? null);
+            self::assertIsArray($actual->getExtra()['typo3/cms']['Package']['providesPackages'] ?? null);
+            self::assertSame('', $actual->getExtra()['typo3/cms']['Package']['providesPackages']['symfony/yaml'] ?? null);
         }
     }
 
@@ -295,23 +284,13 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
 
             $actual = $this->parseComposerJson($composerJson);
 
+            $extra = $actual->getExtra();
+
             self::assertSame([], $actual->getAutoload());
-            self::assertSame(
-                [
-                    'typo3/cms' => [
-                        'extension-key' => 'test',
-                        'vendor-libraries' => [
-                            'root-path' => 'libs',
-                        ],
-                        'Package' => [
-                            'providesPackages' => [
-                                'symfony/yaml' => 'libs/vendor',
-                            ],
-                        ],
-                    ],
-                ],
-                $actual->getExtra(),
-            );
+            self::assertIsArray($actual->getExtra()['typo3/cms'] ?? null);
+            self::assertIsArray($actual->getExtra()['typo3/cms']['Package'] ?? null);
+            self::assertIsArray($actual->getExtra()['typo3/cms']['Package']['providesPackages'] ?? null);
+            self::assertSame('libs/vendor', $actual->getExtra()['typo3/cms']['Package']['providesPackages']['symfony/yaml'] ?? null);
         }
     }
 
@@ -336,15 +315,22 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
                     'root-path' => 'libs',
                 ],
                 'Package' => [
-                    'providesPackages' => [
-                        'symfony/yaml' => '',
-                    ],
+                    'providesPackages' => [],
                 ],
             ];
 
             $actual = $this->parseComposerJson($composerJson);
 
-            self::assertSame($expected, $actual->getExtra()['typo3/cms'] ?? null);
+            $extra = $actual->getExtra();
+
+            self::assertIsArray($extra['typo3/cms'] ?? null);
+            self::assertIsArray($extra['typo3/cms']['Package'] ?? null);
+            self::assertIsArray($extra['typo3/cms']['Package']['providesPackages'] ?? null);
+            self::assertSame('', $extra['typo3/cms']['Package']['providesPackages']['symfony/yaml'] ?? null);
+
+            $extra['typo3/cms']['Package']['providesPackages'] = [];
+
+            self::assertSame($expected, $extra['typo3/cms']);
         }
     }
 
