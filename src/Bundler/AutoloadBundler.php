@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace EliasHaeussler\Typo3VendorBundler\Bundler;
 
 use Composer\InstalledVersions;
+use Composer\Package\BasePackage;
 use Composer\Repository;
 use Composer\Semver;
 use EliasHaeussler\TaskRunner;
@@ -33,6 +34,7 @@ use EliasHaeussler\Typo3VendorBundler\Resource;
 use Symfony\Component\Console;
 use Symfony\Component\Filesystem;
 
+use function array_fill_keys;
 use function array_key_exists;
 use function array_map;
 use function array_values;
@@ -156,10 +158,12 @@ final readonly class AutoloadBundler implements Bundler
             );
         }
 
-        $providedPackages = array_map(
-            static fn () => $autoloadPath,
-            $libsComposer->composer->getPackage()->getRequires(),
+        $packageNames = array_map(
+            static fn (BasePackage $package) => $package->getPrettyName(),
+            $libsComposer->composer->getRepositoryManager()->getLocalRepository()->getPackages(),
         );
+        sort($packageNames);
+        $providedPackages = array_fill_keys($packageNames, $autoloadPath);
 
         // Write metadata to composer.json
         if (!$this->extraSectionIsPrepared() || $this->extraSectionNeedsUpdate('Package.providesPackages', $providedPackages)) {
