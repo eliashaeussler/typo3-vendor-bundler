@@ -89,16 +89,16 @@
         },
         {
             "name": "cyclonedx/cyclonedx-library",
-            "version": "v4.1.0",
+            "version": "v4.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CycloneDX/cyclonedx-php-library.git",
-                "reference": "6a4f249cecf3b4211ad6bd8cee30fca89e0f81e5"
+                "reference": "a99d940fad1b091fe48f41b6ef1b5960bbb0fbd4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/6a4f249cecf3b4211ad6bd8cee30fca89e0f81e5",
-                "reference": "6a4f249cecf3b4211ad6bd8cee30fca89e0f81e5",
+                "url": "https://api.github.com/repos/CycloneDX/cyclonedx-php-library/zipball/a99d940fad1b091fe48f41b6ef1b5960bbb0fbd4",
+                "reference": "a99d940fad1b091fe48f41b6ef1b5960bbb0fbd4",
                 "shasum": ""
             },
             "require": {
@@ -180,7 +180,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-06-04T10:31:45+00:00"
+            "time": "2026-09-17T17:38:29+00:00"
         },
         {
             "name": "eliashaeussler/task-runner",
