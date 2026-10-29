@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b382a26e3a9a928c052dc8172ec432ab",
+    "content-hash": "d8fda24d6e77f8a07e5da3dfda301a0e",
     "packages": [
         {
             "name": "cuyz/valinor",
@@ -713,7 +713,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-05T06:23:12+00:00"
+            "time": "2026-06-05T06:23:12+00:00",
+            "published-time": "2026-06-27T21:46:34+00:00"
         },
         {
             "name": "symfony/filesystem",
@@ -1500,16 +1501,16 @@
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.5.13",
+            "version": "1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "c008272789979f709f7fcb32c2ecf1d2db5e84e5"
+                "reference": "2c99cf2e92516985dea4914812b93d9daf01cdd6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/c008272789979f709f7fcb32c2ecf1d2db5e84e5",
-                "reference": "c008272789979f709f7fcb32c2ecf1d2db5e84e5",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/2c99cf2e92516985dea4914812b93d9daf01cdd6",
+                "reference": "2c99cf2e92516985dea4914812b93d9daf01cdd6",
                 "shasum": ""
             },
             "require": {
@@ -1556,7 +1557,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.5.13"
+                "source": "https://github.com/composer/ca-bundle/tree/1.6.0"
             },
             "funding": [
                 {
@@ -1568,20 +1569,21 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-18T12:35:13+00:00"
+            "time": "2026-10-20T20:14:05+00:00",
+            "published-time": "2026-10-20T20:17:23+00:00"
         },
         {
             "name": "composer/class-map-generator",
-            "version": "1.7.3",
+            "version": "1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/class-map-generator.git",
-                "reference": "86d8208fc3c649a3a999daf1a63c25201be2990f"
+                "reference": "c0efbeb2f3fd7e23c7f180a59765c0b48a31fbc4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/class-map-generator/zipball/86d8208fc3c649a3a999daf1a63c25201be2990f",
-                "reference": "86d8208fc3c649a3a999daf1a63c25201be2990f",
+                "url": "https://api.github.com/repos/composer/class-map-generator/zipball/c0efbeb2f3fd7e23c7f180a59765c0b48a31fbc4",
+                "reference": "c0efbeb2f3fd7e23c7f180a59765c0b48a31fbc4",
                 "shasum": ""
             },
             "require": {
@@ -1625,7 +1627,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/class-map-generator/issues",
-                "source": "https://github.com/composer/class-map-generator/tree/1.7.3"
+                "source": "https://github.com/composer/class-map-generator/tree/1.8.0"
             },
             "funding": [
                 {
@@ -1637,32 +1639,35 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-05T09:17:07+00:00"
+            "time": "2026-09-25T15:24:19+00:00",
+            "published-time": "2026-09-25T15:27:30+00:00"
         },
         {
             "name": "composer/composer",
-            "version": "2.10.2",
+            "version": "2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "8d4439f572a97670a9edc039eb3b093cc976b4bc"
+                "reference": "e52c65bed1de6aa272cdde4b7725ca6653d7b06a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/8d4439f572a97670a9edc039eb3b093cc976b4bc",
-                "reference": "8d4439f572a97670a9edc039eb3b093cc976b4bc",
+                "url": "https://api.github.com/repos/composer/composer/zipball/e52c65bed1de6aa272cdde4b7725ca6653d7b06a",
+                "reference": "e52c65bed1de6aa272cdde4b7725ca6653d7b06a",
                 "shasum": ""
             },
             "require": {
-                "composer/ca-bundle": "^1.5",
-                "composer/class-map-generator": "^1.4.0",
+                "composer/ca-bundle": "^1.6",
+                "composer/class-map-generator": "^1.8.0",
                 "composer/metadata-minifier": "^1.0",
                 "composer/pcre": "^2.3 || ^3.3",
                 "composer/semver": "^3.3",
                 "composer/spdx-licenses": "^1.5.7",
                 "composer/xdebug-handler": "^2.0.2 || ^3.0.3",
+                "ext-filter": "*",
+                "ext-hash": "*",
                 "ext-json": "*",
-                "justinrainbow/json-schema": "^6.5.1",
+                "justinrainbow/json-schema": "^6.6.3",
                 "php": "^7.2.5 || ^8.0",
                 "psr/log": "^1.0 || ^2.0 || ^3.0",
                 "react/promise": "^3.3",
@@ -1679,7 +1684,7 @@
                 "symfony/process": "^5.4.47 || ^6.4.25 || ^7.1.10 || ^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.11.8",
+                "phpstan/phpstan": "1.12.33",
                 "phpstan/phpstan-deprecation-rules": "^1.2.0",
                 "phpstan/phpstan-phpunit": "^1.4.0",
                 "phpstan/phpstan-strict-rules": "^1.6.0",
@@ -1703,7 +1708,7 @@
                     ]
                 },
                 "branch-alias": {
-                    "dev-main": "2.10-dev"
+                    "dev-main": "2.11-dev"
                 }
             },
             "autoload": {
@@ -1738,7 +1743,7 @@
                 "irc": "ircs://irc.libera.chat:6697/composer",
                 "issues": "https://github.com/composer/composer/issues",
                 "security": "https://github.com/composer/composer/security/policy",
-                "source": "https://github.com/composer/composer/tree/2.10.2"
+                "source": "https://github.com/composer/composer/tree/2.11.0"
             },
             "funding": [
                 {
@@ -1750,7 +1755,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-01T09:24:45+00:00"
+            "time": "2026-10-29T09:23:20+00:00",
+            "published-time": "2026-10-29T09:29:08+00:00"
         },
         {
             "name": "composer/metadata-minifier",
@@ -1815,7 +1821,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-30T11:34:59+00:00"
+            "time": "2026-06-30T11:34:59+00:00",
+            "published-time": "2026-06-30T11:37:18+00:00"
         },
         {
             "name": "composer/pcre",
@@ -1891,7 +1898,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-07T11:47:49+00:00"
+            "time": "2026-06-07T11:47:49+00:00",
+            "published-time": "2026-06-11T12:12:37+00:00"
         },
         {
             "name": "composer/semver",
@@ -2110,7 +2118,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-05-06T16:37:16+00:00"
+            "time": "2024-05-06T16:37:16+00:00",
+            "published-time": "2024-05-06T17:01:42+00:00"
         },
         {
             "name": "eliashaeussler/php-cs-fixer-config",
@@ -3161,7 +3170,8 @@
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
                 "source": "https://github.com/jsonrainbow/json-schema/tree/6.10.0"
             },
-            "time": "2026-06-16T20:50:26+00:00"
+            "time": "2026-06-16T20:50:26+00:00",
+            "published-time": "2026-06-16T20:50:30+00:00"
         },
         {
             "name": "localheinz/diff",
@@ -3289,7 +3299,8 @@
                 "issues": "https://github.com/marc-mabe/php-enum/issues",
                 "source": "https://github.com/marc-mabe/php-enum/tree/v4.7.2"
             },
-            "time": "2025-09-14T11:18:39+00:00"
+            "time": "2025-09-14T11:18:39+00:00",
+            "published-time": "2025-09-14T11:32:17+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -4412,7 +4423,8 @@
             "support": {
                 "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
-            "time": "2024-09-11T13:17:53+00:00"
+            "time": "2024-09-11T13:17:53+00:00",
+            "published-time": "2024-09-11T13:21:14+00:00"
         },
         {
             "name": "react/cache",
@@ -4780,7 +4792,8 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2025-08-19T18:57:03+00:00"
+            "time": "2025-08-19T18:57:03+00:00",
+            "published-time": "2025-08-19T19:13:36+00:00"
         },
         {
             "name": "react/socket",
@@ -6048,7 +6061,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-12T11:32:29+00:00"
+            "time": "2026-06-12T11:32:29+00:00",
+            "published-time": "2026-06-12T12:30:14+00:00"
         },
         {
             "name": "seld/phar-utils",
@@ -6096,7 +6110,8 @@
                 "issues": "https://github.com/Seldaek/phar-utils/issues",
                 "source": "https://github.com/Seldaek/phar-utils/tree/1.2.1"
             },
-            "time": "2022-08-31T10:31:18+00:00"
+            "time": "2022-08-31T10:31:18+00:00",
+            "published-time": "2022-08-31T10:31:46+00:00"
         },
         {
             "name": "seld/signal-handler",
@@ -6157,7 +6172,8 @@
                 "issues": "https://github.com/Seldaek/signal-handler/issues",
                 "source": "https://github.com/Seldaek/signal-handler/tree/2.0.2"
             },
-            "time": "2023-09-03T09:24:00+00:00"
+            "time": "2023-09-03T09:24:00+00:00",
+            "published-time": "2023-09-03T09:24:36+00:00"
         },
         {
             "name": "shipmonk/composer-dependency-analyser",
@@ -6508,7 +6524,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-27T08:31:18+00:00"
+            "time": "2026-06-27T08:31:18+00:00",
+            "published-time": "2026-06-27T09:16:49+00:00"
         },
         {
             "name": "symfony/mime",
@@ -6835,7 +6852,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-09T11:45:10+00:00"
+            "time": "2024-09-09T11:45:10+00:00",
+            "published-time": "2026-04-26T14:44:49+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -6919,7 +6937,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T16:19:22+00:00"
+            "time": "2026-04-10T16:19:22+00:00",
+            "published-time": "2026-04-26T14:44:45+00:00"
         },
         {
             "name": "symfony/polyfill-php81",
@@ -6999,7 +7018,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:45:58+00:00"
+            "time": "2026-05-26T12:45:58+00:00",
+            "published-time": "2026-05-26T13:40:34+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
@@ -7079,7 +7099,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-05-26T12:51:13+00:00",
+            "published-time": "2026-05-26T13:40:38+00:00"
         },
         {
             "name": "symfony/process",
@@ -7144,7 +7165,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-23T16:05:06+00:00"
+            "time": "2026-05-23T16:05:06+00:00",
+            "published-time": "2026-05-27T08:45:03+00:00"
         },
         {
             "name": "symfony/stopwatch",
@@ -7273,5 +7295,5 @@
         "composer-plugin-api": "^2.0"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }
