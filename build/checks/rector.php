@@ -21,29 +21,16 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use EliasHaeussler\RectorConfig\Config\Config;
 use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
-use Rector\ValueObject\PhpVersion;
 
-return static function (RectorConfig $rectorConfig): void {
-    $rootPath = dirname(__DIR__, 2);
+$rootPath = dirname(__DIR__, 2);
 
-    Config::create($rectorConfig, PhpVersion::PHP_82)
-        ->in(
-            $rootPath.'/src',
-            $rootPath.'/tests',
-        )
-        ->not(
-            $rootPath.'/tests/Fixtures',
-        )
-        ->withPHPUnit()
-        ->withSymfony()
-        ->skip(NullToStrictStringFuncCallArgRector::class, [
-            $rootPath.'/src/Command/BundleAutoloadCommand.php',
-            $rootPath.'/src/Command/BundleDependenciesCommand.php',
-            $rootPath.'/src/Command/ExtractDependenciesCommand.php',
-        ])
-        ->apply()
-    ;
-};
+return RectorConfig::configure()
+    ->withPaths([
+        $rootPath.'/src',
+        $rootPath.'/tests',
+    ])
+    ->withSkipPath($rootPath.'/tests/Fixtures')
+    ->withComposerBased(phpunit: true, symfony: true)
+    ->withPhpSets(php82: true)
+;
