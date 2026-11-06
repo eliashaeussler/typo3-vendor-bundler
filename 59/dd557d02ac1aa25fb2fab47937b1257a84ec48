@@ -1,0 +1,17 @@
+build/checks/rector.php
+  h_a1c258d8beeba3 28-29,32-36
+  h_a1c258d8beeba3 26,30-31
+tests/Bundler/AutoloadBundlerTest.php
+  h_a1c258d8beeba3 290-293
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "59dd557d02ac1aa25fb2fab47937b1257a84ec48",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
