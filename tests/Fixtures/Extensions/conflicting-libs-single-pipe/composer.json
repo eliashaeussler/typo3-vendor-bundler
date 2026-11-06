@@ -1,0 +1,15 @@
+{
+	"require": {
+		"php": "^8.1",
+		"eliashaeussler/sse": "^1.0 | ^3.0",
+		"typo3/cms-core": "^14.3"
+	},
+	"conflict": {
+		"eliashaeussler/sse": "1.1.0 | 1.1.1"
+	},
+	"config": {
+		"platform": {
+			"php": "8.2.0"
+		}
+	}
+}

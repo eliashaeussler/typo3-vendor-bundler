@@ -26,6 +26,7 @@ namespace EliasHaeussler\Typo3VendorBundler\Tests\Resource;
 use Composer\Composer;
 use Composer\Factory;
 use Composer\IO;
+use Composer\Semver;
 use EliasHaeussler\Typo3VendorBundler as Src;
 use PHPUnit\Framework;
 
@@ -96,6 +97,42 @@ final class DependencyExtractorTest extends Framework\TestCase
 
         // psr/http-message is required by eliashaeussler/sse
         self::assertArrayHasKey('psr/http-message', $actual->excludedPackages);
+    }
+
+    #[Framework\Attributes\Test]
+    public function extractRespectsConflictsOfRootPackageWhenResolvingBestMatchingVersion(): void
+    {
+        $actual = $this->subject->extract($this->createComposerInstance('conflicting-libs'));
+
+        self::assertArrayHasKey('eliashaeussler/sse', $actual->requiredPackages);
+        self::assertSame([], $actual->extractionProblems);
+
+        // Without conflicts, the best matching version would be >= 1.1.0
+        self::assertTrue(
+            Semver\Semver::satisfies($actual->requiredPackages['eliashaeussler/sse']->getVersion(), '<1.1'),
+        );
+    }
+
+    #[Framework\Attributes\Test]
+    public function extractRespectsConflictsOfRootPackageForAllAlternativesOfRequireConstraint(): void
+    {
+        $actual = $this->subject->extract($this->createComposerInstance('conflicting-libs-alternatives'));
+
+        self::assertArrayHasKey('eliashaeussler/sse', $actual->requiredPackages);
+        self::assertSame([], $actual->extractionProblems);
+
+        // The newest matching versions (1.1.0, 1.1.1) are in conflict, so the previous one must be used
+        self::assertSame('1.0.1', $actual->requiredPackages['eliashaeussler/sse']->getPrettyVersion());
+    }
+
+    #[Framework\Attributes\Test]
+    public function extractRespectsConflictsOfRootPackageForRequireConstraintWithSinglePipeSyntax(): void
+    {
+        $actual = $this->subject->extract($this->createComposerInstance('conflicting-libs-single-pipe'));
+
+        self::assertArrayHasKey('eliashaeussler/sse', $actual->requiredPackages);
+        self::assertSame([], $actual->extractionProblems);
+        self::assertSame('1.0.1', $actual->requiredPackages['eliashaeussler/sse']->getPrettyVersion());
     }
 
     private function createComposerInstance(string $fixture = 'valid-no-libs'): Composer
