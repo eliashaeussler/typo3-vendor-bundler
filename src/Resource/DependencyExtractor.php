@@ -26,9 +26,15 @@ namespace EliasHaeussler\Typo3VendorBundler\Resource;
 use Composer\Composer;
 use Composer\Package;
 use Composer\Repository;
+use Composer\Semver;
 
+use function array_filter;
 use function array_key_exists;
+use function array_map;
+use function explode;
+use function implode;
 use function in_array;
+use function trim;
 
 /**
  * DependencyExtractor.
@@ -124,6 +130,7 @@ final class DependencyExtractor
     private function applyBestMatchingPackageVersions(Composer $composer, array &$packages, array &$problems): void
     {
         $requirements = $composer->getPackage()->getRequires();
+        $conflicts = $composer->getPackage()->getConflicts();
 
         // Instantiate Composer version collector from currently loaded repositories
         $repositorySet = new Repository\RepositorySet(
@@ -139,18 +146,77 @@ final class DependencyExtractor
         );
 
         foreach ($packages as $packageName => $package) {
-            $resolvedPackage = $versionSelector->findBestCandidate(
+            $resolvedPackage = $this->findBestCandidateRespectingConflicts(
+                $versionSelector,
                 $packageName,
                 $requirements[$packageName]->getPrettyConstraint(),
+                ($conflicts[$packageName] ?? null)?->getConstraint(),
             );
 
-            if (false === $resolvedPackage) {
+            if (null === $resolvedPackage) {
                 $this->addProblem($problems, $packageName, DependencyExtractionProblem::NoMatchingVersionFound);
                 unset($packages[$packageName]);
             } else {
                 $packages[$packageName] = $resolvedPackage;
             }
         }
+    }
+
+    private function findBestCandidateRespectingConflicts(
+        Package\Version\VersionSelector $versionSelector,
+        string $packageName,
+        string $prettyConstraint,
+        ?Semver\Constraint\ConstraintInterface $conflictConstraint,
+    ): ?Package\PackageInterface {
+        $excludedVersions = [];
+
+        while (true) {
+            $candidate = $versionSelector->findBestCandidate(
+                $packageName,
+                $this->excludeVersions($prettyConstraint, $excludedVersions),
+            );
+
+            // Fail if no version candidate can be determined
+            if (false === $candidate) {
+                return null;
+            }
+
+            // Return candidate if no conflict is configured or the conflict is already respected by the constraint
+            if (null === $conflictConstraint
+                || !$conflictConstraint->matches(
+                    new Semver\Constraint\Constraint('==', $candidate->getVersion()),
+                )
+            ) {
+                return $candidate;
+            }
+
+            // Retry without the conflicting version
+            $excludedVersions[] = $candidate->getPrettyVersion();
+        }
+    }
+
+    /**
+     * @param list<string> $excludedVersions
+     */
+    private function excludeVersions(string $prettyConstraint, array $excludedVersions): string
+    {
+        if ([] === $excludedVersions) {
+            return $prettyConstraint;
+        }
+
+        // ANC-combine all excluded versions (e.g. ['1.1.0', '1.1.1'] gets !=1.1.0, !=1.1.1)
+        $exclusion = implode(', ', array_map(static fn (string $version) => '!='.$version, $excludedVersions));
+
+        // Apply exclusion to all alternatives of the original constraints, because AND has higher precedence over OR
+        $alternatives = array_filter(
+            array_map(trim(...), explode('|', $prettyConstraint)),
+            static fn (string $alternative) => '' !== $alternative,
+        );
+
+        return implode(
+            ' || ',
+            array_map(static fn (string $alternative) => $alternative.', '.$exclusion, $alternatives),
+        );
     }
 
     /**
