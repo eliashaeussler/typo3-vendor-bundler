@@ -287,10 +287,10 @@ final class AutoloadBundlerTest extends Tests\ExtensionFixtureBasedTestCase
             $extra = $actual->getExtra();
 
             self::assertSame([], $actual->getAutoload());
-            self::assertIsArray($actual->getExtra()['typo3/cms'] ?? null);
-            self::assertIsArray($actual->getExtra()['typo3/cms']['Package'] ?? null);
-            self::assertIsArray($actual->getExtra()['typo3/cms']['Package']['providesPackages'] ?? null);
-            self::assertSame('libs/vendor', $actual->getExtra()['typo3/cms']['Package']['providesPackages']['symfony/yaml'] ?? null);
+            self::assertIsArray($extra['typo3/cms'] ?? null);
+            self::assertIsArray($extra['typo3/cms']['Package'] ?? null);
+            self::assertIsArray($extra['typo3/cms']['Package']['providesPackages'] ?? null);
+            self::assertSame('libs/vendor', $extra['typo3/cms']['Package']['providesPackages']['symfony/yaml'] ?? null);
         }
     }
 
