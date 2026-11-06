@@ -42,7 +42,7 @@ jobs:
       matrix:
         php-version: ["8.2", "8.3", "8.4", "8.5"]
         # We test only 2.2 (LTS) and latest version, since all other versions are insecure
-        composer-version: ["2.2", "2.10"]
+        composer-version: ["2.2", "2.11"]
         dependencies: ["highest", "lowest"]
 
     uses: eliashaeussler/gha/.github/workflows/composer-tests.yaml@1b958ba337545acb7dd9b3897a0a5fc636f2cdaf # 1.1.28
