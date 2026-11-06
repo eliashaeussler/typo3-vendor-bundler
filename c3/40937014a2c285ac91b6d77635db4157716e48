@@ -1,0 +1,20 @@
+.github/workflows/ci.yaml
+  h_a1c258d8beeba3 45
+.github/settings.yml
+  h_a1c258d8beeba3 113,115,117,119,121,123,125,127
+composer.json
+  h_a1c258d8beeba3 27
+composer.lock
+  h_a1c258d8beeba3 7,1667,1671,1675-1676,1680-1681,1690,1707,1731,1766,1778-1779
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c340937014a2c285ac91b6d77635db4157716e48",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
