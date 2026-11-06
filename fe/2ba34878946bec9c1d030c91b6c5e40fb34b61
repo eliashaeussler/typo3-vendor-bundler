@@ -1,0 +1,49 @@
+tests/Fixtures/Extensions/conflicting-libs/typo3-vendor-bundler.yaml
+  s_94cfa046a01407::t_94284b09293669 1
+tests/Resource/DependencyExtractorTest.php
+  s_94cfa046a01407::t_0fea8418176a1b 114,126,136-137
+  s_94cfa046a01407::t_21ab16d2360d45 111-113
+  s_94cfa046a01407::t_99231561bae6ea 115-117,123-125
+  s_94cfa046a01407::t_11ddb339c42815 127-129,133-135
+  s_94cfa046a01407::t_20b7c2ef55da0f 29,102-110,118-122,130-132
+tests/Fixtures/Extensions/conflicting-libs-alternatives/composer.json
+  s_94cfa046a01407::t_a4872d827c4568 1-3,5-7,9-15
+  h_a1c258d8beeba3 4,8
+src/Resource/DependencyExtractor.php
+  s_94cfa046a01407::t_a4872d827c4568 196,220
+  s_94cfa046a01407::t_22a721c946a35d 221
+  s_94cfa046a01407::t_a04abe77067c2f 193-195
+  s_94cfa046a01407::t_fddc35b9311ebf 197-199,217-219
+  s_94cfa046a01407::t_9f7ad57949d410 29,31,33-35,37,133,149-150,153,156,165-192,200-216
+tests/Fixtures/Extensions/conflicting-libs-single-pipe/typo3-vendor-bundler.yaml
+  s_94cfa046a01407::t_0fea8418176a1b 1
+tests/Fixtures/Extensions/conflicting-libs-single-pipe/composer.json
+  h_a1c258d8beeba3 4,8,15
+  s_94cfa046a01407::t_0fea8418176a1b 1-3,5-7,9-14
+tests/Fixtures/Extensions/conflicting-libs/composer.json
+  s_94cfa046a01407::t_b8654e9bc4aeab 4,8-13
+  s_94cfa046a01407::t_94284b09293669 1-3,5-7,14-15
+tests/Fixtures/Extensions/conflicting-libs-alternatives/typo3-vendor-bundler.yaml
+  s_94cfa046a01407::t_88cf94b435e744 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "fe2ba34878946bec9c1d030c91b6c5e40fb34b61",
+  "prompts": {},
+  "humans": {
+    "h_a1c258d8beeba3": {
+      "author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  },
+  "sessions": {
+    "s_94cfa046a01407": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0098dfea-c187-4609-9d36-44266271ad89",
+        "model": "claude-sonnet-5-5"
+      },
+      "human_author": "Elias Häußler <elias@haeussler.dev>"
+    }
+  }
+}
