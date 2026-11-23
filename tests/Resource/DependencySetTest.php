@@ -84,8 +84,8 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
     public function exclusionsReturnsExcludedPackagesPreparedForProvideSectionInComposerJson(): void
     {
         $expected = [
-            'baz/foo' => '*',
-            'boo/foo' => '*',
+            'baz/foo' => '1.0.0',
+            'boo/foo' => '1.2.3',
         ];
 
         self::assertSame($expected, $this->subject->exclusions());
@@ -156,10 +156,10 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
         self::assertCount(2, $provides);
         self::assertArrayHasKey('baz/foo', $provides);
         self::assertSame('baz/foo', $provides['baz/foo']->getTarget());
-        self::assertSame('*', $provides['baz/foo']->getPrettyConstraint());
+        self::assertSame('1.0.0', $provides['baz/foo']->getPrettyConstraint());
         self::assertArrayHasKey('boo/foo', $provides);
         self::assertSame('boo/foo', $provides['boo/foo']->getTarget());
-        self::assertSame('*', $provides['boo/foo']->getPrettyConstraint());
+        self::assertSame('1.2.3', $provides['boo/foo']->getPrettyConstraint());
 
         self::assertFalse($composer->getPackage()->getConfig()['allow-plugins'] ?? null);
         self::assertFalse($composer->getPackage()->getConfig()['lock'] ?? null);
@@ -221,8 +221,8 @@ final class DependencySetTest extends Tests\ExtensionFixtureBasedTestCase
                 'foo/boo' => '1.2.3',
             ],
             'provide' => [
-                'baz/foo' => '*',
-                'boo/foo' => '*',
+                'baz/foo' => '1.0.0',
+                'boo/foo' => '1.2.3',
             ],
             'repositories' => [
                 [

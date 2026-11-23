@@ -80,7 +80,7 @@ final readonly class DependencySet
         $exclusions = [];
 
         foreach ($this->excludedPackages as $exclusion) {
-            $exclusions[$exclusion->getPrettyName()] = '*';
+            $exclusions[$exclusion->getPrettyName()] = $exclusion->getPrettyVersion();
         }
 
         ksort($exclusions);
