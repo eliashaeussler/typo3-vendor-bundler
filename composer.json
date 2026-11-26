@@ -12,7 +12,7 @@
 		}
 	],
 	"require": {
-		"php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+		"php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0 || ~8.6.0",
 		"composer-plugin-api": "^2.0",
 		"cuyz/valinor": "^2.2.2",
 		"cyclonedx/cyclonedx-library": "^4.0",
